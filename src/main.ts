@@ -1,7 +1,6 @@
 import Vue from 'vue';
-import './plugins/vuetify'
+import './plugins/vuetify';
 import App from './App.vue';
-import jsPlumb from 'jsplumb';
 
 Vue.config.productionTip = false;
 

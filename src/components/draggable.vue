@@ -6,22 +6,17 @@
 </template> 
 
     <script>
-import jsplumb from "jsplumb";
+import jsplumb from 'jsplumb';
 export default {
-  props: ["yourProps"],
-  data() {
-    return {
-      your: data
-    };
-  },
+  props: ['yourProps'],
   mounted() {
     jsPlumb.ready(function() {
       jsPlumb.connect({
-        source: "item_left",
-        target: "item_right",
-        endpoint: "Rectangle"
+        source: 'item_left',
+        target: 'item_right',
+        endpoint: 'Rectangle',
       });
     });
-  }
+  },
 };
 </script> 

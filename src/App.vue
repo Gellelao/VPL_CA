@@ -27,12 +27,12 @@
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld";
-import HelloWorld1 from "./components/HelloWorld.1";
-import draggable from './components/draggable'
+import HelloWorld from './components/HelloWorld';
+import HelloWorld1 from './components/HelloWorld.1';
+import draggable from './components/draggable';
 
 export default {
-  name: "App",
+  name: 'App',
   components: {
     HelloWorld,
     HelloWorld1,
