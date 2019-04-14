@@ -17,9 +17,9 @@
           <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
         </v-flex>
         <v-flex grow xs6>
-          <img alt="Vue logo" src="./assets/logo.png">
+          <!-- <img alt="Vue logo" src="./assets/logo.png">
           <HelloWorld1 msg="ANOTHER ONE" title="yo it works"/>
-          <draggable/>
+          <draggable/> -->
         </v-flex>
       </v-layout>
     </v-content>

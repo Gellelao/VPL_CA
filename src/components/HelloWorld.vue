@@ -189,6 +189,8 @@ export default {
 <style scoped>
 #points {
   position: relative;
+  background-color:aliceblue;
+  height: 1000px;
 }
 .condition {
   position: absolute;
