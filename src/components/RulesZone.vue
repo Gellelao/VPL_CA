@@ -23,29 +23,13 @@ export default {
     jsPlumb.draggable(targetId, {
       grid: [50, 50]
     });
-    var sourcePoint = {
+    let sourcePoint = {
       endpoint: "Rectangle",
-      paintStyle: {
-        width: 25,
-        height: 21,
-        fillStyle: "blue",
-        outlineColor: "black",
-        outlineWidth: 1
-      },
       isSource: true,
-      connectorStyle: { strokeStyle: "blue", lineWidth: 10 }
     };
-    var targetPoint = {
+    let targetPoint = {
       endpoint: "Dot",
-      paintStyle: {
-        width: 25,
-        height: 21,
-        fillStyle: "blue",
-        outlineColor: "black",
-        outlineWidth: 1
-      },
       isTarget: true,
-      connectorStyle: { strokeStyle: "blue", lineWidth: 10 }
     };
     jsPlumb.makeSource(
       targetId,
@@ -56,12 +40,13 @@ export default {
       sourcePoint
     );
     jsPlumb.makeTarget(targetId, targetPoint);
+
   },
   methods: {
     mounted() {
       jsPlumb.ready(() => {
         jsPlumb.importDefaults({
-          Anchors: ["Bottom", "TopLeft"]
+          Anchors: ["Bottom", "Top"]
         });
 
         const color = "#acd";
@@ -69,7 +54,7 @@ export default {
           // notice the 'curviness' argument to this Bezier curve.
           // the curves on this page are far smoother
           // than the curves on the first demo, which use the default curviness value.
-          Connector: ["Bezier", { curviness: 50 }],
+          Connector: ["StateMachine", { curviness: 50 }],
           Endpoint: ["Dot", { radius: 5 }],
           DragOptions: { cursor: "pointer", zIndex: 5000 },
           PaintStyle: { lineWidth: 5, stroke: "#445566" },
@@ -172,4 +157,28 @@ export default {
   bottom: 10px;
   border-radius: 100%;
 }
+/* ._jsPlumb_endpoint{
+  display: block;
+  z-index: 999999999;
+  color:yellow;
+  background-color:yellow;
+}
+._jsPlumb_connector{
+  display: block;
+  z-index: 999999999;
+  color:yellow;
+  background-color:yellow;
+}
+._jsPlumb_overlay{
+  display: block;
+  z-index: 999999999;
+  color:yellow;
+  background-color:yellow;
+}
+._jsPlumb_hover{
+  display: block;
+  z-index: 999999999;
+  color:yellow;
+  background-color:yellow;
+} */
 </style>
