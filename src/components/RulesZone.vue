@@ -99,7 +99,7 @@ export default {
           {
             maxConnections: 100,
             filter: ".neighboursSource",
-            anchor: "BottomCenter"
+            anchor: "BottomRight"
           },
           sourcePoint
         );
@@ -108,7 +108,7 @@ export default {
           {
             maxConnections: 100,
             filter: ".stateSource",
-            anchor: "BottomLeft"
+            anchor: "BottomCenter"
           },
           sourcePoint
         );
@@ -173,41 +173,6 @@ export default {
     stateBlocks: [],
     conditionBlocks: [],
     actionBlocks: [],
-    point: [
-      {
-        _id: "58c21d713819d56d68763918",
-        name: "Cell",
-        status: "0"
-      },
-      {
-        _id: "58c21d803819d56d68763919",
-        name: "Condition",
-        status: "1"
-      },
-      {
-        _id: "58c21da83819d56d6876391a",
-        name: "Action",
-        status: "0"
-      },
-      {
-        _id: "58c63ecf3819d5a22f2c7f24",
-        name: "Condition",
-        status: "1"
-      }
-    ],
-    location: [
-      ["Cell", 4, 14],
-      ["Condition", 4, 24],
-      ["Condition", 4, 34],
-      ["Action", 20, 24],
-      ["Action", 4, 4]
-    ],
-    line: [
-      ["58c21d713819d56d68763918", "58c21d803819d56d68763919"],
-      ["58c21d803819d56d68763919", "58c21da83819d56d6876391a"],
-      ["58c21d803819d56d68763919", "58c63ecf3819d5a22f2c7f24"],
-      ["58c21da83819d56d6876391a", "58c63ecf3819d5a22f2c7f24"]
-    ]
   })
 };
 </script>
@@ -232,7 +197,7 @@ export default {
 .state {
   position: absolute;
   width: 200px;
-  height: 200px;
+  height: 150px;
   border-radius: 5px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: rgb(255, 255, 255);
@@ -250,8 +215,8 @@ export default {
   background-color: rgb(54, 173, 43);
   width: 30px;
   height: 30px;
-  right: 10px;
-  bottom: 10px;
+  right: -15px;
+  bottom: -15px;
   border-radius: 100%;
 }
 .stateSource {
@@ -259,41 +224,17 @@ export default {
   background-color: rgb(173, 0, 0);
   width: 30px;
   height: 30px;
-  right: 40px;
-  bottom: 10px;
+  right: 85px;
+  bottom: -15px;
   border-radius: 100%;
 }
 .thenSource {
   position: absolute;
-  background-color: rgb(43, 113, 173);
+  background-color: rgb(49, 155, 247);
   width: 30px;
   height: 30px;
   right: -15px;
   bottom: -15px;
   border-radius: 100%;
 }
-/* ._jsPlumb_endpoint{
-  display: block;
-  z-index: 999999999;
-  color:yellow;
-  background-color:yellow;
-}
-._jsPlumb_connector{
-  display: block;
-  z-index: 999999999;
-  color:yellow;
-  background-color:yellow;
-}
-._jsPlumb_overlay{
-  display: block;
-  z-index: 999999999;
-  color:yellow;
-  background-color:yellow;
-}
-._jsPlumb_hover{
-  display: block;
-  z-index: 999999999;
-  color:yellow;
-  background-color:yellow;
-} */
 </style>
