@@ -1,13 +1,31 @@
 <template>
   <div id="points">
-    <button @click="addCondition">Add a Condition Component</button>
+    <button @click="addState">Add a new State</button>
+    <button @click="addCondition">Add a new Condition</button>
+    <button @click="addAction">Add a new Action</button>
     <ul>
-      <li v-for="point in components" :key="point.id">
-        <div :id="point.id" :class="point.type">
-          {{point.name}}
+      <li v-for="block in conditionBlocks" :key="block.id">
+        <div :id="block.id" :class="block.type">
+          {{block.name}}
           <div class="dragSource"></div>
-          </div>
+        </div>
         <button @click="deleteRow(index)">Delete</button>
+      </li>
+    </ul>
+    <ul>
+      <li v-for="block in stateBlocks" :key="block.id">
+        <div :id="block.id" :class="block.type">
+          {{block.name}}
+          <div class="dragSource"></div>
+        </div>
+      </li>
+    </ul>
+    <ul>
+      <li v-for="block in actionBlocks" :key="block.id">
+        <div :id="block.id" :class="block.type">
+          {{block.name}}
+          <div class="dragSource"></div>
+        </div>
       </li>
     </ul>
   </div>
@@ -15,32 +33,19 @@
 
 <script>
 var count = 0;
+const sourcePoint = {
+  endpoint: "Dot",
+  isSource: true
+};
+const targetPoint = {
+  endpoint: "Dot",
+  isTarget: true
+};
+import Vue from "vue";
+
 export default {
   updated() {
     console.log("UPDATED");
-    let targetId = "unique" + count;
-    console.log(targetId);
-    jsPlumb.draggable(targetId, {
-      grid: [50, 50]
-    });
-    let sourcePoint = {
-      endpoint: "Rectangle",
-      isSource: true,
-    };
-    let targetPoint = {
-      endpoint: "Dot",
-      isTarget: true,
-    };
-    jsPlumb.makeSource(
-      targetId,
-      {
-        filter: ".dragSource",
-        maxConnections: 1,
-      },
-      sourcePoint
-    );
-    jsPlumb.makeTarget(targetId, targetPoint);
-
   },
   methods: {
     mounted() {
@@ -81,17 +86,87 @@ export default {
         });
       });
     },
+    addState: function(event) {
+      count = count + 1;
+      this.stateBlocks.push({
+        id: "state_" + count,
+        name: "State",
+        type: "state"
+      });
+      // Wait for the DOM to update before setting up plumbing
+      Vue.nextTick(function() {
+        let targetId = "state_" + count;
+        console.log(targetId);
+        jsPlumb.draggable(targetId, {
+          grid: [50, 50]
+        });
+        jsPlumb.makeSource(
+          targetId,
+          {
+            maxConnections: 100,
+            filter: ".dragSource",
+            anchor: "BottomCenter"
+          },
+          sourcePoint
+        );
+      });
+    },
     addCondition: function(event) {
       count = count + 1;
-      this.components.push({
-        id: "unique" + count,
+      this.conditionBlocks.push({
+        id: "condition_" + count,
         name: "Condition",
         type: "condition"
+      });
+      // Wait for the DOM to update before setting up plumbing
+      Vue.nextTick(function() {
+        let targetId = "condition_" + count;
+        console.log(targetId);
+        jsPlumb.draggable(targetId, {
+          grid: [50, 50]
+        });
+        jsPlumb.makeSource(
+          targetId,
+          {
+            maxConnections: 100,
+            filter: ".dragSource",
+            anchor: "BottomCenter"
+          },
+          sourcePoint
+        );
+        jsPlumb.makeTarget(
+          targetId,
+          { maxConnections: 1, anchor: "TopCenter" },
+          targetPoint
+        );
+      });
+    },
+    addAction: function(event) {
+      count = count + 1;
+      this.actionBlocks.push({
+        id: "action_" + count,
+        name: "Action",
+        type: "action"
+      });
+      // Wait for the DOM to update before setting up plumbing
+      Vue.nextTick(function() {
+        let targetId = "action_" + count;
+        console.log(targetId);
+        jsPlumb.draggable(targetId, {
+          grid: [50, 50]
+        });
+        jsPlumb.makeTarget(
+          targetId,
+          { maxConnections: 1, anchor: "TopCenter" },
+          targetPoint
+        );
       });
     }
   },
   data: () => ({
-    components: [],
+    stateBlocks: [],
+    conditionBlocks: [],
+    actionBlocks: [],
     point: [
       {
         _id: "58c21d713819d56d68763918",
@@ -148,7 +223,23 @@ export default {
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: beige;
 }
-.dragSource{
+.state {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
+  background-color: rgb(255, 255, 255);
+}
+.action {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
+  background-color: rgb(255, 217, 217);
+}
+.dragSource {
   position: absolute;
   background-color: rgb(43, 113, 173);
   width: 30px;

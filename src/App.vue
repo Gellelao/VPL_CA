@@ -27,6 +27,7 @@
 import RulesZone from './components/RulesZone';
 import SimZone from './components/SimZone';
 import jsplumb from 'jsplumb';
+import Vue from 'vue';
 
 export default {
   name: 'App',
