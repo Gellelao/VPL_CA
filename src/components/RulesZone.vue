@@ -4,28 +4,26 @@
     <button @click="addCondition">Add a new Condition</button>
     <button @click="addAction">Add a new Action</button>
     <ul>
+      <li v-for="block in stateBlocks" :key="block.id">
+        <div :id="block.id" :class="block.type">
+          {{block.name}}
+          <div class="neighboursSource"></div>
+          <div class="stateSource"></div>
+        </div>
+      </li>
+    </ul>
+    <ul>
       <li v-for="block in conditionBlocks" :key="block.id">
         <div :id="block.id" :class="block.type">
           {{block.name}}
-          <div class="dragSource"></div>
+          <div class="thenSource"></div>
         </div>
         <button @click="deleteRow(index)">Delete</button>
       </li>
     </ul>
     <ul>
-      <li v-for="block in stateBlocks" :key="block.id">
-        <div :id="block.id" :class="block.type">
-          {{block.name}}
-          <div class="dragSource"></div>
-        </div>
-      </li>
-    </ul>
-    <ul>
       <li v-for="block in actionBlocks" :key="block.id">
-        <div :id="block.id" :class="block.type">
-          {{block.name}}
-          <div class="dragSource"></div>
-        </div>
+        <div :id="block.id" :class="block.type">{{block.name}}</div>
       </li>
     </ul>
   </div>
@@ -50,10 +48,6 @@ export default {
   methods: {
     mounted() {
       jsPlumb.ready(() => {
-        jsPlumb.importDefaults({
-          Anchors: ["Bottom", "Top"]
-        });
-
         const color = "#acd";
         const instance = jsPlumb.getInstance({
           // notice the 'curviness' argument to this Bezier curve.
@@ -104,8 +98,17 @@ export default {
           targetId,
           {
             maxConnections: 100,
-            filter: ".dragSource",
+            filter: ".neighboursSource",
             anchor: "BottomCenter"
+          },
+          sourcePoint
+        );
+        jsPlumb.makeSource(
+          targetId,
+          {
+            maxConnections: 100,
+            filter: ".stateSource",
+            anchor: "BottomLeft"
           },
           sourcePoint
         );
@@ -129,8 +132,8 @@ export default {
           targetId,
           {
             maxConnections: 100,
-            filter: ".dragSource",
-            anchor: "BottomCenter"
+            filter: ".thenSource",
+            anchor: "BottomRight"
           },
           sourcePoint
         );
@@ -157,7 +160,10 @@ export default {
         });
         jsPlumb.makeTarget(
           targetId,
-          { maxConnections: 1, anchor: "TopCenter" },
+          {
+            maxConnections: 100,
+            anchor: "LeftMiddle"
+          },
           targetPoint
         );
       });
@@ -239,13 +245,31 @@ export default {
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: rgb(255, 217, 217);
 }
-.dragSource {
+.neighboursSource {
   position: absolute;
-  background-color: rgb(43, 113, 173);
+  background-color: rgb(54, 173, 43);
   width: 30px;
   height: 30px;
   right: 10px;
   bottom: 10px;
+  border-radius: 100%;
+}
+.stateSource {
+  position: absolute;
+  background-color: rgb(173, 0, 0);
+  width: 30px;
+  height: 30px;
+  right: 40px;
+  bottom: 10px;
+  border-radius: 100%;
+}
+.thenSource {
+  position: absolute;
+  background-color: rgb(43, 113, 173);
+  width: 30px;
+  height: 30px;
+  right: -15px;
+  bottom: -15px;
   border-radius: 100%;
 }
 /* ._jsPlumb_endpoint{
