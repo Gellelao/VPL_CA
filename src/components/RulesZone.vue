@@ -7,6 +7,11 @@
       <li v-for="block in stateBlocks" :key="block.id">
         <div :id="block.id" :class="block.type">
           {{block.name}}
+          <div class="form__field selectColour">
+            <div class="form__input">
+              <swatches v-model="color" popover-to="left"></swatches>
+            </div>
+          </div>
           <div class="neighboursSource"></div>
           <div class="stateSource"></div>
         </div>
@@ -30,6 +35,10 @@
 </template>
 
 <script>
+import Vue from "vue";
+import Swatches from "vue-swatches";
+import "vue-swatches/dist/vue-swatches.min.css";
+
 var count = 0;
 const sourcePoint = {
   endpoint: "Dot",
@@ -39,16 +48,15 @@ const targetPoint = {
   endpoint: "Dot",
   isTarget: true
 };
-import Vue from "vue";
 
 export default {
+  components: { Swatches },
   updated() {
     console.log("UPDATED");
   },
   methods: {
     mounted() {
       jsPlumb.ready(() => {
-        const color = "#acd";
         const instance = jsPlumb.getInstance({
           // notice the 'curviness' argument to this Bezier curve.
           // the curves on this page are far smoother
@@ -170,9 +178,10 @@ export default {
     }
   },
   data: () => ({
+    color: "#1CA085",
     stateBlocks: [],
     conditionBlocks: [],
-    actionBlocks: [],
+    actionBlocks: []
   })
 };
 </script>
@@ -236,5 +245,8 @@ export default {
   right: -15px;
   bottom: -15px;
   border-radius: 100%;
+}
+.selectColour{
+  background-color: beige;
 }
 </style>

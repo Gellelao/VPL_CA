@@ -12,6 +12,7 @@
     "vue": "^2.6.6",
     "vue-class-component": "^6.0.0",
     "vue-property-decorator": "^8.0.0",
+    "vue-swatches": "^1.0.3",
     "vuetify": "^1.5.5"
   },
   "devDependencies": {
