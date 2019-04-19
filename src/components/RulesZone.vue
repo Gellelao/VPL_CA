@@ -90,26 +90,33 @@ export default {
     },
     addState: function(event) {
       count = count + 1;
+      var idOfThisState = "state_" + count;
       this.stateBlocks.push({
-        id: "state_" + count,
+        id: idOfThisState,
         name: "State",
         type: "state"
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(function() {
-        let targetId = "state_" + count;
+        let targetId = idOfThisState;
         console.log(targetId);
         jsPlumb.draggable(targetId, {
           grid: [50, 50]
         });
+        var neighbourClass = {
+          cssClass: "neighboursSource",
+        }
         jsPlumb.makeSource(
           targetId,
           {
             maxConnections: 100,
             filter: ".neighboursSource",
-            anchor: "BottomRight"
+            anchor: ["BottomRight", { cssClass: "neighboursSource" }]
           },
-          sourcePoint
+          {
+            endpoint: ["Dot", {}, neighbourClass],
+            isSource: true
+          }
         );
         jsPlumb.makeSource(
           targetId,
@@ -118,20 +125,24 @@ export default {
             filter: ".stateSource",
             anchor: "BottomCenter"
           },
-          sourcePoint
+          {
+            endpoint: "Rectangle",
+            isSource: true
+          }
         );
       });
     },
     addCondition: function(event) {
       count = count + 1;
+      var idOfThisCond = "condition_" + count;
       this.conditionBlocks.push({
-        id: "condition_" + count,
+        id: idOfThisCond,
         name: "Condition",
         type: "condition"
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(function() {
-        let targetId = "condition_" + count;
+        let targetId = idOfThisCond;
         console.log(targetId);
         jsPlumb.draggable(targetId, {
           grid: [50, 50]
@@ -150,6 +161,16 @@ export default {
           { maxConnections: 1, anchor: "TopCenter" },
           targetPoint
         );
+
+        jsPlumb.bind("connection", function(info) {
+          console.log(info.target);
+          console.log(info.sourceEndpoint);
+          // console.log(info.sourceEndpoint.type);
+          if (info.target.id == idOfThisCond) {
+            document.getElementById(idOfThisCond).innerText =
+              info.sourceEndpoint.type;
+          }
+        });
       });
     },
     addAction: function(event) {
@@ -191,7 +212,7 @@ export default {
   position: relative;
   background-color: aliceblue;
   height: 800px;
-  resize: vertical;
+  resize: both;
   border: 1px solid #aaaaaa;
   overflow-y: scroll;
 }
@@ -246,7 +267,7 @@ export default {
   bottom: -15px;
   border-radius: 100%;
 }
-.selectColour{
+.selectColour {
   background-color: beige;
 }
 </style>
