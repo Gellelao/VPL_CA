@@ -98,18 +98,17 @@ export default {
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(function() {
-        let targetId = idOfThisState;
-        let neighbourNode = targetId+"_neighbours";
-        let stateNode = targetId+"_state";
-        console.log(targetId);
-        jsPlumb.draggable(targetId, {
+        let neighbourNode = idOfThisState+"_neighbours";
+        let stateNode = idOfThisState+"_state";
+        
+        jsPlumb.draggable(idOfThisState, {
           grid: [50, 50]
         });
         jsPlumb.makeSource(
           neighbourNode,
           {
             maxConnections: 100,
-            anchor: "BottomRight"
+            anchor: "Center"
           },
           sourcePoint
         );
@@ -117,7 +116,7 @@ export default {
           stateNode,
           {
             maxConnections: 100,
-            anchor: "BottomCenter"
+            anchor: "Center"
           },
           sourcePoint
         );
@@ -149,7 +148,7 @@ export default {
         );
         jsPlumb.makeTarget(
           targetId,
-          { maxConnections: 1, anchor: "TopCenter" },
+          { maxConnections: 1, anchor: "BottomLeft" },
           targetPoint
         );
 
@@ -200,7 +199,7 @@ export default {
   position: relative;
   background-color: aliceblue;
   height: 800px;
-  resize: both;
+  resize: vertical;
   border: 1px solid #aaaaaa;
   overflow-y: scroll;
 }
