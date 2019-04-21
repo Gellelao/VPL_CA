@@ -13,7 +13,7 @@
             </div>
           </div>
           <div :id="block.id+'_neighbours'" class="neighboursSource"></div>
-          <div class="stateSource"></div>
+          <div :id="block.id+'_state'" class="stateSource"></div>
         </div>
       </li>
     </ul>
@@ -100,6 +100,7 @@ export default {
       Vue.nextTick(function() {
         let targetId = idOfThisState;
         let neighbourNode = targetId+"_neighbours";
+        let stateNode = targetId+"_state";
         console.log(targetId);
         jsPlumb.draggable(targetId, {
           grid: [50, 50]
@@ -108,24 +109,17 @@ export default {
           neighbourNode,
           {
             maxConnections: 100,
-            anchor: ["BottomRight", { cssClass: "neighboursSource" }]
+            anchor: "BottomRight"
           },
-          {
-            endpoint: "Dot",
-            isSource: true
-          }
+          sourcePoint
         );
         jsPlumb.makeSource(
-          targetId,
+          stateNode,
           {
             maxConnections: 100,
-            filter: ".stateSource",
             anchor: "BottomCenter"
           },
-          {
-            endpoint: "Rectangle",
-            isSource: true
-          }
+          sourcePoint
         );
       });
     },
@@ -159,19 +153,10 @@ export default {
           targetPoint
         );
 
-        jsPlumb.bind("endpointClick", function(info){
-          console.log("====================");
-          console.log(info);
-        });
-
         jsPlumb.bind("connection", function(info) {
-          console.log(info);
-          console.log(info.target);
-          console.log(info.sourceEndpoint);
-          // console.log(info.sourceEndpoint.type);
           if (info.target.id == idOfThisCond) {
             document.getElementById(idOfThisCond).innerText =
-              info.sourceEndpoint.type;
+              info.sourceId;
           }
         });
       });
