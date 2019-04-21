@@ -12,7 +12,7 @@
               <swatches v-model="color" popover-to="left"></swatches>
             </div>
           </div>
-          <div class="neighboursSource"></div>
+          <div :id="block.id+'_neighbours'" class="neighboursSource"></div>
           <div class="stateSource"></div>
         </div>
       </li>
@@ -99,22 +99,19 @@ export default {
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(function() {
         let targetId = idOfThisState;
+        let neighbourNode = targetId+"_neighbours";
         console.log(targetId);
         jsPlumb.draggable(targetId, {
           grid: [50, 50]
         });
-        var neighbourClass = {
-          cssClass: "neighboursSource",
-        }
         jsPlumb.makeSource(
-          targetId,
+          neighbourNode,
           {
             maxConnections: 100,
-            filter: ".neighboursSource",
             anchor: ["BottomRight", { cssClass: "neighboursSource" }]
           },
           {
-            endpoint: ["Dot", {}, neighbourClass],
+            endpoint: "Dot",
             isSource: true
           }
         );
@@ -162,7 +159,13 @@ export default {
           targetPoint
         );
 
+        jsPlumb.bind("endpointClick", function(info){
+          console.log("====================");
+          console.log(info);
+        });
+
         jsPlumb.bind("connection", function(info) {
+          console.log(info);
           console.log(info.target);
           console.log(info.sourceEndpoint);
           // console.log(info.sourceEndpoint.type);
