@@ -12,9 +12,9 @@
               <swatches v-model="color" popover-to="left"></swatches>
             </div>
           </div>
+        </div>
           <div :id="block.id+'_neighbours'" class="neighboursSource"></div>
           <div :id="block.id+'_state'" class="stateSource"></div>
-        </div>
       </li>
     </ul>
     <ul>
@@ -98,9 +98,9 @@ export default {
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(function() {
-        let neighbourNode = idOfThisState+"_neighbours";
-        let stateNode = idOfThisState+"_state";
-        
+        let neighbourNode = idOfThisState + "_neighbours";
+        let stateNode = idOfThisState + "_state";
+
         jsPlumb.draggable(idOfThisState, {
           grid: [50, 50]
         });
@@ -148,14 +148,13 @@ export default {
         );
         jsPlumb.makeTarget(
           targetId,
-          { maxConnections: 1, anchor: "BottomLeft" },
+          { maxConnections: 1, anchor: "TopCenter" },
           targetPoint
         );
 
         jsPlumb.bind("connection", function(info) {
           if (info.target.id == idOfThisCond) {
-            document.getElementById(idOfThisCond).innerText =
-              info.sourceId;
+            document.getElementById(idOfThisCond).innerText = info.sourceId;
           }
         });
       });
