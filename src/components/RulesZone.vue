@@ -17,7 +17,15 @@
         </div>
       </li>
     </ul>
-    <ul>
+    <div v-if="conditionBlocks.length > 0">
+    <ConditionBlock 
+      v-for="block in conditionBlocks" 
+      :key="block.id"
+      :id="block.id"
+    >
+    </ConditionBlock>
+    </div>
+    <!-- <ul>
       <li v-for="block in conditionBlocks" :key="block.id">
         <div :id="block.id" :class="block.type">
           {{block.name}}
@@ -25,7 +33,7 @@
         </div>
         <button @click="deleteRow(index)">Delete</button>
       </li>
-    </ul>
+    </ul>-->
     <ul>
       <li v-for="block in actionBlocks" :key="block.id">
         <div :id="block.id" :class="block.type">{{block.name}}</div>
@@ -37,6 +45,7 @@
 <script>
 import Vue from "vue";
 import Swatches from "vue-swatches";
+import ConditionBlock from "./ConditionBlock";
 import "vue-swatches/dist/vue-swatches.min.css";
 
 var count = 0;
@@ -50,7 +59,7 @@ const targetPoint = {
 };
 
 export default {
-  components: { Swatches },
+  components: { Swatches, ConditionBlock },
   updated() {
     console.log("UPDATED");
   },
@@ -102,8 +111,6 @@ export default {
       var idOfThisCond = "condition_" + count;
       this.conditionBlocks.push({
         id: idOfThisCond,
-        name: "Condition",
-        type: "condition"
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(function() {
