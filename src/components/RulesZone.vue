@@ -12,9 +12,9 @@
               <swatches v-model="color" popover-to="left"></swatches>
             </div>
           </div>
-        </div>
           <div :id="block.id+'_neighbours'" class="neighboursSource"></div>
           <div :id="block.id+'_state'" class="stateSource"></div>
+        </div>
       </li>
     </ul>
     <ul>
@@ -54,40 +54,12 @@ export default {
   updated() {
     console.log("UPDATED");
   },
+  mounted() {
+    console.log("mounted");
+    jsPlumb.setContainer(document.getElementById("points"));
+    jsPlumb.ready(() => {});
+  },
   methods: {
-    mounted() {
-      jsPlumb.ready(() => {
-        const instance = jsPlumb.getInstance({
-          // notice the 'curviness' argument to this Bezier curve.
-          // the curves on this page are far smoother
-          // than the curves on the first demo, which use the default curviness value.
-          Connector: ["StateMachine", { curviness: 50 }],
-          Endpoint: ["Dot", { radius: 5 }],
-          DragOptions: { cursor: "pointer", zIndex: 5000 },
-          PaintStyle: { lineWidth: 5, stroke: "#445566" },
-          EndpointStyle: { radius: 9, fill: color, stroke: "red" },
-          HoverPaintStyle: { stroke: "#ec9f2e", lineWidth: 4 },
-          EndpointHoverStyle: { fill: "#ec9f2e", stroke: "#acd" },
-          ConnectionOverlays: [
-            [
-              "Arrow",
-              {
-                location: 1,
-                id: "arrow",
-                length: 4,
-                foldback: 0.8,
-                paintStyle: {
-                  lineWidth: 15,
-                  stroke: "lightgray",
-                  fill: "lightgray"
-                }
-              }
-            ]
-          ],
-          Container: "points"
-        });
-      });
-    },
     addState: function(event) {
       count = count + 1;
       var idOfThisState = "state_" + count;
@@ -102,7 +74,7 @@ export default {
         let stateNode = idOfThisState + "_state";
 
         jsPlumb.draggable(idOfThisState, {
-          grid: [50, 50]
+          // grid: [50, 50]
         });
         jsPlumb.makeSource(
           neighbourNode,
@@ -120,6 +92,9 @@ export default {
           },
           sourcePoint
         );
+        document
+          .getElementById(idOfThisState)
+          .setAttribute("position", "absolute");
       });
     },
     addCondition: function(event) {
@@ -135,7 +110,7 @@ export default {
         let targetId = idOfThisCond;
         console.log(targetId);
         jsPlumb.draggable(targetId, {
-          grid: [50, 50]
+          // grid: [50, 50]
         });
         jsPlumb.makeSource(
           targetId,
@@ -171,7 +146,7 @@ export default {
         let targetId = "action_" + count;
         console.log(targetId);
         jsPlumb.draggable(targetId, {
-          grid: [50, 50]
+          // grid: [50, 50]
         });
         jsPlumb.makeTarget(
           targetId,
