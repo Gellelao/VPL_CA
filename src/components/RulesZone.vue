@@ -3,44 +3,26 @@
     <button @click="addState">Add a new State</button>
     <button @click="addCondition">Add a new Condition</button>
     <button @click="addAction">Add a new Action</button>
-    <ul>
-      <li v-for="block in stateBlocks" :key="block.id">
-        <div :id="block.id" :class="block.type">
-          {{block.name}}
-          <div class="form__field selectColour">
-            <div class="form__input">
-              <swatches v-model="color" popover-to="left"></swatches>
-            </div>
-          </div>
-          <div :id="block.id+'_neighbours'" class="neighboursSource"></div>
-          <div :id="block.id+'_state'" class="stateSource"></div>
-        </div>
-      </li>
-    </ul>
+    
+    <div v-if="stateBlocks.length > 0">
+      <StateBlock v-for="block in stateBlocks" :key="block.id" :id="block.id"></StateBlock>
+    </div>
+
     <div v-if="conditionBlocks.length > 0">
       <ConditionBlock v-for="block in conditionBlocks" :key="block.id" :id="block.id"></ConditionBlock>
     </div>
-    <!-- <ul>
-      <li v-for="block in conditionBlocks" :key="block.id">
-        <div :id="block.id" :class="block.type">
-          {{block.name}}
-          <div class="thenSource"></div>
-        </div>
-        <button @click="deleteRow(index)">Delete</button>
-      </li>
-    </ul>-->
-    <ul>
-      <li v-for="block in actionBlocks" :key="block.id">
-        <div :id="block.id" :class="block.type">{{block.name}}</div>
-      </li>
-    </ul>
+
+    <div v-if="actionBlocks.length > 0">
+      <ActionBlock v-for="block in actionBlocks" :key="block.id" :id="block.id"></ActionBlock>
+    </div>
   </div>
 </template>
 
 <script>
 import Vue from "vue";
-import Swatches from "vue-swatches";
+import StateBlock from "./StateBlock";
 import ConditionBlock from "./ConditionBlock";
+import ActionBlock from "./ActionBlock";
 import "vue-swatches/dist/vue-swatches.min.css";
 
 var count = 0;
@@ -54,7 +36,7 @@ const targetPoint = {
 };
 
 export default {
-  components: { Swatches, ConditionBlock },
+  components: {ConditionBlock, StateBlock, ActionBlock },
   updated() {
     console.log("UPDATED");
   },
@@ -162,7 +144,6 @@ export default {
     }
   },
   data: () => ({
-    color: "#1CA085",
     stateBlocks: [],
     conditionBlocks: [],
     actionBlocks: []
