@@ -9,7 +9,7 @@
     </div>
 
     <div v-if="conditionBlocks.length > 0">
-      <ConditionBlock v-for="block in conditionBlocks" :key="block.id" :id="block.id"></ConditionBlock>
+      <ConditionBlock v-for="block in conditionBlocks" :key="block.id" :id="block.id" :source="block.source"></ConditionBlock>
     </div>
 
     <div v-if="actionBlocks.length > 0">
@@ -87,10 +87,11 @@ export default {
       count = count + 1;
       var idOfThisCond = "condition_" + count;
       this.conditionBlocks.push({
-        id: idOfThisCond
+        id: idOfThisCond,
+        source: ""
       });
       // Wait for the DOM to update before setting up plumbing
-      Vue.nextTick(function() {
+      Vue.nextTick(() => {
         let targetId = idOfThisCond;
         console.log(targetId);
         jsPlumb.draggable(targetId, {
@@ -111,11 +112,21 @@ export default {
           targetPoint
         );
 
-        jsPlumb.bind("connection", function(info) {
+        // Update the source of the block to the name of the property which
+        // was just connected to it.
+        jsPlumb.bind("connection", (info) => {
           if (info.target.id == idOfThisCond) {
-            document.getElementById(idOfThisCond).innerText = info.sourceId;
+            Vue.set(
+              // Find the array entry for this block
+              this.conditionBlocks.find(x => x.id === idOfThisCond),
+              // Update the source field
+              "source",
+              // to the sourceId of the connection
+              info.sourceId
+            );
           }
         });
+        console.log(this.conditionBlocks);
       });
     },
     addAction: function(event) {
