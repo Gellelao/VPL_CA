@@ -224,5 +224,6 @@ export default {
 }
 .selectColour {
   background-color: beige;
+  box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75);
 }
 </style>
