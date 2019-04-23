@@ -18,12 +18,7 @@
       </li>
     </ul>
     <div v-if="conditionBlocks.length > 0">
-    <ConditionBlock 
-      v-for="block in conditionBlocks" 
-      :key="block.id"
-      :id="block.id"
-    >
-    </ConditionBlock>
+      <ConditionBlock v-for="block in conditionBlocks" :key="block.id" :id="block.id"></ConditionBlock>
     </div>
     <!-- <ul>
       <li v-for="block in conditionBlocks" :key="block.id">
@@ -110,7 +105,7 @@ export default {
       count = count + 1;
       var idOfThisCond = "condition_" + count;
       this.conditionBlocks.push({
-        id: idOfThisCond,
+        id: idOfThisCond
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(function() {

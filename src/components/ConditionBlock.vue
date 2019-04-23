@@ -1,11 +1,15 @@
-<script>
-import Vue from "vue";
+<template>
+  <div :id="id" class="condition">
+    Condition
+    <div class="thenSource"></div>
+  </div>
+</template>
 
-Vue.component("ConditionBlock", {
-  props: ["id", "class"],
-  template: `<div :id="id" class="condition">
-          State
-          <div class="thenSource"></div>
-        </div>`
-});
+<script>
+export default {
+  props: ['id'],
+  data: () => ({
+    //
+  })
+};
 </script>
