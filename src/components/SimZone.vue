@@ -1,8 +1,9 @@
 <template>
   <div>
-    <tr v-for="(row, idx1) in grid" :key="idx1">
-      <td v-for="(col, idx2) in row" :key="idx2">
-        <div class="cell" :style="{'background-color': grid[idx1][idx2]}"></div>
+    <button @click="updateCells">Update cells</button>
+    <tr v-for="(row, x) in grid" :key="x">
+      <td v-for="(col, y) in row" :key="y">
+        <div class="cell" :style="{'background-color': grid[x][y]}"></div>
       </td>
     </tr>
   </div>
@@ -12,19 +13,60 @@
 export default {
   data: () => ({
     grid: [
-      ["#1df954", "#1CA085", "#3ba07e", "#1CA085", "#1df954"],
-      ["#1df954", "#1CA085", "#3ba07e", "#1CA085", "#1df954"],
-      ["#5a704d", "#1CA085", "#3ba07e", "#1CA085", "#1df954"],
-      ["#1df954", "#1CA085", "#3ba07e", "#d21ad8", "#1df954"],
-      ["#1df954", "#1CA085", "#3ba07e", "#1CA085", "#1df954"]
+      ["#ffffff", "#ffffff", "#ffffff", "#ffffff", "#ffffff"],
+      ["#ffffff", "#ffffff", "#000000", "#ffffff", "#ffffff"],
+      ["#000000", "#ffffff", "#ffffff", "#000000", "#ffffff"],
+      ["#000000", "#ffffff", "#ffffff", "#000000", "#ffffff"],
+      ["#ffffff", "#000000", "#ffffff", "#ffffff", "#ffffff"]
     ]
-  })
+  }),
+  methods: {
+    updateCells() {
+      let newGrid = [];
+      for (let x = 0; x < this.grid.length; x++) {
+        newGrid[x] = [ ];
+        for (let y = 0; y < this.grid[x].length; y++) {
+          let nextVal = this.applyRules(x, y);
+          newGrid[x][y] = nextVal;
+        }
+      }
+      this.grid = newGrid;
+    },
+    applyRules(x, y) {
+      let cellState = this.grid[x][y];
+      let neighbours = this.getMyNeighbours(x, y);
+      let aliveNeighbours = neighbours.filter(cell => cell === "#000000").length;
+      if (cellState === "#ffffff") { // DEAD
+        if (aliveNeighbours == 3) 
+        {
+          return "#000000";
+        }
+      } else { // ALIVE
+        if (aliveNeighbours < 2 || aliveNeighbours > 3){
+          return "#ffffff";
+        }
+      }
+      return cellState;
+    },
+    getMyNeighbours(x, y) {
+      // no looping for now
+      let neighbours = [];
+      for (let i = x - 1; i <= x + 1; i++) {
+        if (i < 0 || i >= this.grid[0].length) continue;
+        for (let j = y - 1; j <= y + 1; j++) {
+          if (j < 0 || j >= this.grid[i].length || (x == i && y == j)) continue;
+          neighbours.push(this.grid[i][j]);
+        }
+      }
+      return neighbours;
+    }
+  }
 };
 </script>
 
 <style scoped>
-  .cell{
-    width: 20px;
-    height: 20px;
-  }
+.cell {
+  width: 20px;
+  height: 20px;
+}
 </style>
