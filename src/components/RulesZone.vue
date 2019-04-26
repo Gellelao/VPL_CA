@@ -13,7 +13,7 @@
     </div>
 
     <div v-if="actionBlocks.length > 0">
-      <ActionBlock v-for="block in actionBlocks" :key="block.id" :id="block.id"></ActionBlock>
+      <ActionBlock v-for="block in actionBlocks" :key="block.id" :id="block.id" :source="block.source" :triggers="block.triggers"></ActionBlock>
     </div>
   </div>
 </template>
@@ -49,13 +49,12 @@ export default {
     addState: function(event) {
       count = count + 1;
       var idOfThisState = "state_" + count;
+
       this.stateBlocks.push({
         id: idOfThisState,
-        name: "State",
-        type: "state"
       });
       // Wait for the DOM to update before setting up plumbing
-      Vue.nextTick(function() {
+      Vue.nextTick(() => {
         let neighbourNode = idOfThisState + "_neighbours";
         let stateNode = idOfThisState + "_state";
 
@@ -78,14 +77,12 @@ export default {
           },
           sourcePoint
         );
-        document
-          .getElementById(idOfThisState)
-          .setAttribute("position", "absolute");
       });
     },
     addCondition: function(event) {
       count = count + 1;
       var idOfThisCond = "condition_" + count;
+
       this.conditionBlocks.push({
         id: idOfThisCond,
         source: ""
@@ -112,8 +109,8 @@ export default {
           targetPoint
         );
 
-        // Update the source of the block to the name of the property which
-        // was just connected to it.
+        // When a connection is made, update the source of the block to
+        // the name of the property which was just connected to it.
         jsPlumb.bind("connection", (info) => {
           if (info.target.id == idOfThisCond) {
             Vue.set(
@@ -131,26 +128,49 @@ export default {
     },
     addAction: function(event) {
       count = count + 1;
+      var idOfThisAction = "action_" + count;
+
       this.actionBlocks.push({
-        id: "action_" + count,
-        name: "Action",
-        type: "action"
+        id: idOfThisAction,
+        source: "",
+        triggers: []
       });
       // Wait for the DOM to update before setting up plumbing
-      Vue.nextTick(function() {
-        let targetId = "action_" + count;
-        console.log(targetId);
-        jsPlumb.draggable(targetId, {
+      Vue.nextTick(() => {
+        jsPlumb.draggable(idOfThisAction, {
           // grid: [50, 50]
         });
         jsPlumb.makeTarget(
-          targetId,
+          idOfThisAction,
           {
             maxConnections: 100,
             anchor: "LeftMiddle"
           },
           targetPoint
         );
+
+        // When a connection is made, update the source of the block to
+        // the name of the property which was just connected to it.
+        jsPlumb.bind("connection", (info) => {
+          console.log(info);
+          if (info.target.id == idOfThisAction) {
+            // Only update source if we receive a connection from a State block
+            if(info.source.id.startsWith("state")){
+            Vue.set(
+              // Find the array entry for this block
+              this.actionBlocks.find(x => x.id === idOfThisAction),
+              // Update the source field
+              "source",
+              // to the sourceId of the connection
+              info.sourceId
+            );
+            }
+            else{
+            // Add the id of the source to the array of triggers
+              this.actionBlocks.find(x => x.id === idOfThisAction).triggers.push(info.sourceId);
+            }
+          }
+        });
       });
     }
   },
