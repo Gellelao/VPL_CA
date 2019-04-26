@@ -6,7 +6,7 @@
       <div>Neighbours are in state</div>
       <div class="selectColour">
         <div class="form__input">
-          <swatches v-model="requiredState" popover-to="left">Select state</swatches>
+          <swatches v-model="requiredState" colors="text-basic">Select state</swatches>
         </div>
       </div>
     </template>

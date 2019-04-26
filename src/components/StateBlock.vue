@@ -3,7 +3,7 @@
     State
     <div class="form__field selectColour">
       <div class="form__input">
-        <swatches v-model="color" popover-to="left"></swatches>
+        <swatches v-model="color" colors="text-basic"></swatches>
       </div>
     </div>
     <div :id="id+'_neighbours'" class="neighboursSource"></div>
