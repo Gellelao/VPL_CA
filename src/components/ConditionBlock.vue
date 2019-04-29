@@ -2,11 +2,15 @@
   <div :id="id" class="condition">
     Condition
     <template v-if="property === 'neighbours'">
-      <input v-model.number="howManyNeighbours" type="number">
+      <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number">
       <div>Neighbours are in state</div>
       <div class="selectColour">
         <div class="form__input">
-          <swatches v-model="requiredState" colors="text-basic">Select state</swatches>
+          <swatches
+            v-model="requiredState"
+            colors="text-basic"
+            @input="updateStateInParent"
+          >Select state</swatches>
         </div>
       </div>
     </template>
@@ -32,6 +36,20 @@ export default {
     property() {
       let index = this.source.lastIndexOf("_");
       return this.source.substr(index + 1);
+    }
+  },
+  methods: {
+    updateStateInParent() {
+      this.$root.$emit("updateConditionRequiredState", {
+        id: this.id,
+        requiredState: this.requiredState
+      });
+    },
+    updateNeighboursInParent() {
+      this.$root.$emit("updateConditionNeighbours", {
+        id: this.id,
+        neighbours: this.howManyNeighbours
+      });
     }
   }
 };

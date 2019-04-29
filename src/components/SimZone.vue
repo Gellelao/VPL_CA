@@ -4,6 +4,7 @@
     <button @click="updateCells">Update cells</button>
     <!-- The following button is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
     <button @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</button>
+    Rules: {{rules}}
     <tr v-for="(row, x) in grid" :key="x">
       <td v-for="(col, y) in row" :key="y">
         <div class="cell" :style="{'background-color': grid[x][y]}"></div>
@@ -14,6 +15,7 @@
 
 <script>
 export default {
+  props: ["rules"],
   data: () => ({
     grid: [],
     timer: null,

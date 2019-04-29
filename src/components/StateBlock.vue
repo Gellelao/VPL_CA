@@ -3,7 +3,7 @@
     State
     <div class="form__field selectColour">
       <div class="form__input">
-        <swatches v-model="color" colors="text-basic"></swatches>
+        <swatches v-model="colour" colors="text-basic" @input="updateStateInParent"></swatches>
       </div>
     </div>
     <div :id="id+'_neighbours'" class="neighboursSource"></div>
@@ -15,10 +15,18 @@
 import Swatches from "vue-swatches";
 
 export default {
-  components: { Swatches},
+  components: { Swatches },
   props: ["id"],
   data: () => ({
-    color: "#1CA085",
-  })
+    colour: "#1CA085"
+  }),
+  methods: {
+    updateStateInParent() {
+      this.$root.$emit("updateStateColour", {
+        id: this.id,
+        colour: this.colour
+      });
+    }
+  }
 };
 </script>
