@@ -99,13 +99,15 @@ export default {
         let index = elem.source.lastIndexOf("_");
         var property = elem.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
         var requiredState = elem.requiredState;
-        var howManyNeighbours = elem.howManyNeighbours;
+        var operator = elem.operator;
+        var desiredNumberOfNeighbours = elem.desiredNumberOfNeighbours;
 
         rules.push({
           stateColour,
           property,
           requiredState,
-          howManyNeighbours,
+          operator,
+          desiredNumberOfNeighbours,
           actions
         });
       });
@@ -135,7 +137,7 @@ export default {
     this.$root.$on("updateConditionNeighbours", data => {
       Vue.set(
         this.conditionBlocks.find(x => x.id === data.id),
-        "howManyNeighbours",
+        "desiredNumberOfNeighbours",
         data.neighbours
       );
     });
@@ -144,6 +146,13 @@ export default {
         this.actionBlocks.find(x => x.id === data.id),
         "desiredState",
         data.desiredState
+      );
+    });
+    this.$root.$on("updateConditionOperator", data => {
+      Vue.set(
+        this.conditionBlocks.find(x => x.id === data.id),
+        "operator",
+        data.operator
       );
     });
   },
@@ -189,7 +198,7 @@ export default {
         id: idOfThisCond,
         source: "",
         actions: [],
-        howManyNeighbours: 1
+        desiredNumberOfNeighbours: 1
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {

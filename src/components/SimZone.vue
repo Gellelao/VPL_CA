@@ -55,26 +55,78 @@ export default {
 
       this.rules.forEach(rule => {
         // Only consider rules that match the state of this cell
-        if(rule.stateColour === cellState){
-          switch(rule.property){
+        if (rule.stateColour === cellState) {
+          switch (rule.property) {
             case "neighbours": {
-              let desiredNeighbours = neighbours.filter(cell => cell === rule.requiredState).length;
+              let actualNeighbours = neighbours.filter(
+                cell => cell === rule.requiredState
+              ).length;
               // Make this equals sign a variable - could be < or >
-              if(desiredNeighbours === rule.howManyNeighbours){
-                rule.actions.forEach(action => {
-                  switch(action.property){
-                    case "neighbours": {
-
-                    }
-                    case "state": {
-                      futureCellState = action.desiredState;
-                    }
+              switch (rule.operator) {
+                case "Exactly": {
+                  if (actualNeighbours === rule.desiredNumberOfNeighbours) {
+                    rule.actions.forEach(action => {
+                      switch (action.property) {
+                        case "neighbours": {
+                          break;
+                        }
+                        case "state": {
+                          futureCellState = action.desiredState;
+                          break;
+                        }
+                        default: {
+                          break;
+                        }
+                      }
+                    });
                   }
-                });
+                  break;
+                }
+                case "Less than": {
+                  if (actualNeighbours < rule.desiredNumberOfNeighbours) {
+                    rule.actions.forEach(action => {
+                      switch (action.property) {
+                        case "neighbours": {
+                          break;
+                        }
+                        case "state": {
+                          futureCellState = action.desiredState;
+                          break;
+                        }
+                        default: {
+                          break;
+                        }
+                      }
+                    });
+                  }
+                  break;
+                }
+                case "More than": {
+                  if (actualNeighbours > rule.desiredNumberOfNeighbours) {
+                    rule.actions.forEach(action => {
+                      switch (action.property) {
+                        case "neighbours": {
+                          break;
+                        }
+                        case "state": {
+                          futureCellState = action.desiredState;
+                          break;
+                        }
+                        default: {
+                          break;
+                        }
+                      }
+                    });
+                  }
+                  break;
+                }
+                default: {
+                  break;
+                }
               }
             }
             case "state": {
-
+              break;
             }
             default: {
               break;
@@ -108,14 +160,14 @@ export default {
       }
       return neighbours;
     },
-    start(){
+    start() {
       this.isRunning = true;
       this.timer = setInterval(this.updateCells, 100);
     },
-    stop(){
+    stop() {
       this.isRunning = false;
       clearInterval(this.timer);
-    },
+    }
   }
 };
 </script>
