@@ -18,7 +18,7 @@ export default {
   components: { Swatches },
   props: ["id"],
   data: () => ({
-    colour: "#1CA085"
+    colour: "#000000"
   }),
   mounted(){
     this.updateStateInParent();

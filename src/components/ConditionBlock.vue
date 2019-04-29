@@ -38,6 +38,9 @@ export default {
     howManyNeighbours: 1,
     requiredState: "1CA085"
   }),
+  mounted(){
+    this.updateOperatorInParent();
+  },
   computed: {
     property() {
       let index = this.source.lastIndexOf("_");
