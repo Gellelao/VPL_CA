@@ -20,6 +20,9 @@ export default {
   data: () => ({
     colour: "#1CA085"
   }),
+  mounted(){
+    this.updateStateInParent();
+  },
   methods: {
     updateStateInParent() {
       this.$root.$emit("updateStateColour", {

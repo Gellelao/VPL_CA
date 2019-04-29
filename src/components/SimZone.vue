@@ -30,7 +30,7 @@ export default {
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
-          newRow.push(Math.random() < 0.5 ? "#ffffff" : "#000000");
+          newRow.push(Math.random() < 0.5 ? "#FFFFFF" : "#000000");
         }
         newGrid.push(newRow);
       }
@@ -50,20 +50,51 @@ export default {
     applyRules(x, y) {
       let cellState = this.grid[x][y];
       let neighbours = this.getMyNeighbours(x, y);
-      let aliveNeighbours = neighbours.filter(cell => cell === "#000000")
-        .length;
-      if (cellState === "#ffffff") {
-        // DEAD
-        if (aliveNeighbours == 3) {
-          return "#000000";
+      // We expect to have updated this variable by the end of the method
+      var futureCellState = cellState;
+
+      this.rules.forEach(rule => {
+        // Only consider rules that match the state of this cell
+        if(rule.stateColour === cellState){
+          switch(rule.property){
+            case "neighbours": {
+              let desiredNeighbours = neighbours.filter(cell => cell === rule.requiredState).length;
+              // Make this equals sign a variable - could be < or >
+              if(desiredNeighbours === rule.howManyNeighbours){
+                rule.actions.forEach(action => {
+                  switch(action.property){
+                    case "neighbours": {
+
+                    }
+                    case "state": {
+                      futureCellState = action.desiredState;
+                    }
+                  }
+                });
+              }
+            }
+            case "state": {
+
+            }
+            default: {
+              break;
+            }
+          }
         }
-      } else {
-        // ALIVE
-        if (aliveNeighbours < 2 || aliveNeighbours > 3) {
-          return "#ffffff";
-        }
-      }
-      return cellState;
+      });
+
+      // if (cellState === "#ffffff") {
+      //   // DEAD
+      //   if (aliveNeighbours == 3) {
+      //     return "#000000";
+      //   }
+      // } else {
+      //   // ALIVE
+      //   if (aliveNeighbours < 2 || aliveNeighbours > 3) {
+      //     return "#ffffff";
+      //   }
+      // }
+      return futureCellState;
     },
     getMyNeighbours(x, y) {
       // no looping for now
