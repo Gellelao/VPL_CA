@@ -91,5 +91,8 @@ export default {
 .cell {
   width: 20px;
   height: 20px;
+  border-radius: 5px;
+  /* border-radius: 10px;
+  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
 }
 </style>
