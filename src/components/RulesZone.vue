@@ -63,16 +63,53 @@ export default {
     actionBlocks: []
   }),
   updated() {
-    console.log("UPDATED");
-    console.log(this.stateBlocks);
-    console.log(this.conditionBlocks);
-    console.log(this.actionBlocks);
+    // console.log("UPDATED");
   },
   computed: {
     rules() {
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
-      return this.stateBlocks;
+      var rules = [];
+      this.conditionBlocks.forEach((elem) => {
+        // We need conditions to have all of the required info before we make a rule out of them
+        if (elem.actions.length == 0 || !elem.requiredState || !elem.source) {
+          return;
+        }
+        // Create list of Action objects
+        var actions = [];
+        var validActions = true;
+        elem.actions.forEach(elem => {
+          let action = this.actionBlocks.find(x => x.id === elem);
+          if(!action.source || !action.desiredState){
+            validActions = false;
+          }
+          let index = action.source.lastIndexOf("_");
+          var property = action.source.substr(index + 1); // Use this to determine whether or not we'll set our own state or our neighbours states
+          actions.push({
+            property: property,
+            desiredState: action.desiredState
+          });
+        });
+        // We need at least once action to have the required info, so return otherwise.
+        if(!validActions)return;
+        // Vars represent data that will become part of the rule
+        let sourceId = elem.source
+        let source = this.stateBlocks.find(x => elem.source.startsWith(x.id));
+        var stateColour = source.colour;
+        let index = elem.source.lastIndexOf("_");
+        var property = elem.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
+        var requiredState = elem.requiredState;
+        var howManyNeighbours = elem.howManyNeighbours;
+
+        rules.push({
+          stateColour,
+          property,
+          requiredState,
+          howManyNeighbours,
+          actions
+        });
+      });
+      return rules;
     }
   },
   mounted() {
@@ -151,7 +188,8 @@ export default {
       this.conditionBlocks.push({
         id: idOfThisCond,
         source: "",
-        actions: []
+        actions: [],
+        howManyNeighbours: 1
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
