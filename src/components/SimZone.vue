@@ -1,6 +1,7 @@
 <template>
   <div>
     <button @click="initializeGrid()">Initialize Grid</button>
+    <button @click="fillGrid()">Fill Grid</button>
     <button @click="updateCells">Update cells</button>
     <!-- The following button is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
     <button @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</button>
@@ -52,6 +53,17 @@ export default {
             var randomIndex = Math.floor(Math.random() * this.colours.length);
             newRow.push(this.colours[randomIndex]);
           }
+        }
+        newGrid.push(newRow);
+      }
+      this.grid = newGrid;
+    },
+    fillGrid(width = 39, height = 39) {
+      let newGrid = [];
+      for (let y = 0; y < height; y++) {
+        let newRow = [];
+        for (let x = 0; x < width; x++) {
+            newRow.push(this.penColour);
         }
         newGrid.push(newRow);
       }
