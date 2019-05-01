@@ -4,25 +4,41 @@
     <button @click="updateCells">Update cells</button>
     <!-- The following button is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
     <button @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</button>
-    Rules: {{rules}}
+    <!-- Rules: {{rules}} -->
     <tr v-for="(row, x) in grid" :key="x">
       <td v-for="(col, y) in row" :key="y">
-        <div class="cell" :style="{'background-color': grid[x][y]}"></div>
+        <div class="cell" :style="{'background-color': grid[x][y]}" @click="setColour(x, y)"></div>
       </td>
     </tr>
+    <div class="form__label">
+      <swatches v-model="penColour" colors="text-basic" inline></swatches>
+    </div>
   </div>
 </template>
 
 <script>
+import Swatches from "vue-swatches";
+
 export default {
+  components: { Swatches },
   props: ["rules"],
   data: () => ({
     grid: [],
     timer: null,
-    isRunning: false
+    isRunning: false,
+    penColour: "#000000"
   }),
   mounted() {
     this.initializeGrid();
+  },
+  computed: {
+    colours() {
+      let colours = new Set();
+      this.rules.forEach(rule => {
+        colours.add(rule.stateColour);
+      });
+      return Array.from(colours);
+    }
   },
   methods: {
     initializeGrid(width = 39, height = 39) {
@@ -30,7 +46,12 @@ export default {
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
-          newRow.push(Math.random() < 0.5 ? "#FFFFFF" : "#000000");
+          if (this.colours.length <= 1) {
+            newRow.push(Math.random() < 0.5 ? "#FFFFFF" : "#000000");
+          } else {
+            var randomIndex = Math.floor(Math.random() * this.colours.length);
+            newRow.push(this.colours[randomIndex]);
+          }
         }
         newGrid.push(newRow);
       }
@@ -160,6 +181,15 @@ export default {
       }
       return neighbours;
     },
+    setColour(x, y) {
+      // Code from here: https://stackoverflow.com/questions/45644781/update-value-in-multidimensional-array-in-vue?rq=1
+      //make a copy of the row
+      const newRow = this.grid[x].slice(0);
+      // update the value
+      newRow[y] = this.penColour;
+      // update it in the grid
+      this.$set(this.grid, x, newRow);
+    },
     start() {
       this.isRunning = true;
       this.timer = setInterval(this.updateCells, 100);
@@ -176,7 +206,7 @@ export default {
 .cell {
   width: 20px;
   height: 20px;
-  border-radius: 5px;
+  /* border-radius: 5px; */
   /* border-radius: 10px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
 }
