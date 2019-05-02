@@ -3,9 +3,9 @@
     <v-layout align-center justify-center row>
       <v-flex grow xs6>
         <div id="points">
-          <button @click="addState">Add a new State</button>
-          <button @click="addCondition">Add a new Condition</button>
-          <button @click="addAction">Add a new Action</button>
+          <v-btn @click="addState">Add a new State</v-btn>
+          <v-btn @click="addCondition">Add a new Condition</v-btn>
+          <v-btn @click="addAction">Add a new Action</v-btn>
 
           <div v-if="stateBlocks.length > 0">
             <StateBlock v-for="block in stateBlocks" :key="block.id" :id="block.id"></StateBlock>
@@ -46,6 +46,8 @@ import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
 
 var count = 0;
+
+// Define common jsplumb styles
 const sourcePoint = {
   endpoint: "Dot",
   isSource: true
@@ -70,7 +72,7 @@ export default {
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
-      this.conditionBlocks.forEach((elem) => {
+      this.conditionBlocks.forEach(elem => {
         // We need conditions to have all of the required info before we make a rule out of them
         if (elem.actions.length == 0 || !elem.requiredState || !elem.source) {
           return;
@@ -80,7 +82,7 @@ export default {
         var validActions = true;
         elem.actions.forEach(elem => {
           let action = this.actionBlocks.find(x => x.id === elem);
-          if(!action.source || !action.desiredState){
+          if (!action.source || !action.desiredState) {
             validActions = false;
           }
           let index = action.source.lastIndexOf("_");
@@ -91,9 +93,9 @@ export default {
           });
         });
         // We need at least once action to have the required info, so return otherwise.
-        if(!validActions)return;
-        // Vars represent data that will become part of the rule
-        let sourceId = elem.source
+        if (!validActions) return;
+
+        let sourceId = elem.source;
         let source = this.stateBlocks.find(x => elem.source.startsWith(x.id));
         var stateColour = source.colour;
         let index = elem.source.lastIndexOf("_");
@@ -310,6 +312,7 @@ export default {
   overflow-y: scroll;
 }
 .condition {
+  z-index: 2;
   position: absolute;
   width: 200px;
   height: 100px;
@@ -318,6 +321,7 @@ export default {
   background-color: beige;
 }
 .state {
+  z-index: 2;
   position: absolute;
   width: 200px;
   height: 150px;
@@ -326,13 +330,37 @@ export default {
   background-color: rgb(255, 255, 255);
 }
 .action {
+  z-index: 2;
   position: absolute;
   width: 100px;
   height: 100px;
-  border-radius: 5px;
+  /* border-radius: 5px; */
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: rgb(255, 217, 217);
 }
+.action:before {
+      content: "";
+      position: absolute;
+      top: -25px;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 50px solid transparent;
+      border-right: 50px solid transparent;
+      border-bottom: 25px solid  rgb(255, 217, 217);
+    }
+.action:after {
+      content: "";
+      position: absolute;
+      bottom: -25px;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 50px solid transparent;
+      border-right: 50px solid transparent;
+      border-top: 25px solid  rgb(255, 217, 217);
+    }
+
 .neighboursSource {
   position: absolute;
   background-color: rgb(54, 173, 43);
@@ -363,5 +391,13 @@ export default {
 .selectColour {
   background-color: beige;
   box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75);
+}
+._jsPlumb_drag_select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;    
 }
 </style>

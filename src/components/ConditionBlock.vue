@@ -1,6 +1,6 @@
 <template>
   <div :id="id" class="condition">
-    Condition
+    <span>Condition</span>
     <template v-if="property === 'neighbours'">
       <select v-model="operator" @change="updateOperatorInParent">
         <option>Exactly</option>

@@ -1,10 +1,10 @@
 <template>
   <div>
-    <button @click="initializeGrid()">Initialize Grid</button>
-    <button @click="fillGrid()">Fill Grid</button>
-    <button @click="updateCells">Update cells</button>
-    <!-- The following button is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
-    <button @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</button>
+    <v-btn @click="initializeGrid()">Initialize Grid</v-btn>
+    <v-btn @click="fillGrid()">Fill Grid</v-btn>
+    <v-btn @click="updateCells">Update cells</v-btn>
+    <!-- The following v-btn is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
+    <v-btn @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</v-btn>
     <!-- Rules: {{rules}} -->
     <tr v-for="(row, x) in grid" :key="x">
       <td v-for="(col, y) in row" :key="y">
@@ -42,7 +42,7 @@ export default {
     }
   },
   methods: {
-    initializeGrid(width = 39, height = 39) {
+    initializeGrid(width = 47, height = 39) {
       let newGrid = [];
       for (let y = 0; y < height; y++) {
         let newRow = [];
