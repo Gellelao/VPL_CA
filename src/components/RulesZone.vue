@@ -2,17 +2,15 @@
   <v-content>
     <v-layout align-start justify-center row>
       <v-flex xs6>
-
-    <v-toolbar>
-      <v-toolbar-title class="headline text-uppercase">
-        <span>Rules</span>
-      </v-toolbar-title>
+        <v-toolbar>
+          <v-toolbar-title class="headline text-uppercase">
+            <span>Rules</span>
+          </v-toolbar-title>
           <v-btn @click="addState">Add a new State</v-btn>
           <v-btn @click="addCondition">Add a new Condition</v-btn>
           <v-btn @click="addAction">Add a new Action</v-btn>
-    </v-toolbar>
+        </v-toolbar>
         <div id="points">
-
           <div v-if="stateBlocks.length > 0">
             <StateBlock v-for="block in stateBlocks" :key="block.id" :id="block.id"></StateBlock>
           </div>
@@ -54,9 +52,34 @@ import "vue-swatches/dist/vue-swatches.min.css";
 var count = 0;
 
 // Define common jsplumb styles
-const sourcePoint = {
+
+const flowChartSourcePoint = {
   endpoint: "Dot",
-  isSource: true
+  isSource: true,
+  connector: ["Flowchart", {stub:20,cornerRadius:10,alwaysRespectStubs:true}],
+  cssClass: "stateNeighboursConnector",
+};
+const bezierSourcePoint = {
+  endpoint: "Dot",
+  isSource: true,
+  connector: ["Bezier", {curviness: 50}],
+  cssClass: "stateNeighboursConnector",
+};
+const straightSourcePoint = {
+  endpoint: "Dot",
+  isSource: true,
+  connector: ["Straight", {stub: 20}],
+  cssClass: "stateNeighboursConnector",
+};
+const flowChartTargetPoint = {
+  endpoint: "Dot",
+  connector: ["Flowchart", {stub:20,cornerRadius:10,alwaysRespectStubs:true}],
+  isTarget: true
+};
+const bezierTargetPoint = {
+  endpoint: "Dot",
+  connector: ["Bezier", {curviness: 50}],
+  isTarget: true
 };
 const targetPoint = {
   endpoint: "Dot",
@@ -184,9 +207,9 @@ export default {
           neighbourNode,
           {
             maxConnections: 100,
-            anchor: "Center"
+            anchor: "Center",
           },
-          sourcePoint
+          bezierSourcePoint
         );
         jsPlumb.makeSource(
           stateNode,
@@ -194,7 +217,7 @@ export default {
             maxConnections: 100,
             anchor: "Center"
           },
-          sourcePoint
+          bezierSourcePoint
         );
       });
     },
@@ -222,12 +245,12 @@ export default {
             filter: ".thenSource",
             anchor: "BottomRight"
           },
-          sourcePoint
+          bezierSourcePoint
         );
         jsPlumb.makeTarget(
           targetId,
-          { maxConnections: 1, anchor: "TopCenter" },
-          targetPoint
+          { maxConnections: 1, anchor: "Continuous" },
+          flowChartTargetPoint
         );
 
         jsPlumb.bind("connection", info => {
@@ -278,7 +301,7 @@ export default {
           idOfThisAction,
           {
             maxConnections: 100,
-            anchor: "LeftMiddle"
+            anchor: "Continuous"
           },
           targetPoint
         );
@@ -323,6 +346,10 @@ export default {
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none;    
+  user-select: none;
+}
+.stateNeighboursConnector svg{
+  stroke:rgb(54, 173, 43);
+  stroke-width:3;
 }
 </style>
