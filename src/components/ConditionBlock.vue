@@ -69,3 +69,25 @@ export default {
   }
 };
 </script>
+
+<style scoped lang="scss">
+
+.condition {
+  z-index: 2;
+  position: absolute;
+  width: 200px;
+  height: 100px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
+  background-color: beige;
+}
+.thenSource {
+  position: absolute;
+  background-color: rgb(49, 155, 247);
+  width: 30px;
+  height: 30px;
+  right: -15px;
+  bottom: -15px;
+  border-radius: 100%;
+}
+</style>

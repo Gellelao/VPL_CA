@@ -1,11 +1,17 @@
 <template>
   <v-content>
-    <v-layout align-center justify-center row>
-      <v-flex grow xs6>
-        <div id="points">
+    <v-layout align-start justify-center row>
+      <v-flex xs6>
+
+    <v-toolbar>
+      <v-toolbar-title class="headline text-uppercase">
+        <span>Rules</span>
+      </v-toolbar-title>
           <v-btn @click="addState">Add a new State</v-btn>
           <v-btn @click="addCondition">Add a new Condition</v-btn>
           <v-btn @click="addAction">Add a new Action</v-btn>
+    </v-toolbar>
+        <div id="points">
 
           <div v-if="stateBlocks.length > 0">
             <StateBlock v-for="block in stateBlocks" :key="block.id" :id="block.id"></StateBlock>
@@ -30,7 +36,7 @@
           </div>
         </div>
       </v-flex>
-      <v-flex grow xs6>
+      <v-flex xs6>
         <SimZone :rules="this.rules"/>
       </v-flex>
     </v-layout>
@@ -306,91 +312,10 @@ export default {
 #points {
   position: relative;
   background-color: aliceblue;
-  height: 800px;
+  min-height: 800px;
   resize: vertical;
   border: 1px solid #aaaaaa;
   overflow-y: scroll;
-}
-.condition {
-  z-index: 2;
-  position: absolute;
-  width: 200px;
-  height: 100px;
-  border-radius: 5px;
-  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: beige;
-}
-.state {
-  z-index: 2;
-  position: absolute;
-  width: 200px;
-  height: 150px;
-  border-radius: 5px;
-  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: rgb(255, 255, 255);
-}
-.action {
-  z-index: 2;
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  /* border-radius: 5px; */
-  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: rgb(255, 217, 217);
-}
-.action:before {
-      content: "";
-      position: absolute;
-      top: -25px;
-      left: 0;
-      width: 0;
-      height: 0;
-      border-left: 50px solid transparent;
-      border-right: 50px solid transparent;
-      border-bottom: 25px solid  rgb(255, 217, 217);
-    }
-.action:after {
-      content: "";
-      position: absolute;
-      bottom: -25px;
-      left: 0;
-      width: 0;
-      height: 0;
-      border-left: 50px solid transparent;
-      border-right: 50px solid transparent;
-      border-top: 25px solid  rgb(255, 217, 217);
-    }
-
-.neighboursSource {
-  position: absolute;
-  background-color: rgb(54, 173, 43);
-  width: 30px;
-  height: 30px;
-  right: -15px;
-  bottom: -15px;
-  border-radius: 100%;
-}
-.stateSource {
-  position: absolute;
-  background-color: rgb(173, 0, 0);
-  width: 30px;
-  height: 30px;
-  right: 85px;
-  bottom: -15px;
-  border-radius: 100%;
-}
-.thenSource {
-  position: absolute;
-  background-color: rgb(49, 155, 247);
-  width: 30px;
-  height: 30px;
-  right: -15px;
-  bottom: -15px;
-  border-radius: 100%;
-}
-.selectColour {
-  background-color: beige;
-  box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75);
 }
 ._jsPlumb_drag_select {
   -webkit-touch-callout: none;

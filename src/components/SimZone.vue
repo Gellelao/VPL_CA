@@ -1,10 +1,16 @@
 <template>
   <div>
-    <v-btn @click="initializeGrid()">Initialize Grid</v-btn>
-    <v-btn @click="fillGrid()">Fill Grid</v-btn>
-    <v-btn @click="updateCells">Update cells</v-btn>
-    <!-- The following v-btn is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
-    <v-btn @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</v-btn>
+    <v-toolbar>
+      <v-spacer></v-spacer>
+      <v-btn @click="initializeGrid()">Initialize Grid</v-btn>
+      <v-btn @click="fillGrid()">Fill Grid</v-btn>
+      <v-btn @click="updateCells">Update cells</v-btn>
+      <!-- The following v-btn is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
+      <v-btn @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</v-btn>
+      <v-toolbar-title class="headline text-uppercase">
+        <span>Simulation</span>
+      </v-toolbar-title>
+    </v-toolbar>
     <!-- Rules: {{rules}} -->
     <tr v-for="(row, x) in grid" :key="x">
       <td v-for="(col, y) in row" :key="y">
@@ -19,6 +25,9 @@
 
 <script>
 import Swatches from "vue-swatches";
+
+const defaultWidth = 40;
+const defaultHeight = 40;
 
 export default {
   components: { Swatches },
@@ -42,7 +51,7 @@ export default {
     }
   },
   methods: {
-    initializeGrid(width = 47, height = 39) {
+    initializeGrid(width = defaultWidth, height = defaultHeight) {
       let newGrid = [];
       for (let y = 0; y < height; y++) {
         let newRow = [];
@@ -58,12 +67,12 @@ export default {
       }
       this.grid = newGrid;
     },
-    fillGrid(width = 39, height = 39) {
+    fillGrid(width = defaultWidth, height = defaultHeight) {
       let newGrid = [];
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
-            newRow.push(this.penColour);
+          newRow.push(this.penColour);
         }
         newGrid.push(newRow);
       }
@@ -183,6 +192,7 @@ export default {
     },
     getMyNeighbours(x, y) {
       // no looping for now
+      // 8 neighbours
       let neighbours = [];
       for (let i = x - 1; i <= x + 1; i++) {
         if (i < 0 || i >= this.grid[0].length) continue;
@@ -201,6 +211,7 @@ export default {
       newRow[y] = this.penColour;
       // update it in the grid
       this.$set(this.grid, x, newRow);
+      // That process is necessary in order for Vue to realise that the array has changed and rerender accordingly
     },
     start() {
       this.isRunning = true;
@@ -214,10 +225,15 @@ export default {
 };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+$cellWidth:20px;
+
+tr{
+  column-gap: 0px;
+}
 .cell {
-  width: 20px;
-  height: 20px;
+  width: $cellWidth;
+  height: $cellWidth;
   /* border-radius: 5px; */
   /* border-radius: 10px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */

@@ -38,3 +38,39 @@ export default {
   }
 };
 </script>
+
+<style scoped lang="scss">
+
+.action {
+  z-index: 2;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  /* border-radius: 5px; */
+  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
+  background-color: rgb(255, 217, 217);
+}
+.action:before {
+      content: "";
+      position: absolute;
+      top: -25px;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 50px solid transparent;
+      border-right: 50px solid transparent;
+      border-bottom: 25px solid  rgb(255, 217, 217);
+    }
+.action:after {
+      content: "";
+      position: absolute;
+      bottom: -25px;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 50px solid transparent;
+      border-right: 50px solid transparent;
+      border-top: 25px solid  rgb(255, 217, 217);
+    }
+
+</style>
