@@ -1,15 +1,25 @@
 <template>
   <div :id="id" class="action">
-    Action
+    <v-toolbar-title class="text-uppercase">
+      <span class="heading">Action</span>
+    </v-toolbar-title>
     <template v-if="property === 'neighbours'">
-      <div>Turn my neighbours into:</div>
-      <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
+      <div class="body">
+        <div>Turn my neighbours into:</div>
+        <div class="selectColour">
+          <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
+        </div>
+      </div>
     </template>
     <template v-else-if="property === 'state'">
-      <div>Turn myself into:</div>
-      <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
+      <div class="body">
+        <div>Become:</div>
+        <div class="selectColour">
+          <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
+        </div>
+      </div>
     </template>
-    <div v-else>Connect a property</div>
+    <div class="body" v-else>Connect a property</div>
   </div>
 </template>
 
@@ -20,7 +30,7 @@ export default {
   components: { Swatches },
   props: ["id", "source"],
   data: () => ({
-    desiredState: "1CA085",
+    desiredState: "1CA085"
   }),
   computed: {
     property() {
@@ -40,15 +50,37 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 .action {
   z-index: 2;
   position: absolute;
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 160px;
   /* border-radius: 5px; */
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: rgb(255, 217, 217);
+
+  .heading {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+  }
+  .body {
+    position: absolute;
+    top: 40px;
+    left: 10px;
+  }
+  .selectColour {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    top: 60px;
+    left: 18px;
+    padding: 4px;
+    border-radius: 5px;
+    background-color: rgb(90, 90, 90);
+    /* box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75); */
+  }
 }
 // .action:before {
 //       content: "";
@@ -72,5 +104,4 @@ export default {
 //       border-right: 50px solid transparent;
 //       border-top: 25px solid  rgb(255, 217, 217);
 //     }
-
 </style>
