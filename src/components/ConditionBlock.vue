@@ -5,24 +5,24 @@
     </v-toolbar-title>
     <template class="body" v-if="property === 'neighbours'">
       <div class="body">
-      <select v-model="operator" @change="updateOperatorInParent">
-        <option>Exactly</option>
-        <option>Less than</option>
-        <option>More than</option>
-      </select>
-      <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number">
-      <div>Neighbours are:</div>
-      <div class="selectColour">
+        <select v-model="operator" @change="updateOperatorInParent">
+          <option>Exactly</option>
+          <option>Less than</option>
+          <option>More than</option>
+        </select>
+        <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number">
+        <div>Neighbours are:</div>
+        <div class="selectColour">
           <swatches
             v-model="requiredState"
             colors="text-basic"
             @input="updateStateInParent"
           >Select state</swatches>
-      </div>
+        </div>
       </div>
     </template>
     <template v-else-if="property === 'state'">
-      <div class="body" >State!</div>
+      <div class="body">Skip!</div>
     </template>
     <div class="body" v-else>Connect a property</div>
     <div class="thenSource"></div>
@@ -74,28 +74,42 @@ export default {
 
 <style scoped lang="scss">
 .condition {
+  text-align: center;
   z-index: 2;
   position: absolute;
   width: 120px;
-  height: 170px;
+  // min-height: 70px;
+  // max-height: 170px;
+  padding: 10px;
   border-radius: 5px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: beige;
   .heading {
-    position: absolute;
-    top: 10px;
-    left: 10px;
+    // position: absolute;
+    display: inline-block;
+    // top: 10px;
+    // left: 10px;
     font-size: 18px;
   }
   .body {
-    position: absolute;
-    top: 40px;
-    left: 10px;
+    display: inline-block;
+    // position: absolute;
+    // top: 40px;
+    // left: 10px;
   }
-  input{
-    width: 100px;
+  select {
+    width: 100%;
+    border-radius: 5px;
+    background-color: rgb(228, 228, 197);
+    margin-bottom: 4px;
+  }
+  input {
+    width: 100%;
+    border-radius: 5px;
+    background-color: rgb(228, 228, 197);
   }
   .thenSource {
+    display: inline-block;
     position: absolute;
     background-color: rgb(49, 155, 247);
     width: 30px;
@@ -105,11 +119,12 @@ export default {
     border-radius: 100%;
   }
   .selectColour {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    top: 70px;
-    left: 25px;
+    display: inline-block;
+    // position: absolute;
+    // width: 50px;
+    // height: 50px;
+    // top: 70px;
+    // left: 25px;
     padding: 4px;
     border-radius: 5px;
     background-color: rgb(90, 90, 90);
