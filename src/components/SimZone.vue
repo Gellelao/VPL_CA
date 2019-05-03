@@ -89,6 +89,24 @@ export default {
       }
       this.grid = newGrid;
     },
+    processActions(actions) {
+      var nextState;
+      actions.forEach(action => {
+        switch (action.property) {
+          case "neighbours": {
+            break;
+          }
+          case "state": {
+            nextState = action.desiredState;
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+      });
+      return nextState;
+    },
     applyRules(x, y) {
       let cellState = this.grid[x][y];
       let neighbours = this.getMyNeighbours(x, y);
@@ -107,58 +125,24 @@ export default {
               switch (rule.operator) {
                 case "Exactly": {
                   if (actualNeighbours === rule.desiredNumberOfNeighbours) {
-                    rule.actions.forEach(action => {
-                      switch (action.property) {
-                        case "neighbours": {
-                          break;
-                        }
-                        case "state": {
-                          futureCellState = action.desiredState;
-                          break;
-                        }
-                        default: {
-                          break;
-                        }
-                      }
-                    });
+                    let resultState = this.processActions(rule.actions);
+                    if (resultState){
+                      futureCellState = resultState;
+                    }
                   }
                   break;
                 }
                 case "Less than": {
                   if (actualNeighbours < rule.desiredNumberOfNeighbours) {
-                    rule.actions.forEach(action => {
-                      switch (action.property) {
-                        case "neighbours": {
-                          break;
-                        }
-                        case "state": {
-                          futureCellState = action.desiredState;
-                          break;
-                        }
-                        default: {
-                          break;
-                        }
-                      }
-                    });
+                    let resultState = this.processActions(rule.actions);
+                    if (resultState) futureCellState = resultState;
                   }
                   break;
                 }
                 case "More than": {
                   if (actualNeighbours > rule.desiredNumberOfNeighbours) {
-                    rule.actions.forEach(action => {
-                      switch (action.property) {
-                        case "neighbours": {
-                          break;
-                        }
-                        case "state": {
-                          futureCellState = action.desiredState;
-                          break;
-                        }
-                        default: {
-                          break;
-                        }
-                      }
-                    });
+                    let resultState = this.processActions(rule.actions);
+                    if (resultState) futureCellState = resultState;
                   }
                   break;
                 }
@@ -166,8 +150,11 @@ export default {
                   break;
                 }
               }
+              break;
             }
             case "state": {
+              let resultState = this.processActions(rule.actions);
+              if (resultState) futureCellState = resultState;
               break;
             }
             default: {
@@ -226,9 +213,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
-$cellWidth:20px;
+$cellWidth: 20px;
 
-tr{
+tr {
   column-gap: 0px;
 }
 .cell {
