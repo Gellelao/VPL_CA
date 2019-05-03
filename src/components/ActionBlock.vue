@@ -51,57 +51,27 @@ export default {
 
 <style scoped lang="scss">
 .action {
+  text-align: center;
   z-index: 2;
   position: absolute;
-  width: 110px;
-  height: 160px;
-  /* border-radius: 5px; */
+  padding: 10px;
+  // width: 110px;
+  // height: 160px;
+  border-radius: 30px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: rgb(255, 217, 217);
+  background-color: #FDD835;
 
   .heading {
-    position: absolute;
-    top: 10px;
-    left: 10px;
+    // position: absolute;
+    // top: 10px;
+    // left: 10px;
     font-size: 18px;
+    margin-bottom: 12px;
   }
   .body {
-    position: absolute;
-    top: 40px;
-    left: 10px;
-  }
-  .selectColour {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    top: 60px;
-    left: 18px;
-    padding: 4px;
-    border-radius: 5px;
-    background-color: rgb(90, 90, 90);
-    /* box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75); */
+    // position: absolute;
+    // top: 40px;
+    // left: 10px;
   }
 }
-// .action:before {
-//       content: "";
-//       position: absolute;
-//       top: -25px;
-//       left: 0;
-//       width: 0;
-//       height: 0;
-//       border-left: 50px solid transparent;
-//       border-right: 50px solid transparent;
-//       border-bottom: 25px solid  rgb(255, 217, 217);
-//     }
-// .action:after {
-//       content: "";
-//       position: absolute;
-//       bottom: -25px;
-//       left: 0;
-//       width: 0;
-//       height: 0;
-//       border-left: 50px solid transparent;
-//       border-right: 50px solid transparent;
-//       border-top: 25px solid  rgb(255, 217, 217);
-//     }
 </style>

@@ -83,13 +83,14 @@ export default {
   padding: 10px;
   border-radius: 5px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: beige;
+  background-color: #FFF176;
   .heading {
     // position: absolute;
     display: inline-block;
     // top: 10px;
     // left: 10px;
     font-size: 18px;
+    margin-bottom: 12px;
   }
   .body {
     display: inline-block;
@@ -100,13 +101,15 @@ export default {
   select {
     width: 100%;
     border-radius: 5px;
-    background-color: rgb(228, 228, 197);
+    background-color: #FDD835;
     margin-bottom: 4px;
+    padding-left: 4px;
   }
   input {
     width: 100%;
     border-radius: 5px;
-    background-color: rgb(228, 228, 197);
+    background-color: #FDD835;
+    padding-left: 4px;
   }
   .thenSource {
     display: inline-block;
@@ -117,18 +120,6 @@ export default {
     right: -15px;
     bottom: -15px;
     border-radius: 100%;
-  }
-  .selectColour {
-    display: inline-block;
-    // position: absolute;
-    // width: 50px;
-    // height: 50px;
-    // top: 70px;
-    // left: 25px;
-    padding: 4px;
-    border-radius: 5px;
-    background-color: rgb(90, 90, 90);
-    /* box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75); */
   }
 }
 </style>

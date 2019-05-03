@@ -56,29 +56,35 @@ var count = 0;
 const flowChartSourcePoint = {
   endpoint: "Dot",
   isSource: true,
-  connector: ["Flowchart", {stub:20,cornerRadius:10,alwaysRespectStubs:true}],
-  cssClass: "stateNeighboursConnector",
+  connector: [
+    "Flowchart",
+    { stub: 20, cornerRadius: 10, alwaysRespectStubs: true }
+  ],
+  cssClass: "stateNeighboursConnector"
 };
 const bezierSourcePoint = {
   endpoint: "Dot",
   isSource: true,
-  connector: ["Bezier", {curviness: 50}],
-  cssClass: "stateNeighboursConnector",
+  connector: ["Bezier", { curviness: 50 }],
+  cssClass: "stateNeighboursConnector"
 };
 const straightSourcePoint = {
   endpoint: "Dot",
   isSource: true,
-  connector: ["Straight", {stub: 20}],
-  cssClass: "stateNeighboursConnector",
+  connector: ["Straight", { stub: 20 }],
+  cssClass: "stateNeighboursConnector"
 };
 const flowChartTargetPoint = {
   endpoint: "Dot",
-  connector: ["Flowchart", {stub:20,cornerRadius:10,alwaysRespectStubs:true}],
+  connector: [
+    "Flowchart",
+    { stub: 20, cornerRadius: 10, alwaysRespectStubs: true }
+  ],
   isTarget: true
 };
 const bezierTargetPoint = {
   endpoint: "Dot",
-  connector: ["Bezier", {curviness: 50}],
+  connector: ["Bezier", { curviness: 50 }],
   isTarget: true
 };
 const targetPoint = {
@@ -207,7 +213,7 @@ export default {
           neighbourNode,
           {
             maxConnections: 100,
-            anchor: "Center",
+            anchor: "Center"
           },
           bezierSourcePoint
         );
@@ -331,10 +337,10 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 #points {
   position: relative;
-  background-color: aliceblue;
+  background-color: #FFFDE7;
   min-height: 800px;
   resize: vertical;
   border: 1px solid #aaaaaa;
@@ -348,8 +354,20 @@ export default {
   -ms-user-select: none;
   user-select: none;
 }
-.stateNeighboursConnector svg{
-  stroke:rgb(54, 173, 43);
-  stroke-width:3;
+.stateNeighboursConnector svg {
+  stroke: rgb(54, 173, 43);
+  stroke-width: 3;
+}
+.selectColour {
+  display: inline-block;
+  // position: absolute;
+  width: 50px;
+  height: 50px;
+  // top: 70px;
+  // left: 25px;
+  padding: 4px;
+  border-radius: 15px;
+  background-color: rgb(90, 90, 90);
+  /* box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75); */
 }
 </style>
