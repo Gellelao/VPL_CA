@@ -35,6 +35,7 @@ export default {
   data: () => ({
     grid: [],
     nextGrid: [],
+    updateInfoData: null,
     timer: null,
     isRunning: false,
     penColour: "#000000"
@@ -94,17 +95,20 @@ export default {
           if (updateInfo) {
             this.nextGrid[x][y] = updateInfo.self.colour;
             updates.push(updateInfo);
+            if(x==1 && y==1){
+              this.updateInfoData = updateInfo;
+            }
           }
         }
       }
-      updates.forEach(update => {
-        let cellUpdates = update.neighbours;
-        if (cellUpdates) {
-          cellUpdates.forEach(cell => {
-            this.nextGrid[cell.x][cell.y] = cell.colour;
-          });
-        }
-      });
+      // updates.forEach(update => {
+      //   let cellUpdates = update.neighbours;
+      //   if (cellUpdates) {
+      //     cellUpdates.forEach(cell => {
+      //       this.nextGrid[cell.x][cell.y] = cell.colour;
+      //     });
+      //   }
+      // });
       this.grid = this.nextGrid;
       // Force grid to update:
       let newRow = this.grid[0].slice(0);
@@ -159,15 +163,13 @@ export default {
                 }
                 case "Less than": {
                   if (actualNeighbours < rule.desiredNumberOfNeighbours) {
-                    let resultState = this.processActions(x, y, rule.actions);
-                    if (resultState) futureCellState = resultState;
+                    updateInfo = this.processActions(x, y, rule.actions);
                   }
                   break;
                 }
                 case "More than": {
                   if (actualNeighbours > rule.desiredNumberOfNeighbours) {
-                    let resultState = this.processActions(x, y, rule.actions);
-                    if (resultState) futureCellState = resultState;
+                    updateInfo = this.processActions(x, y, rule.actions);
                   }
                   break;
                 }
@@ -223,7 +225,6 @@ export default {
       return cellUpdates;
     },
     setCell(x, y, colour = this.penColour) {
-      console.log("setting (" + x + ", " + y + ") to " + colour);
       // Code from here: https://stackoverflow.com/questions/45644781/update-value-in-multidimensional-array-in-vue?rq=1
       //make a copy of the row
       const newRow = this.grid[x].slice(0);
