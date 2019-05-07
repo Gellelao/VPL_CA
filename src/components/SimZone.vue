@@ -14,7 +14,7 @@
     <!-- Rules: {{rules}} -->
     <tr v-for="(row, x) in grid" :key="x">
       <td v-for="(col, y) in row" :key="y">
-        <div class="cell" :style="{'background-color': grid[x][y]}" @click="setColour(x, y)"></div>
+        <div class="cell" :style="{'background-color': grid[x][y]}" @click="setCell(x, y)"></div>
       </td>
     </tr>
     <div class="form__label">
@@ -34,6 +34,7 @@ export default {
   props: ["rules"],
   data: () => ({
     grid: [],
+    nextGrid: [],
     timer: null,
     isRunning: false,
     penColour: "#000000"
@@ -51,49 +52,105 @@ export default {
     }
   },
   methods: {
+    setArrays(receiver, original){
+      for (var i = 0; i < original.length; i++){
+        // receiver[i] = original[i].slice();
+        this.$set(receiver, i, original[i].slice());
+      }
+    },
     initializeGrid(width = defaultWidth, height = defaultHeight) {
-      let newGrid = [];
+      this.grid = [];
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
           if (this.colours.length <= 1) {
             newRow.push(Math.random() < 0.5 ? "#FFFFFF" : "#000000");
-          } else {
+          } 
+          else {
             var randomIndex = Math.floor(Math.random() * this.colours.length);
             newRow.push(this.colours[randomIndex]);
           }
         }
-        newGrid.push(newRow);
+        this.grid.push(newRow);
       }
-      this.grid = newGrid;
+      // this.setArrays(this.grid, this.nextGrid);
     },
     fillGrid(width = defaultWidth, height = defaultHeight) {
-      let newGrid = [];
+      this.grid = [];
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
           newRow.push(this.penColour);
         }
-        newGrid.push(newRow);
+        this.grid.push(newRow);
       }
-      this.grid = newGrid;
+      // this.setArrays(this.grid, this.nextGrid);
     },
     updateCells() {
-      let newGrid = [];
-      for (let x = 0; x < this.grid.length; x++) {
-        newGrid[x] = [];
-        for (let y = 0; y < this.grid[x].length; y++) {
-          let nextVal = this.applyRules(x, y);
-          newGrid[x][y] = nextVal;
+      this.setArrays(this.nextGrid, this.grid);
+      var updates = [];
+      // for (let x = 0; x < this.grid.length; x++) {
+      //   this.nextGrid[x] = [];
+      //   for (let y = 0; y < this.grid[x].length; y++) {
+      //     this.nextGrid[x][y] = "";
+      //   }
+      // }
+      for (let x = 0; x < this.nextGrid.length; x++) {
+        for (let y = 0; y < this.nextGrid[x].length; y++) {
+          let updateInfo = this.applyRules(x, y);
+          if (updateInfo) {
+            if(updateInfo.self){
+              this.nextGrid[x][y] = updateInfo.self.colour;
+            }
+            updates.push(updateInfo);
+          }
         }
       }
-      this.grid = newGrid;
+      updates.forEach(update => {
+        let cellUpdates = update.neighbours;
+        if (cellUpdates) {
+          cellUpdates.forEach(cell => {
+            this.nextGrid[cell.x][cell.y] = cell.colour;
+          });
+        }
+      });
+      this.setArrays(this.grid, this.nextGrid);
+      // Force grid to update:
+      // let newRow = this.grid[0].slice(0);
+      // this.$set(this.grid, 0, newRow);
+    },
+    processActions(x, y, actions) {
+      var actionsResult = {};
+      actions.forEach(action => {
+        switch (action.property) {
+          case "neighbours": {
+            actionsResult.neighbours = this.setMyNeighbours(
+              x,
+              y,
+              action.desiredState
+            );
+            break;
+          }
+          case "state": {
+            actionsResult.self = {
+              x,
+              y,
+              colour: action.desiredState
+            };
+            break;
+          }
+          default: {
+            // do nothing
+          }
+        }
+      });
+      return actionsResult;
     },
     applyRules(x, y) {
       let cellState = this.grid[x][y];
       let neighbours = this.getMyNeighbours(x, y);
       // We expect to have updated this variable by the end of the method
-      var futureCellState = cellState;
+      var updateInfo;
 
       this.rules.forEach(rule => {
         // Only consider rules that match the state of this cell
@@ -103,92 +160,45 @@ export default {
               let actualNeighbours = neighbours.filter(
                 cell => cell === rule.requiredState
               ).length;
-              // Make this equals sign a variable - could be < or >
               switch (rule.operator) {
                 case "Exactly": {
                   if (actualNeighbours === rule.desiredNumberOfNeighbours) {
-                    rule.actions.forEach(action => {
-                      switch (action.property) {
-                        case "neighbours": {
-                          break;
-                        }
-                        case "state": {
-                          futureCellState = action.desiredState;
-                          break;
-                        }
-                        default: {
-                          break;
-                        }
-                      }
-                    });
+                    updateInfo = this.processActions(x, y, rule.actions);
                   }
                   break;
                 }
                 case "Less than": {
                   if (actualNeighbours < rule.desiredNumberOfNeighbours) {
-                    rule.actions.forEach(action => {
-                      switch (action.property) {
-                        case "neighbours": {
-                          break;
-                        }
-                        case "state": {
-                          futureCellState = action.desiredState;
-                          break;
-                        }
-                        default: {
-                          break;
-                        }
-                      }
-                    });
+                    updateInfo = this.processActions(x, y, rule.actions);
                   }
                   break;
                 }
                 case "More than": {
                   if (actualNeighbours > rule.desiredNumberOfNeighbours) {
-                    rule.actions.forEach(action => {
-                      switch (action.property) {
-                        case "neighbours": {
-                          break;
-                        }
-                        case "state": {
-                          futureCellState = action.desiredState;
-                          break;
-                        }
-                        default: {
-                          break;
-                        }
-                      }
-                    });
+                    updateInfo = this.processActions(x, y, rule.actions);
                   }
                   break;
                 }
                 default: {
-                  break;
+                  // do nothing
                 }
               }
+              break;
             }
             case "state": {
+              updateInfo = this.processActions(x, y, rule.actions);
               break;
             }
             default: {
-              break;
+              // do nothing
             }
           }
         }
       });
-
-      // if (cellState === "#ffffff") {
-      //   // DEAD
-      //   if (aliveNeighbours == 3) {
-      //     return "#000000";
-      //   }
-      // } else {
-      //   // ALIVE
-      //   if (aliveNeighbours < 2 || aliveNeighbours > 3) {
-      //     return "#ffffff";
-      //   }
+      // if(updateInfo){
+      //   this.nextGrid[x][y] = futureCellState;
       // }
-      return futureCellState;
+      return updateInfo;
     },
     getMyNeighbours(x, y) {
       // no looping for now
@@ -203,16 +213,39 @@ export default {
       }
       return neighbours;
     },
-    setColour(x, y) {
+    setMyNeighbours(x, y, colour) {
+      // no looping for now
+      // 8 neighbours
+      var cellUpdates = [];
+      for (let i = x - 1; i <= x + 1; i++) {
+        if (i < 0 || i >= this.grid[0].length) continue;
+        for (let j = y - 1; j <= y + 1; j++) {
+          if (j < 0 || j >= this.grid[i].length || (x == i && y == j)) continue;
+          cellUpdates.push({
+            x: i,
+            y: j,
+            colour
+          });
+        }
+      }
+      return cellUpdates;
+    },
+    setCell(x, y, colour = this.penColour) {
       // Code from here: https://stackoverflow.com/questions/45644781/update-value-in-multidimensional-array-in-vue?rq=1
       //make a copy of the row
       const newRow = this.grid[x].slice(0);
       // update the value
-      newRow[y] = this.penColour;
+      newRow[y] = colour;
       // update it in the grid
       this.$set(this.grid, x, newRow);
       // That process is necessary in order for Vue to realise that the array has changed and rerender accordingly
     },
+    // For use by the algorithm, only affects NextGrid instead of directly altering the current grid
+    // setNextCell(x, y, colour) {
+    //   const newRow = this.nextGrid[x].slice(0);
+    //   newRow[y] = colour;
+    //   this.$set(this.nextGrid, x, newRow);
+    // },
     start() {
       this.isRunning = true;
       this.timer = setInterval(this.updateCells, 100);
@@ -226,9 +259,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
-$cellWidth:20px;
+$cellWidth: 20px;
 
-tr{
+tr {
   column-gap: 0px;
 }
 .cell {

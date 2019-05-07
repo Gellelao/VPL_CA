@@ -56,29 +56,35 @@ var count = 0;
 const flowChartSourcePoint = {
   endpoint: "Dot",
   isSource: true,
-  connector: ["Flowchart", {stub:20,cornerRadius:10,alwaysRespectStubs:true}],
-  cssClass: "stateNeighboursConnector",
+  connector: [
+    "Flowchart",
+    { stub: 20, cornerRadius: 10, alwaysRespectStubs: true }
+  ],
+  cssClass: "stateNeighboursConnector"
 };
 const bezierSourcePoint = {
   endpoint: "Dot",
   isSource: true,
-  connector: ["Bezier", {curviness: 50}],
-  cssClass: "stateNeighboursConnector",
+  connector: ["Bezier", { curviness: 50 }],
+  cssClass: "stateNeighboursConnector"
 };
 const straightSourcePoint = {
   endpoint: "Dot",
   isSource: true,
-  connector: ["Straight", {stub: 20}],
-  cssClass: "stateNeighboursConnector",
+  connector: ["Straight", { stub: 20 }],
+  cssClass: "stateNeighboursConnector"
 };
 const flowChartTargetPoint = {
   endpoint: "Dot",
-  connector: ["Flowchart", {stub:20,cornerRadius:10,alwaysRespectStubs:true}],
+  connector: [
+    "Flowchart",
+    { stub: 20, cornerRadius: 10, alwaysRespectStubs: true }
+  ],
   isTarget: true
 };
 const bezierTargetPoint = {
   endpoint: "Dot",
-  connector: ["Bezier", {curviness: 50}],
+  connector: ["Bezier", { curviness: 50 }],
   isTarget: true
 };
 const targetPoint = {
@@ -103,9 +109,18 @@ export default {
       var rules = [];
       this.conditionBlocks.forEach(elem => {
         // We need conditions to have all of the required info before we make a rule out of them
-        if (elem.actions.length == 0 || !elem.requiredState || !elem.source) {
+        if (elem.actions.length == 0 || !elem.source) {
           return;
         }
+
+        let index = elem.source.lastIndexOf("_");
+        var property = elem.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
+
+        // We need a required state if we're basing the condition on neighbours
+        if (property === "neighbours" && !elem.requiredState) {
+          return;
+        }
+
         // Create list of Action objects
         var actions = [];
         var validActions = true;
@@ -121,14 +136,14 @@ export default {
             desiredState: action.desiredState
           });
         });
-        // We need at least once action to have the required info, so return otherwise.
+        // We need at least one action to have the required info, so return otherwise.
         if (!validActions) return;
 
         let sourceId = elem.source;
-        let source = this.stateBlocks.find(x => elem.source.startsWith(x.id));
+        index = sourceId.lastIndexOf("_");
+        sourceId = sourceId.substr(0, index);
+        let source = this.stateBlocks.find(x => x.id === sourceId);
         var stateColour = source.colour;
-        let index = elem.source.lastIndexOf("_");
-        var property = elem.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
         var requiredState = elem.requiredState;
         var operator = elem.operator;
         var desiredNumberOfNeighbours = elem.desiredNumberOfNeighbours;
@@ -207,7 +222,7 @@ export default {
           neighbourNode,
           {
             maxConnections: 100,
-            anchor: "Center",
+            anchor: "Center"
           },
           bezierSourcePoint
         );
@@ -331,10 +346,10 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
 #points {
   position: relative;
-  background-color: aliceblue;
+  background-color: #fffde7;
   min-height: 800px;
   resize: vertical;
   border: 1px solid #aaaaaa;
@@ -348,8 +363,20 @@ export default {
   -ms-user-select: none;
   user-select: none;
 }
-.stateNeighboursConnector svg{
-  stroke:rgb(54, 173, 43);
-  stroke-width:3;
+.stateNeighboursConnector svg {
+  stroke: rgb(54, 173, 43);
+  stroke-width: 3;
+}
+.selectColour {
+  display: inline-block;
+  // position: absolute;
+  width: 50px;
+  height: 50px;
+  // top: 70px;
+  // left: 25px;
+  padding: 4px;
+  border-radius: 15px;
+  background-color: rgb(90, 90, 90);
+  /* box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75); */
 }
 </style>

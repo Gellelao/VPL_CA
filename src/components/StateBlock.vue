@@ -54,7 +54,7 @@ export default {
   height: 150px;
   border-radius: 100%;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: rgb(255, 255, 255);
+  background-color: #FFF9C4;
 
   .heading{
     position: absolute;
