@@ -35,7 +35,6 @@ export default {
   data: () => ({
     grid: [],
     nextGrid: [],
-    updateInfoData: null,
     timer: null,
     isRunning: false,
     penColour: "#000000"
@@ -100,11 +99,10 @@ export default {
         for (let y = 0; y < this.nextGrid[x].length; y++) {
           let updateInfo = this.applyRules(x, y);
           if (updateInfo) {
-            this.nextGrid[x][y] = updateInfo.self.colour;
-            updates.push(updateInfo);
-            if(x==1 && y==1){
-              this.updateInfoData = updateInfo;
+            if(updateInfo.self){
+              this.nextGrid[x][y] = updateInfo.self.colour;
             }
+            updates.push(updateInfo);
           }
         }
       }
@@ -131,6 +129,7 @@ export default {
               y,
               action.desiredState
             );
+            break;
           }
           case "state": {
             actionsResult.self = {
