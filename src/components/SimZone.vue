@@ -53,35 +53,42 @@ export default {
     }
   },
   methods: {
+    setArrays(receiver, original){
+      for (var i = 0; i < original.length; i++){
+        // receiver[i] = original[i].slice();
+        this.$set(receiver, i, original[i].slice());
+      }
+    },
     initializeGrid(width = defaultWidth, height = defaultHeight) {
-      this.nextGrid = [];
+      this.grid = [];
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
           if (this.colours.length <= 1) {
             newRow.push(Math.random() < 0.5 ? "#FFFFFF" : "#000000");
-          } else {
+          } 
+          else {
             var randomIndex = Math.floor(Math.random() * this.colours.length);
             newRow.push(this.colours[randomIndex]);
           }
         }
-        this.nextGrid.push(newRow);
+        this.grid.push(newRow);
       }
-      this.grid = this.nextGrid;
+      // this.setArrays(this.grid, this.nextGrid);
     },
     fillGrid(width = defaultWidth, height = defaultHeight) {
-      this.nextGrid = [];
+      this.grid = [];
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
           newRow.push(this.penColour);
         }
-        this.nextGrid.push(newRow);
+        this.grid.push(newRow);
       }
-      this.grid = this.nextGrid;
+      // this.setArrays(this.grid, this.nextGrid);
     },
     updateCells() {
-      this.nextGrid = this.grid;
+      this.setArrays(this.nextGrid, this.grid);
       var updates = [];
       // for (let x = 0; x < this.grid.length; x++) {
       //   this.nextGrid[x] = [];
@@ -101,18 +108,18 @@ export default {
           }
         }
       }
-      // updates.forEach(update => {
-      //   let cellUpdates = update.neighbours;
-      //   if (cellUpdates) {
-      //     cellUpdates.forEach(cell => {
-      //       this.nextGrid[cell.x][cell.y] = cell.colour;
-      //     });
-      //   }
-      // });
-      this.grid = this.nextGrid;
+      updates.forEach(update => {
+        let cellUpdates = update.neighbours;
+        if (cellUpdates) {
+          cellUpdates.forEach(cell => {
+            this.nextGrid[cell.x][cell.y] = cell.colour;
+          });
+        }
+      });
+      this.setArrays(this.grid, this.nextGrid);
       // Force grid to update:
-      let newRow = this.grid[0].slice(0);
-      this.$set(this.grid, 0, newRow);
+      // let newRow = this.grid[0].slice(0);
+      // this.$set(this.grid, 0, newRow);
     },
     processActions(x, y, actions) {
       var actionsResult = {};
