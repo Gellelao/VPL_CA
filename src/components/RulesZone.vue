@@ -117,10 +117,10 @@ export default {
         var property = elem.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
 
         // We need a required state if we're basing the condition on neighbours
-        if(property === "neighbours" && !elem.requiredState){
+        if (property === "neighbours" && !elem.requiredState) {
           return;
         }
-        
+
         // Create list of Action objects
         var actions = [];
         var validActions = true;
@@ -136,11 +136,13 @@ export default {
             desiredState: action.desiredState
           });
         });
-        // We need at least once action to have the required info, so return otherwise.
+        // We need at least one action to have the required info, so return otherwise.
         if (!validActions) return;
 
         let sourceId = elem.source;
-        let source = this.stateBlocks.find(x => elem.source.startsWith(x.id));
+        index = sourceId.lastIndexOf("_");
+        sourceId = sourceId.substr(0, index);
+        let source = this.stateBlocks.find(x => x.id === sourceId);
         var stateColour = source.colour;
         var requiredState = elem.requiredState;
         var operator = elem.operator;
@@ -347,7 +349,7 @@ export default {
 <style lang="scss">
 #points {
   position: relative;
-  background-color: #FFFDE7;
+  background-color: #fffde7;
   min-height: 800px;
   resize: vertical;
   border: 1px solid #aaaaaa;
