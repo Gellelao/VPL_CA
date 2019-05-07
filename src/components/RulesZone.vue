@@ -249,7 +249,6 @@ export default {
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
         let targetId = idOfThisCond;
-        console.log(targetId);
         jsPlumb.draggable(targetId, {
           // grid: [50, 50]
         });
@@ -296,7 +295,6 @@ export default {
               .actions.push(info.targetId);
           }
         });
-        console.log(this.conditionBlocks);
       });
     },
     addAction: function(event) {
@@ -324,11 +322,23 @@ export default {
         // When a connection is made, update the source of the block to
         // the name of the property which was just connected to it.
         jsPlumb.bind("connection", info => {
-          console.log(info);
+          // console.log(jsPlumb.getConnections());
           if (
             info.targetId == idOfThisAction &&
             info.sourceId.startsWith("state")
           ) {
+            jsPlumb.select({target: idOfThisAction}).each(connection => {
+              if(connection.sourceId.startsWith("state")){
+                // connection.setPaintStyle({ strokeStyle:"blue", lineWidth:5 });
+                connection.getPaintStyle().strokeStyle = '#CE322A';
+                connection.getPaintStyle().lineWidth = 5 + "px";
+                connection.getPaintStyle().outlineColor = "black";
+                connection.getPaintStyle().outlineWidth = 1;
+              console.log(connection.getPaintStyle());
+                jsPlumb.repaint(connection);
+              }
+            });
+            //.filter().removeAllOverlays();
             // Only update source if we receive a connection from a State block
             Vue.set(
               // Find the array entry for this block
