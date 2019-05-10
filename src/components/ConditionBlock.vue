@@ -22,7 +22,7 @@
       </div>
     </template>
     <template v-else-if="property === 'state'">
-      <div class="body">Skip!</div>
+      <div class="body">Apply action regardless</div>
     </template>
     <div class="body" v-else>Connect a property</div>
     <div class="thenSource"></div>

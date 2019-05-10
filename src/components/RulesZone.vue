@@ -59,20 +59,19 @@ const flowChartSourcePoint = {
   connector: [
     "Flowchart",
     { stub: 20, cornerRadius: 10, alwaysRespectStubs: true }
-  ],
-  cssClass: "stateNeighboursConnector"
+  ]
 };
 const bezierSourcePoint = {
   endpoint: "Dot",
   isSource: true,
   connector: ["Bezier", { curviness: 50 }],
-  cssClass: "stateNeighboursConnector"
+        DragOptions: { cursor: 'pointer', zIndex: 5000 },
+        PaintStyle: { lineWidth: 5, stroke: '#445566' },
 };
 const straightSourcePoint = {
   endpoint: "Dot",
   isSource: true,
-  connector: ["Straight", { stub: 20 }],
-  cssClass: "stateNeighboursConnector"
+  connector: ["Straight", { stub: 20 }]
 };
 const flowChartTargetPoint = {
   endpoint: "Dot",
@@ -101,6 +100,9 @@ export default {
   }),
   updated() {
     // console.log("UPDATED");
+    jsPlumb.select().each(connection => {
+                console.log(connection.getPaintStyle());
+  });
   },
   computed: {
     rules() {
@@ -162,6 +164,14 @@ export default {
   },
   mounted() {
     console.log("mounted");
+    jsPlumb.registerConnectionTypes({
+      normal: {
+        paintStyle: { strokeStyle: "blue", lineWidth: 3 }
+      },
+      actionProperty: {
+        paintStyle: { stroke: "red", 'stroke-width': 50, outlineStroke: "black", outlineWidth: 5 }
+      }
+    });
     jsPlumb.setContainer(document.getElementById("points"));
     jsPlumb.ready(() => {});
 
@@ -315,30 +325,21 @@ export default {
           {
             maxConnections: 100,
             anchor: "Continuous"
-          },
-          targetPoint
+          }
         );
 
         // When a connection is made, update the source of the block to
         // the name of the property which was just connected to it.
         jsPlumb.bind("connection", info => {
-          // console.log(jsPlumb.getConnections());
           if (
             info.targetId == idOfThisAction &&
             info.sourceId.startsWith("state")
           ) {
-            jsPlumb.select({target: idOfThisAction}).each(connection => {
-              if(connection.sourceId.startsWith("state")){
-                // connection.setPaintStyle({ strokeStyle:"blue", lineWidth:5 });
-                connection.getPaintStyle().strokeStyle = '#CE322A';
-                connection.getPaintStyle().lineWidth = 5 + "px";
-                connection.getPaintStyle().outlineColor = "black";
-                connection.getPaintStyle().outlineWidth = 1;
-              console.log(connection.getPaintStyle());
-                jsPlumb.repaint(connection);
+            jsPlumb.select({ target: idOfThisAction }).each(connection => {
+              if (connection.sourceId.startsWith("state")) {
+                connection.addType("actionProperty");
               }
             });
-            //.filter().removeAllOverlays();
             // Only update source if we receive a connection from a State block
             Vue.set(
               // Find the array entry for this block
@@ -372,10 +373,6 @@ export default {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-}
-.stateNeighboursConnector svg {
-  stroke: rgb(54, 173, 43);
-  stroke-width: 3;
 }
 .selectColour {
   display: inline-block;
