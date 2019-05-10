@@ -53,60 +53,32 @@ var count = 0;
 
 // Define common jsplumb styles
 
-const flowChartSourcePoint = {
-  endpoint: "Dot",
-  isSource: true,
-  connector: [
-    "Flowchart",
-    { stub: 20, cornerRadius: 10, alwaysRespectStubs: true }
+const defaultArrow = [
+  [
+    "Arrow",
+    {
+      location: 0.7,
+      id: "arrow",
+      length: 20,
+      width:12,
+      foldback: 0.9,
+      paintStyle: {
+        fill: "white"
+      }
+    }
   ]
-};
+];
 const bezierSourcePoint = {
   endpoint: "Dot",
   isSource: true,
   connector: ["Bezier", { curviness: 50 }],
-  connectionType: "normal"
-};
-const straightSourcePoint = {
-  endpoint: "Dot",
-  isSource: true,
-  connector: ["Straight", { stub: 20 }]
-};
-const flowChartTargetPoint = {
-  endpoint: "Dot",
-  connector: [
-    "Flowchart",
-    { stub: 20, cornerRadius: 10, alwaysRespectStubs: true }
-  ],
-  isTarget: true
-};
-const bezierTargetPoint = {
-  endpoint: "Dot",
-  connector: ["Bezier", { curviness: 50 }],
-  isTarget: true
+  connectionType: "normal",
+  connectorOverlays: defaultArrow
 };
 const targetPoint = {
   endpoint: "Dot",
   isTarget: true
 };
-const defaultArrows = [
-              [
-                "Arrow",
-                {
-                  location: 0.5,
-                  id: "arrow",
-                  length: 8,
-                  foldback: 0.8,
-                  paintStyle: {
-                    lineWidth: 15,
-                    stroke: "lightgray",
-                    fill: "lightgray",
-                    stroke: "#000000",
-                    strokeWidth: 150
-                  }
-                }
-              ]
-            ]
 
 export default {
   components: { ConditionBlock, StateBlock, ActionBlock, SimZone },
@@ -246,8 +218,7 @@ export default {
           neighbourNode,
           {
             maxConnections: 100,
-            anchor: "Center",
-            connectorOverlays: defaultArrows
+            anchor: "Center"
           },
           bezierSourcePoint
         );
@@ -289,7 +260,7 @@ export default {
         jsPlumb.makeTarget(
           targetId,
           { maxConnections: 1, anchor: "Continuous" },
-          flowChartTargetPoint
+          targetPoint
         );
 
         jsPlumb.bind("connection", info => {
@@ -350,6 +321,7 @@ export default {
             jsPlumb.select({ target: idOfThisAction }).each(connection => {
               if (connection.sourceId.startsWith("state")) {
                 connection.addType("actionProperty");
+                connection.removeOverlay("arrow");
               }
             });
             // Only update source if we receive a connection from a State block
