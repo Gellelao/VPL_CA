@@ -57,7 +57,7 @@ const defaultArrow = [
   [
     "Arrow",
     {
-      location: 0.7,
+      location: 0.75,
       id: "arrow",
       length: 20,
       width:12,
@@ -155,7 +155,7 @@ export default {
         paintStyle: { stroke: "#e8d225", strokeWidth: 15 } //outlineStroke: "black", outlineWidth: 2
       },
       actionProperty: {
-        paintStyle: { stroke: "#f2eaa9", strokeWidth: 10 } //outlineStroke: "black", outlineWidth: 2
+        paintStyle: { stroke: "#f2eaa9", strokeWidth: 8 } //outlineStroke: "black", outlineWidth: 2
       }
     });
     jsPlumb.setContainer(document.getElementById("points"));
