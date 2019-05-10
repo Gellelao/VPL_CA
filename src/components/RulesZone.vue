@@ -65,8 +65,7 @@ const bezierSourcePoint = {
   endpoint: "Dot",
   isSource: true,
   connector: ["Bezier", { curviness: 50 }],
-        DragOptions: { cursor: 'pointer', zIndex: 5000 },
-        PaintStyle: { lineWidth: 5, stroke: '#445566' },
+  connectionType: "normal"
 };
 const straightSourcePoint = {
   endpoint: "Dot",
@@ -90,6 +89,24 @@ const targetPoint = {
   endpoint: "Dot",
   isTarget: true
 };
+const defaultArrows = [
+              [
+                "Arrow",
+                {
+                  location: 0.5,
+                  id: "arrow",
+                  length: 8,
+                  foldback: 0.8,
+                  paintStyle: {
+                    lineWidth: 15,
+                    stroke: "lightgray",
+                    fill: "lightgray",
+                    stroke: "#000000",
+                    strokeWidth: 150
+                  }
+                }
+              ]
+            ]
 
 export default {
   components: { ConditionBlock, StateBlock, ActionBlock, SimZone },
@@ -100,9 +117,6 @@ export default {
   }),
   updated() {
     // console.log("UPDATED");
-    jsPlumb.select().each(connection => {
-                console.log(connection.getPaintStyle());
-  });
   },
   computed: {
     rules() {
@@ -166,10 +180,10 @@ export default {
     console.log("mounted");
     jsPlumb.registerConnectionTypes({
       normal: {
-        paintStyle: { strokeStyle: "blue", lineWidth: 3 }
+        paintStyle: { stroke: "#e8d225", strokeWidth: 15 } //outlineStroke: "black", outlineWidth: 2
       },
       actionProperty: {
-        paintStyle: { stroke: "red", 'stroke-width': 50, outlineStroke: "black", outlineWidth: 5 }
+        paintStyle: { stroke: "#f2eaa9", strokeWidth: 10 } //outlineStroke: "black", outlineWidth: 2
       }
     });
     jsPlumb.setContainer(document.getElementById("points"));
@@ -232,7 +246,8 @@ export default {
           neighbourNode,
           {
             maxConnections: 100,
-            anchor: "Center"
+            anchor: "Center",
+            connectorOverlays: defaultArrows
           },
           bezierSourcePoint
         );
@@ -320,13 +335,10 @@ export default {
         jsPlumb.draggable(idOfThisAction, {
           // grid: [50, 50]
         });
-        jsPlumb.makeTarget(
-          idOfThisAction,
-          {
-            maxConnections: 100,
-            anchor: "Continuous"
-          }
-        );
+        jsPlumb.makeTarget(idOfThisAction, {
+          maxConnections: 100,
+          anchor: "Continuous"
+        });
 
         // When a connection is made, update the source of the block to
         // the name of the property which was just connected to it.
