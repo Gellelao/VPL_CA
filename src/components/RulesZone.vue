@@ -63,7 +63,6 @@ import "vue-swatches/dist/vue-swatches.min.css";
 var count = 0;
 
 // Define common jsplumb styles
-
 const defaultArrow = [
   [
     "Arrow",
@@ -285,7 +284,8 @@ export default {
           // update the source of this block to the name of the property which was just connected to it.
           if (
             info.targetId == idOfThisCond &&
-            info.sourceId.startsWith("state")
+            (info.sourceId.startsWith("state") ||
+              info.sourceId.startsWith("transform"))
           ) {
             Vue.set(
               // Find the array entry for this block
@@ -333,7 +333,8 @@ export default {
         jsPlumb.bind("connection", info => {
           if (
             info.targetId == idOfThisAction &&
-            (info.sourceId.startsWith("state") || info.sourceId.startsWith("transform"))
+            (info.sourceId.startsWith("state") ||
+              info.sourceId.startsWith("transform"))
           ) {
             // Style the Action connection differently to other connections
             info.connection.addType("actionProperty");
@@ -364,18 +365,18 @@ export default {
         jsPlumb.draggable(idOfThisTransform, {
           // grid: [50, 50]
         });
-        jsPlumb.makeSource(
-          idOfThisTransform,
-          {
-            maxConnections: 100,
-            filter: ".thenSource",
-            anchor: "BottomRight"
-          },
-          bezierSourcePoint
-        );
+        // jsPlumb.makeSource(
+        //   idOfThisTransform,
+        //   {
+        //     maxConnections: 100,
+        //     filter: ".thenSource",
+        //     anchor: "BottomRight"
+        //   },
+        //   bezierSourcePoint
+        // );
         jsPlumb.makeTarget(idOfThisTransform, {
           // 1 max connection because each Transform should have exactly one
-          // property attached, and nothing else
+          // property attached
           maxConnections: 1,
           anchor: "Continuous"
         });
@@ -394,6 +395,22 @@ export default {
                 // to the sourceId of the connection
                 info.sourceId
               );
+              // Append the property of the source onto the id of this Transform
+              let index = info.sourceId.lastIndexOf("_");
+              let newId =
+                idOfThisTransform + "_" + info.sourceId.substr(index + 1);
+              // Vue.set(
+              //   // Find the array entry for this block
+              //   this.transformBlocks.find(x => x.id === idOfThisTransform),
+              //   // Update the source field
+              //   "id",
+              //   // to the sourceId of the connection
+              //   newId
+              // );
+
+              jsPlumb.setId(idOfThisTransform, newId);
+              // jsPlumb.setIdChanged(idOfThisTransform, newId);
+
               // Transform Blocks should only accept connections from State Blocks,
               // so destroy all other connections
             } else {

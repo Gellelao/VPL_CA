@@ -5,11 +5,13 @@
     </v-toolbar-title>
     <template v-if="property === 'neighbours'">
       <div class="body">
+        neighbours
         <!-- Fill this in -->
       </div>
     </template>
     <template v-else-if="property === 'state'">
       <div class="body">
+        state
         <!-- Fill this in -->
       </div>
     </template>
