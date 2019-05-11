@@ -9,6 +9,7 @@
           <v-btn @click="addState">Add a new State</v-btn>
           <v-btn @click="addCondition">Add a new Condition</v-btn>
           <v-btn @click="addAction">Add a new Action</v-btn>
+          <v-btn @click="addTransform">Add a new Transform</v-btn>
         </v-toolbar>
         <div id="points">
           <div v-if="stateBlocks.length > 0">
@@ -32,6 +33,15 @@
               :source="block.source"
             ></ActionBlock>
           </div>
+
+          <div v-if="transformBlocks.length > 0">
+            <TransformBlock
+              v-for="block in transformBlocks"
+              :key="block.id"
+              :id="block.id"
+              :source="block.source"
+            ></TransformBlock>
+          </div>
         </div>
       </v-flex>
       <v-flex xs6>
@@ -46,6 +56,7 @@ import Vue from "vue";
 import StateBlock from "./StateBlock";
 import ConditionBlock from "./ConditionBlock";
 import ActionBlock from "./ActionBlock";
+import TransformBlock from "./TransformBlock";
 import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
 
@@ -60,7 +71,7 @@ const defaultArrow = [
       location: 0.75,
       id: "arrow",
       length: 20,
-      width:12,
+      width: 12,
       foldback: 0.9,
       paintStyle: {
         fill: "white"
@@ -81,11 +92,18 @@ const targetPoint = {
 };
 
 export default {
-  components: { ConditionBlock, StateBlock, ActionBlock, SimZone },
+  components: {
+    ConditionBlock,
+    StateBlock,
+    ActionBlock,
+    TransformBlock,
+    SimZone
+  },
   data: () => ({
     stateBlocks: [],
     conditionBlocks: [],
-    actionBlocks: []
+    actionBlocks: [],
+    transformBlocks: []
   }),
   updated() {
     // console.log("UPDATED");
@@ -244,12 +262,11 @@ export default {
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
-        let targetId = idOfThisCond;
-        jsPlumb.draggable(targetId, {
+        jsPlumb.draggable(idOfThisCond, {
           // grid: [50, 50]
         });
         jsPlumb.makeSource(
-          targetId,
+          idOfThisCond,
           {
             maxConnections: 100,
             filter: ".thenSource",
@@ -258,7 +275,7 @@ export default {
           bezierSourcePoint
         );
         jsPlumb.makeTarget(
-          targetId,
+          idOfThisCond,
           { maxConnections: 1, anchor: "Continuous" },
           targetPoint
         );
@@ -316,14 +333,11 @@ export default {
         jsPlumb.bind("connection", info => {
           if (
             info.targetId == idOfThisAction &&
-            info.sourceId.startsWith("state")
+            (info.sourceId.startsWith("state") || info.sourceId.startsWith("transform"))
           ) {
-            jsPlumb.select({ target: idOfThisAction }).each(connection => {
-              if (connection.sourceId.startsWith("state")) {
-                connection.addType("actionProperty");
-                connection.removeOverlay("arrow");
-              }
-            });
+            // Style the Action connection differently to other connections
+            info.connection.addType("actionProperty");
+            info.connection.removeOverlay("arrow");
             // Only update source if we receive a connection from a State block
             Vue.set(
               // Find the array entry for this block
@@ -333,6 +347,58 @@ export default {
               // to the sourceId of the connection
               info.sourceId
             );
+          }
+        });
+      });
+    },
+    addTransform: function(event) {
+      count = count + 1;
+      var idOfThisTransform = "transform_" + count;
+
+      this.transformBlocks.push({
+        id: idOfThisTransform,
+        source: ""
+      });
+      // Wait for the DOM to update before setting up plumbing
+      Vue.nextTick(() => {
+        jsPlumb.draggable(idOfThisTransform, {
+          // grid: [50, 50]
+        });
+        jsPlumb.makeSource(
+          idOfThisTransform,
+          {
+            maxConnections: 100,
+            filter: ".thenSource",
+            anchor: "BottomRight"
+          },
+          bezierSourcePoint
+        );
+        jsPlumb.makeTarget(idOfThisTransform, {
+          // 1 max connection because each Transform should have exactly one
+          // property attached, and nothing else
+          maxConnections: 1,
+          anchor: "Continuous"
+        });
+
+        // When a connection is made, update the source of the block to
+        // the name of the property which was just connected to it.
+        jsPlumb.bind("connection", info => {
+          if (info.targetId == idOfThisTransform) {
+            if (info.sourceId.startsWith("state")) {
+              // Only update source if we receive a connection from a State block
+              Vue.set(
+                // Find the array entry for this block
+                this.transformBlocks.find(x => x.id === idOfThisTransform),
+                // Update the source field
+                "source",
+                // to the sourceId of the connection
+                info.sourceId
+              );
+              // Transform Blocks should only accept connections from State Blocks,
+              // so destroy all other connections
+            } else {
+              jsPlumb.deleteConnection(info.connection);
+            }
           }
         });
       });
