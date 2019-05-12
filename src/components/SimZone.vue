@@ -26,8 +26,9 @@
 <script>
 import Swatches from "vue-swatches";
 
-const defaultWidth = 40;
-const defaultHeight = 40;
+const defaultWidth = 10;
+const defaultHeight = 10;
+const defaultNeighbourhood = [[true, true, true], [true, false, true], [true, true, true]];
 
 export default {
   components: { Swatches },
@@ -148,13 +149,13 @@ export default {
     },
     applyRules(x, y) {
       let cellState = this.grid[x][y];
-      let neighbours = this.getMyNeighbours(x, y);
       // We expect to have updated this variable by the end of the method
       var updateInfo;
 
       this.rules.forEach(rule => {
         // Only consider rules that match the state of this cell
         if (rule.stateColour === cellState) {
+          let neighbours = this.getMyNeighbours(x, y, rule.neighbourhood);
           switch (rule.property) {
             case "neighbours": {
               let actualNeighbours = neighbours.filter(
@@ -200,7 +201,7 @@ export default {
       // }
       return updateInfo;
     },
-    getMyNeighbours(x, y) {
+    getMyNeighbours(x, y, neighbourhood=defaultNeighbourhood) {
       // no looping for now
       // 8 neighbours
       let neighbours = [];
@@ -208,12 +209,13 @@ export default {
         if (i < 0 || i >= this.grid[0].length) continue;
         for (let j = y - 1; j <= y + 1; j++) {
           if (j < 0 || j >= this.grid[i].length || (x == i && y == j)) continue;
+          if(!neighbourhood[i-x+1][j-y+1]) continue; // Filter out neighbours we are not interested in
           neighbours.push(this.grid[i][j]);
         }
       }
       return neighbours;
     },
-    setMyNeighbours(x, y, colour) {
+    setMyNeighbours(x, y, colour, neighbourhood=defaultNeighbourhood) {
       // no looping for now
       // 8 neighbours
       var cellUpdates = [];
@@ -221,6 +223,7 @@ export default {
         if (i < 0 || i >= this.grid[0].length) continue;
         for (let j = y - 1; j <= y + 1; j++) {
           if (j < 0 || j >= this.grid[i].length || (x == i && y == j)) continue;
+          if(!neighbourhood[i-x+1][j-y+1]) continue; // Filter out neighbours we are not interested in
           cellUpdates.push({
             x: i,
             y: j,

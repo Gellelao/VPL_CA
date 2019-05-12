@@ -144,6 +144,7 @@ export default {
         // We need at least one action to have the required info, so return otherwise.
         if (!validActions) return;
 
+        var neighbourhood = undefined;
         let sourceId = elem.source;
 
         // If there is a transform block present, go find the original state source
@@ -155,6 +156,7 @@ export default {
             x => x.id === sourceId
           );
           sourceId = transformSource.source;
+          neighbourhood = transformSource.neighbourhood;
         }
 
         index = sourceId.lastIndexOf("_");
@@ -170,6 +172,7 @@ export default {
           property,
           requiredState,
           operator,
+          neighbourhood,
           desiredNumberOfNeighbours,
           actions
         });
@@ -224,6 +227,13 @@ export default {
         this.conditionBlocks.find(x => x.id === data.id),
         "operator",
         data.operator
+      );
+    });
+    this.$root.$on("updateNeighbourhood", data => {
+      Vue.set(
+        this.transformBlocks.find(x => x.id === data.id),
+        "neighbourhood",
+        data.neighbourhood
       );
     });
   },
