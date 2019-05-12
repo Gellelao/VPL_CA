@@ -120,15 +120,16 @@ export default {
       // let newRow = this.grid[0].slice(0);
       // this.$set(this.grid, 0, newRow);
     },
-    processActions(x, y, actions) {
+    processActions(x, y, rule) {
       var actionsResult = {};
-      actions.forEach(action => {
+      rule.actions.forEach(action => {
         switch (action.property) {
           case "neighbours": {
             actionsResult.neighbours = this.setMyNeighbours(
               x,
               y,
-              action.desiredState
+              action.desiredState,
+              rule.neighbourhood
             );
             break;
           }
@@ -164,19 +165,19 @@ export default {
               switch (rule.operator) {
                 case "Exactly": {
                   if (actualNeighbours === rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule.actions);
+                    updateInfo = this.processActions(x, y, rule);
                   }
                   break;
                 }
                 case "Less than": {
                   if (actualNeighbours < rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule.actions);
+                    updateInfo = this.processActions(x, y, rule);
                   }
                   break;
                 }
                 case "More than": {
                   if (actualNeighbours > rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule.actions);
+                    updateInfo = this.processActions(x, y, rule);
                   }
                   break;
                 }
@@ -187,7 +188,7 @@ export default {
               break;
             }
             case "state": {
-              updateInfo = this.processActions(x, y, rule.actions);
+              updateInfo = this.processActions(x, y, rule);
               break;
             }
             default: {
