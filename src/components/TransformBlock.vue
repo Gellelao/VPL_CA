@@ -5,16 +5,14 @@
     </v-toolbar-title>
     <template v-if="property === 'neighbours'">
       <div class="body">
-        <div>
-        Set neighbourhood:
-        </div>
+        <div>Set neighbourhood:</div>
         <!-- Grid start -->
         <div class="grid">
-        <tr v-for="(row, x) in grid" :key="x">
-          <td v-for="(col, y) in row" :key="y">
-            <div class="tile" :class="{on: grid[x][y]}" @click="toggleCell(x, y)"></div>
-          </td>
-        </tr>
+          <tr v-for="(row, x) in grid" :key="x">
+            <td v-for="(col, y) in row" :key="y">
+              <div class="tile" :class="{on: grid[x][y]}" @click="toggleCell(x, y)"></div>
+            </td>
+          </tr>
         </div>
         <!-- Grid end -->
       </div>
@@ -78,7 +76,7 @@ export default {
       this.$set(this.grid, x, newRow);
       // That process is necessary in order for Vue to realise that the array has changed and rerender accordingly
       this.updateNeighbourhoodInParent();
-    },
+    }
   }
 };
 </script>
@@ -120,10 +118,12 @@ export default {
   }
   .body {
     display: inline-block;
-    margin-bottom: 10px;
   }
   .grid {
+    border-collapse: collapse;
     display: inline-block;
+    margin-bottom: 10px;
+    margin-top: 10px;
   }
   .tile {
     width: 30px;
@@ -134,9 +134,9 @@ export default {
   .on {
     background-color: #a16a23;
   }
-  tr {
-    column-gap: 1px;
-    row-gap: 1px;
+  th,
+  td {
+    border: 1px solid black;
   }
 }
 </style>
