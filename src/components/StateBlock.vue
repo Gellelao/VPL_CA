@@ -1,8 +1,8 @@
 <template>
   <div :id="id" class="state">
-     <v-toolbar-title class="text-uppercase">
-       <span class="heading">State</span>
-     </v-toolbar-title>
+    <v-toolbar-title class="text-uppercase">
+      <span class="heading">State</span>
+    </v-toolbar-title>
     <div class="selectColour">
       <!-- <div class="form__input"> -->
       <swatches v-model="colour" colors="text-basic" @input="updateStateInParent"></swatches>
@@ -10,13 +10,13 @@
     </div>
     <v-tooltip bottom>
       <template v-slot:activator="{ on }">
-    <div :id="id+'_neighbours'" v-on="on" class="neighboursSource"></div>
+        <div :id="id+'_neighbours'" v-on="on" class="neighboursSource"></div>
       </template>
       <span>Neighbours</span>
     </v-tooltip>
     <v-tooltip bottom>
       <template v-slot:activator="{ on }">
-    <div :id="id+'_state'" v-on="on" class="stateSource"></div>
+        <div :id="id+'_state'" v-on="on" class="stateSource"></div>
       </template>
       <span>State</span>
     </v-tooltip>
@@ -54,9 +54,9 @@ export default {
   height: 150px;
   border-radius: 100%;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: #FFF9C4;
+  background-color: #fff9c4;
 
-  .heading{
+  .heading {
     position: absolute;
     top: 30px;
     left: 42px;

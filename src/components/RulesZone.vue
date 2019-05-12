@@ -145,6 +145,18 @@ export default {
         if (!validActions) return;
 
         let sourceId = elem.source;
+
+        // If there is a transform block present, go find the original state source
+        // and update the sourceId to point to that instead of the transform block
+        if (sourceId.startsWith("transform")) {
+          index = sourceId.lastIndexOf("_");
+          sourceId = sourceId.substr(0, index);
+          let transformSource = this.transformBlocks.find(
+            x => x.id === sourceId
+          );
+          sourceId = transformSource.source;
+        }
+
         index = sourceId.lastIndexOf("_");
         sourceId = sourceId.substr(0, index);
         let source = this.stateBlocks.find(x => x.id === sourceId);
@@ -362,18 +374,28 @@ export default {
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
+        let neighbourNode = idOfThisTransform + "_neighbours";
+        let stateNode = idOfThisTransform + "_state";
+
         jsPlumb.draggable(idOfThisTransform, {
           // grid: [50, 50]
         });
-        // jsPlumb.makeSource(
-        //   idOfThisTransform,
-        //   {
-        //     maxConnections: 100,
-        //     filter: ".thenSource",
-        //     anchor: "BottomRight"
-        //   },
-        //   bezierSourcePoint
-        // );
+        jsPlumb.makeSource(
+          neighbourNode,
+          {
+            maxConnections: 100,
+            anchor: "Center"
+          },
+          bezierSourcePoint
+        );
+        jsPlumb.makeSource(
+          stateNode,
+          {
+            maxConnections: 100,
+            anchor: "Center"
+          },
+          bezierSourcePoint
+        );
         jsPlumb.makeTarget(idOfThisTransform, {
           // 1 max connection because each Transform should have exactly one
           // property attached
@@ -395,21 +417,6 @@ export default {
                 // to the sourceId of the connection
                 info.sourceId
               );
-              // Append the property of the source onto the id of this Transform
-              let index = info.sourceId.lastIndexOf("_");
-              let newId =
-                idOfThisTransform + "_" + info.sourceId.substr(index + 1);
-              // Vue.set(
-              //   // Find the array entry for this block
-              //   this.transformBlocks.find(x => x.id === idOfThisTransform),
-              //   // Update the source field
-              //   "id",
-              //   // to the sourceId of the connection
-              //   newId
-              // );
-
-              jsPlumb.setId(idOfThisTransform, newId);
-              // jsPlumb.setIdChanged(idOfThisTransform, newId);
 
               // Transform Blocks should only accept connections from State Blocks,
               // so destroy all other connections
@@ -433,24 +440,20 @@ export default {
   border: 1px solid #aaaaaa;
   overflow-y: scroll;
 }
-._jsPlumb_drag_select {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
+// ._jsPlumb_drag_select {
+//   -webkit-touch-callout: none;
+//   -webkit-user-select: none;
+//   -khtml-user-select: none;
+//   -moz-user-select: none;
+//   -ms-user-select: none;
+//   user-select: none;
+// }
 .selectColour {
   display: inline-block;
-  // position: absolute;
   width: 50px;
   height: 50px;
-  // top: 70px;
-  // left: 25px;
   padding: 4px;
   border-radius: 15px;
   background-color: rgb(90, 90, 90);
-  /* box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75); */
 }
 </style>

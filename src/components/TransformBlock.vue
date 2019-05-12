@@ -16,7 +16,23 @@
       </div>
     </template>
     <div class="body" v-else>Connect a property</div>
-    <div class="thenSource"></div>
+    <!-- put the property nodes in v-shows so that they stay on the dom -->
+    <div v-show="property === 'neighbours'">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <div :id="id+'_neighbours'" v-on="on" class="neighboursSource"></div>
+        </template>
+        <span>Neighbours</span>
+      </v-tooltip>
+    </div>
+    <div v-show="property === 'state'">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <div :id="id+'_state'" v-on="on" class="stateSource"></div>
+        </template>
+        <span>State</span>
+      </v-tooltip>
+    </div>
   </div>
 </template>
 
@@ -60,13 +76,19 @@ export default {
     font-size: 18px;
     margin-bottom: 12px;
   }
-  .thenSource {
-    display: inline-block;
+  .neighboursSource {
     position: absolute;
-    background-color: rgb(49, 155, 247);
+    background-color: rgb(54, 173, 43);
     width: 30px;
     height: 30px;
-    right: -15px;
+    bottom: -15px;
+    border-radius: 100%;
+  }
+  .stateSource {
+    position: absolute;
+    background-color: rgb(173, 0, 0);
+    width: 30px;
+    height: 30px;
     bottom: -15px;
     border-radius: 100%;
   }
