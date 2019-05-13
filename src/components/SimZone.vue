@@ -219,7 +219,6 @@ export default {
     setMyNeighbours(x, y, colour, neighbourhood=defaultNeighbourhood) {
       // no looping for now
       // 8 neighbours
-      console.log(neighbourhood);
       var cellUpdates = [];
       for (let i = x - 1; i <= x + 1; i++) {
         if (i < 0 || i >= this.grid[0].length) continue;
