@@ -120,16 +120,16 @@ export default {
       // let newRow = this.grid[0].slice(0);
       // this.$set(this.grid, 0, newRow);
     },
-    processActions(x, y, rule) {
+    processActions(x, y, actions) {
       var actionsResult = {};
-      rule.actions.forEach(action => {
+      actions.forEach(action => {
         switch (action.property) {
           case "neighbours": {
             actionsResult.neighbours = this.setMyNeighbours(
               x,
               y,
               action.desiredState,
-              rule.neighbourhood
+              action.neighbourhood
             );
             break;
           }
@@ -165,19 +165,19 @@ export default {
               switch (rule.operator) {
                 case "Exactly": {
                   if (actualNeighbours === rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule);
+                    updateInfo = this.processActions(x, y, rule.actions);
                   }
                   break;
                 }
                 case "Less than": {
                   if (actualNeighbours < rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule);
+                    updateInfo = this.processActions(x, y, rule.actions);
                   }
                   break;
                 }
                 case "More than": {
                   if (actualNeighbours > rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule);
+                    updateInfo = this.processActions(x, y, rule.actions);
                   }
                   break;
                 }
@@ -188,7 +188,7 @@ export default {
               break;
             }
             case "state": {
-              updateInfo = this.processActions(x, y, rule);
+              updateInfo = this.processActions(x, y, rule.actions);
               break;
             }
             default: {
@@ -219,6 +219,7 @@ export default {
     setMyNeighbours(x, y, colour, neighbourhood=defaultNeighbourhood) {
       // no looping for now
       // 8 neighbours
+      console.log(neighbourhood);
       var cellUpdates = [];
       for (let i = x - 1; i <= x + 1; i++) {
         if (i < 0 || i >= this.grid[0].length) continue;

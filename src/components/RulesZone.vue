@@ -136,9 +136,20 @@ export default {
           }
           let index = action.source.lastIndexOf("_");
           var property = action.source.substr(index + 1); // Use this to determine whether or not we'll set our own state or our neighbours states
+
+          var neighbourhood = undefined;
+          let sourceId = action.source.substr(0, index);
+          if(sourceId.startsWith("transform")){
+            let transformSource = this.transformBlocks.find(
+              x => x.id === sourceId
+            );
+            neighbourhood = transformSource.neighbourhood;
+          }
+
           actions.push({
-            property: property,
-            desiredState: action.desiredState
+            property,
+            desiredState: action.desiredState,
+            neighbourhood
           });
         });
         // We need at least one action to have the required info, so return otherwise.
