@@ -28,7 +28,9 @@ import Swatches from "vue-swatches";
 
 const defaultWidth = 40;
 const defaultHeight = 40;
-const defaultNeighbourhood = [[true, true, true], [true, false, true], [true, true, true]];
+const defaultNeighbourhood = [[true, true, true],
+                              [true, false, true],
+                              [true, true, true]];
 
 export default {
   components: { Swatches },
