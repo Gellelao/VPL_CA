@@ -4,22 +4,18 @@
       <span class="heading">Action</span>
     </v-toolbar-title>
     <template v-if="property === 'neighbours'">
-      <div class="body">
         <div>Turn my neighbours into:</div>
         <div class="selectColour">
           <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
         </div>
-      </div>
     </template>
     <template v-else-if="property === 'state'">
-      <div class="body">
         <div>Become:</div>
         <div class="selectColour">
           <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
         </div>
-      </div>
     </template>
-    <div class="body" v-else>Connect a property</div>
+    <div v-else>Connect a property</div>
   </div>
 </template>
 
@@ -67,11 +63,6 @@ export default {
     // left: 10px;
     font-size: 18px;
     margin-bottom: 12px;
-  }
-  .body {
-    // position: absolute;
-    // top: 40px;
-    // left: 10px;
   }
 }
 </style>

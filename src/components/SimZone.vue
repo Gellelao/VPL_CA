@@ -2,6 +2,14 @@
   <div>
     <v-toolbar>
       <v-spacer></v-spacer>
+      <v-slider
+        class="speedSlider"
+        v-model="speed"
+        step="200"
+        min="0"
+        :max="largestDelay"
+        label="Speed"
+      ></v-slider>
       <v-btn @click="initializeGrid()">Initialize Grid</v-btn>
       <v-btn @click="fillGrid()">Fill Grid</v-btn>
       <v-btn @click="updateCells">Update cells</v-btn>
@@ -28,7 +36,12 @@ import Swatches from "vue-swatches";
 
 const defaultWidth = 40;
 const defaultHeight = 40;
-const defaultNeighbourhood = [[true, true, true], [true, false, true], [true, true, true]];
+const defaultNeighbourhood = [
+  [true, true, true],
+  [true, false, true],
+  [true, true, true]
+];
+const largestDelay = 2000;
 
 export default {
   components: { Swatches },
@@ -38,7 +51,9 @@ export default {
     nextGrid: [],
     timer: null,
     isRunning: false,
-    penColour: "#000000"
+    penColour: "#000000",
+    speed: 2000,
+    largestDelay: 2000
   }),
   mounted() {
     this.initializeGrid();
@@ -50,11 +65,15 @@ export default {
         colours.add(rule.stateColour);
       });
       return Array.from(colours);
+    },
+    updateDelay(){
+      // Add 100 to avoid having zero delay
+      return this.largestDelay - this.speed + 100;
     }
   },
   methods: {
-    setArrays(receiver, original){
-      for (var i = 0; i < original.length; i++){
+    setArrays(receiver, original) {
+      for (var i = 0; i < original.length; i++) {
         // receiver[i] = original[i].slice();
         this.$set(receiver, i, original[i].slice());
       }
@@ -66,8 +85,7 @@ export default {
         for (let x = 0; x < width; x++) {
           if (this.colours.length <= 1) {
             newRow.push(Math.random() < 0.5 ? "#FFFFFF" : "#000000");
-          } 
-          else {
+          } else {
             var randomIndex = Math.floor(Math.random() * this.colours.length);
             newRow.push(this.colours[randomIndex]);
           }
@@ -100,7 +118,7 @@ export default {
         for (let y = 0; y < this.nextGrid[x].length; y++) {
           let updateInfo = this.applyRules(x, y);
           if (updateInfo) {
-            if(updateInfo.self){
+            if (updateInfo.self) {
               this.nextGrid[x][y] = updateInfo.self.colour;
             }
             updates.push(updateInfo);
@@ -202,7 +220,7 @@ export default {
       // }
       return updateInfo;
     },
-    getMyNeighbours(x, y, neighbourhood=defaultNeighbourhood) {
+    getMyNeighbours(x, y, neighbourhood = defaultNeighbourhood) {
       // no looping for now
       // 8 neighbours
       let neighbours = [];
@@ -210,13 +228,13 @@ export default {
         if (i < 0 || i >= this.grid[0].length) continue;
         for (let j = y - 1; j <= y + 1; j++) {
           if (j < 0 || j >= this.grid[i].length || (x == i && y == j)) continue;
-          if(!neighbourhood[i-x+1][j-y+1]) continue; // Filter out neighbours we are not interested in
+          if (!neighbourhood[i - x + 1][j - y + 1]) continue; // Filter out neighbours we are not interested in
           neighbours.push(this.grid[i][j]);
         }
       }
       return neighbours;
     },
-    setMyNeighbours(x, y, colour, neighbourhood=defaultNeighbourhood) {
+    setMyNeighbours(x, y, colour, neighbourhood = defaultNeighbourhood) {
       // no looping for now
       // 8 neighbours
       var cellUpdates = [];
@@ -224,7 +242,7 @@ export default {
         if (i < 0 || i >= this.grid[0].length) continue;
         for (let j = y - 1; j <= y + 1; j++) {
           if (j < 0 || j >= this.grid[i].length || (x == i && y == j)) continue;
-          if(!neighbourhood[i-x+1][j-y+1]) continue; // Filter out neighbours we are not interested in
+          if (!neighbourhood[i - x + 1][j - y + 1]) continue; // Filter out neighbours we are not interested in
           cellUpdates.push({
             x: i,
             y: j,
@@ -252,7 +270,7 @@ export default {
     // },
     start() {
       this.isRunning = true;
-      this.timer = setInterval(this.updateCells, 100);
+      this.timer = setInterval(this.updateCells, this.updateDelay);
     },
     stop() {
       this.isRunning = false;
@@ -274,5 +292,10 @@ tr {
   /* border-radius: 5px; */
   /* border-radius: 10px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
+}
+.speedSlider{
+  width: 200px;
+  padding: 20px;
+  top: 20px;
 }
 </style>
