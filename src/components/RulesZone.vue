@@ -455,7 +455,8 @@ export default {
 <style lang="scss">
 #points {
   position: relative;
-  background-color: #fffde7;
+  // background-color: #fffde7;
+  background-color: white;
   min-height: 800px;
   resize: vertical;
   border: 1px solid #aaaaaa;
