@@ -20,11 +20,13 @@
       </v-toolbar-title>
     </v-toolbar>
     <!-- Rules: {{rules}} -->
-    <tr v-for="(row, x) in grid" :key="x">
-      <td v-for="(col, y) in row" :key="y">
-        <div class="cell" :style="{'background-color': grid[x][y]}" @click="setCell(x, y)"></div>
-      </td>
-    </tr>
+    <div class="grid">
+      <tr v-for="(row, x) in grid" :key="x">
+        <td v-for="(col, y) in row" :key="y">
+          <div class="cell" :style="{'background-color': grid[x][y]}" @click="setCell(x, y)"></div>
+        </td>
+      </tr>
+    </div>
     <div class="form__label">
       <swatches v-model="penColour" colors="text-basic" inline></swatches>
     </div>
@@ -34,8 +36,8 @@
 <script>
 import Swatches from "vue-swatches";
 
-const defaultWidth = 40;
-const defaultHeight = 40;
+const defaultWidth = 15;
+const defaultHeight = 15;
 const defaultNeighbourhood = [
   [true, true, true],
   [true, false, true],
@@ -66,7 +68,7 @@ export default {
       });
       return Array.from(colours);
     },
-    updateDelay(){
+    updateDelay() {
       // Add 100 to avoid having zero delay
       return this.largestDelay - this.speed + 100;
     }
@@ -281,10 +283,18 @@ export default {
 </script>
 
 <style scoped lang="scss">
-$cellWidth: 20px;
+$cellWidth: 30px;
 
-tr {
-  column-gap: 0px;
+.grid {
+  padding-top: 130px;
+  padding-left: 180px;
+  padding-bottom: 80px;
+  border-collapse: collapse;
+  display: inline-block;
+}
+th,
+td {
+  border: 3px solid grey;
 }
 .cell {
   width: $cellWidth;
@@ -293,7 +303,7 @@ tr {
   /* border-radius: 10px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
 }
-.speedSlider{
+.speedSlider {
   width: 200px;
   padding: 20px;
   top: 20px;
