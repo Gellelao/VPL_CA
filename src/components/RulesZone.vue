@@ -61,6 +61,7 @@ import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
 
 var count = 0;
+const dragGridSize = 20;
 
 // Define common jsplumb styles
 const defaultArrow = [
@@ -262,7 +263,7 @@ export default {
         let stateNode = idOfThisState + "_state";
 
         jsPlumb.draggable(idOfThisState, {
-          // grid: [50, 50]
+          grid: [dragGridSize, dragGridSize]
         });
         jsPlumb.makeSource(
           neighbourNode,
@@ -295,7 +296,7 @@ export default {
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
         jsPlumb.draggable(idOfThisCond, {
-          // grid: [50, 50]
+          grid: [dragGridSize, dragGridSize]
         });
         jsPlumb.makeSource(
           idOfThisCond,
@@ -354,7 +355,7 @@ export default {
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
         jsPlumb.draggable(idOfThisAction, {
-          // grid: [50, 50]
+          grid: [dragGridSize, dragGridSize]
         });
         jsPlumb.makeTarget(idOfThisAction, {
           maxConnections: 100,
@@ -399,7 +400,7 @@ export default {
         let stateNode = idOfThisTransform + "_state";
 
         jsPlumb.draggable(idOfThisTransform, {
-          // grid: [50, 50]
+          grid: [dragGridSize, dragGridSize]
         });
         jsPlumb.makeSource(
           neighbourNode,
