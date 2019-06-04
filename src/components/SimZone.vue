@@ -304,7 +304,7 @@ td {
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
 }
 .speedSlider {
-  width: 200px;
+  width: 140px;
   padding: 20px;
   top: 20px;
 }
