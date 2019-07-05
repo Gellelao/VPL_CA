@@ -12,37 +12,42 @@
           <v-btn @click="addTransform">Add a new Transform</v-btn>
         </v-toolbar>
         <div id="points">
-          <div v-if="stateBlocks.length > 0">
-            <StateBlock v-for="block in stateBlocks" :key="block.id" :id="block.id"></StateBlock>
+          <div v-if="blocks.stateBlocks.length > 0">
+            <StateBlock v-for="block in blocks.stateBlocks" :key="block.id" :id="block.id"></StateBlock>
           </div>
 
-          <div v-if="conditionBlocks.length > 0">
+          <div v-if="blocks.conditionBlocks.length > 0">
             <ConditionBlock
-              v-for="block in conditionBlocks"
+              v-for="block in blocks.conditionBlocks"
               :key="block.id"
               :id="block.id"
               :source="block.source"
             ></ConditionBlock>
           </div>
 
-          <div v-if="actionBlocks.length > 0">
+          <div v-if="blocks.actionBlocks.length > 0">
             <ActionBlock
-              v-for="block in actionBlocks"
+              v-for="block in blocks.actionBlocks"
               :key="block.id"
               :id="block.id"
               :source="block.source"
             ></ActionBlock>
           </div>
 
-          <div v-if="transformBlocks.length > 0">
+          <div v-if="blocks.transformBlocks.length > 0">
             <TransformBlock
-              v-for="block in transformBlocks"
+              v-for="block in blocks.transformBlocks"
               :key="block.id"
               :id="block.id"
               :source="block.source"
             ></TransformBlock>
           </div>
         </div>
+        <v-toolbar>
+          <v-btn @click="save">Save Rules</v-btn>
+          <v-btn @click="$refs.inputUpload.click()">Load Rules</v-btn>
+          <input v-show="false" ref="inputUpload" type="file" @change="load">
+        </v-toolbar>
       </v-flex>
       <v-flex xs6>
         <SimZone :rules="this.rules"/>
@@ -100,10 +105,12 @@ export default {
     SimZone
   },
   data: () => ({
-    stateBlocks: [],
-    conditionBlocks: [],
-    actionBlocks: [],
-    transformBlocks: []
+    blocks: {
+      stateBlocks: [],
+      conditionBlocks: [],
+      actionBlocks: [],
+      transformBlocks: []
+    }
   }),
   updated() {
     // console.log("UPDATED");
@@ -113,7 +120,7 @@ export default {
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
-      this.conditionBlocks.forEach(elem => {
+      this.blocks.conditionBlocks.forEach(elem => {
         // We need conditions to have all of the required info before we make a rule out of them
         if (elem.actions.length == 0 || !elem.source) {
           return;
@@ -131,7 +138,7 @@ export default {
         var actions = [];
         var validActions = true;
         elem.actions.forEach(elem => {
-          let action = this.actionBlocks.find(x => x.id === elem);
+          let action = this.blocks.actionBlocks.find(x => x.id === elem);
           if (!action.source || !action.desiredState) {
             validActions = false;
           }
@@ -140,8 +147,8 @@ export default {
 
           var neighbourhood = undefined;
           let sourceId = action.source.substr(0, index);
-          if(sourceId.startsWith("transform")){
-            let transformSource = this.transformBlocks.find(
+          if (sourceId.startsWith("transform")) {
+            let transformSource = this.blocks.transformBlocks.find(
               x => x.id === sourceId
             );
             neighbourhood = transformSource.neighbourhood;
@@ -164,7 +171,7 @@ export default {
         if (sourceId.startsWith("transform")) {
           index = sourceId.lastIndexOf("_");
           sourceId = sourceId.substr(0, index);
-          let transformSource = this.transformBlocks.find(
+          let transformSource = this.blocks.transformBlocks.find(
             x => x.id === sourceId
           );
           sourceId = transformSource.source;
@@ -173,7 +180,7 @@ export default {
 
         index = sourceId.lastIndexOf("_");
         sourceId = sourceId.substr(0, index);
-        let source = this.stateBlocks.find(x => x.id === sourceId);
+        let source = this.blocks.stateBlocks.find(x => x.id === sourceId);
         var stateColour = source.colour;
         var requiredState = elem.requiredState;
         var operator = elem.operator;
@@ -208,42 +215,42 @@ export default {
     // Set up events to make sure changes down in the components are reflected in the data up here
     this.$root.$on("updateStateColour", data => {
       Vue.set(
-        this.stateBlocks.find(x => x.id === data.id),
+        this.blocks.stateBlocks.find(x => x.id === data.id),
         "colour",
         data.colour
       );
     });
     this.$root.$on("updateConditionRequiredState", data => {
       Vue.set(
-        this.conditionBlocks.find(x => x.id === data.id),
+        this.blocks.conditionBlocks.find(x => x.id === data.id),
         "requiredState",
         data.requiredState
       );
     });
     this.$root.$on("updateConditionNeighbours", data => {
       Vue.set(
-        this.conditionBlocks.find(x => x.id === data.id),
+        this.blocks.conditionBlocks.find(x => x.id === data.id),
         "desiredNumberOfNeighbours",
         data.neighbours
       );
     });
     this.$root.$on("updateActionDesiredState", data => {
       Vue.set(
-        this.actionBlocks.find(x => x.id === data.id),
+        this.blocks.actionBlocks.find(x => x.id === data.id),
         "desiredState",
         data.desiredState
       );
     });
     this.$root.$on("updateConditionOperator", data => {
       Vue.set(
-        this.conditionBlocks.find(x => x.id === data.id),
+        this.blocks.conditionBlocks.find(x => x.id === data.id),
         "operator",
         data.operator
       );
     });
     this.$root.$on("updateNeighbourhood", data => {
       Vue.set(
-        this.transformBlocks.find(x => x.id === data.id),
+        this.blocks.transformBlocks.find(x => x.id === data.id),
         "neighbourhood",
         data.neighbourhood
       );
@@ -254,40 +261,44 @@ export default {
       count = count + 1;
       var idOfThisState = "state_" + count;
 
-      this.stateBlocks.push({
+      this.blocks.stateBlocks.push({
         id: idOfThisState
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
-        let neighbourNode = idOfThisState + "_neighbours";
-        let stateNode = idOfThisState + "_state";
-
-        jsPlumb.draggable(idOfThisState, {
-          grid: [dragGridSize, dragGridSize]
-        });
-        jsPlumb.makeSource(
-          neighbourNode,
-          {
-            maxConnections: 100,
-            anchor: "Center"
-          },
-          bezierSourcePoint
-        );
-        jsPlumb.makeSource(
-          stateNode,
-          {
-            maxConnections: 100,
-            anchor: "Center"
-          },
-          bezierSourcePoint
-        );
+        this.initializeStateBlock(idOfThisState);
       });
+    },
+    initializeStateBlock(id) {
+      console.log("Initializing state block with id " + id);
+      let neighbourNode = id + "_neighbours";
+      let stateNode = id + "_state";
+
+      jsPlumb.draggable(id, {
+        grid: [dragGridSize, dragGridSize]
+      });
+      jsPlumb.makeSource(
+        neighbourNode,
+        {
+          maxConnections: 100,
+          anchor: "Center"
+        },
+        bezierSourcePoint
+      );
+      jsPlumb.makeSource(
+        stateNode,
+        {
+          maxConnections: 100,
+          anchor: "Center"
+        },
+        bezierSourcePoint
+      );
     },
     addCondition: function(event) {
       count = count + 1;
       var idOfThisCond = "condition_" + count;
 
-      this.conditionBlocks.push({
+      this.blocks.conditionBlocks.push({
         id: idOfThisCond,
         source: "",
         actions: [],
@@ -323,7 +334,7 @@ export default {
           ) {
             Vue.set(
               // Find the array entry for this block
-              this.conditionBlocks.find(x => x.id === idOfThisCond),
+              this.blocks.conditionBlocks.find(x => x.id === idOfThisCond),
               // Update the source field
               "source",
               // to the sourceId of the connection
@@ -337,7 +348,7 @@ export default {
             info.targetId.startsWith("action")
           ) {
             // Add the id of the source to the array of triggers
-            this.conditionBlocks
+            this.blocks.conditionBlocks
               .find(x => x.id === idOfThisCond)
               .actions.push(info.targetId);
           }
@@ -348,7 +359,7 @@ export default {
       count = count + 1;
       var idOfThisAction = "action_" + count;
 
-      this.actionBlocks.push({
+      this.blocks.actionBlocks.push({
         id: idOfThisAction,
         source: ""
       });
@@ -376,7 +387,7 @@ export default {
             // Only update source if we receive a connection from a State block
             Vue.set(
               // Find the array entry for this block
-              this.actionBlocks.find(x => x.id === idOfThisAction),
+              this.blocks.actionBlocks.find(x => x.id === idOfThisAction),
               // Update the source field
               "source",
               // to the sourceId of the connection
@@ -390,7 +401,7 @@ export default {
       count = count + 1;
       var idOfThisTransform = "transform_" + count;
 
-      this.transformBlocks.push({
+      this.blocks.transformBlocks.push({
         id: idOfThisTransform,
         source: ""
       });
@@ -433,7 +444,9 @@ export default {
               // Only update source if we receive a connection from a State block
               Vue.set(
                 // Find the array entry for this block
-                this.transformBlocks.find(x => x.id === idOfThisTransform),
+                this.blocks.transformBlocks.find(
+                  x => x.id === idOfThisTransform
+                ),
                 // Update the source field
                 "source",
                 // to the sourceId of the connection
@@ -448,6 +461,53 @@ export default {
           }
         });
       });
+    },
+    save() {
+      console.log("SAVE");
+      let blockData = JSON.stringify(this.blocks);
+      // Code from here: https://forum.vuejs.org/t/saving-form-data/38714
+      let blob = new Blob([blockData], { type: "text/plain;charset=utf-8;" });
+      if (navigator.msSaveBlob) {
+        // IE 10+
+        navigator.msSaveBlob(blob, filename);
+      } else {
+        let link = document.createElement("a");
+        if (link.download !== undefined) {
+          // feature detection
+          // Browsers that support HTML5 download attribute
+          let url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", "rules.txt");
+          link.style.visibility = "hidden";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+    },
+    load(e) {
+      console.log("LOAD");
+      // Code from https://codepen.io/Atinux/pen/qOvawK/
+      var file = e.target.files || e.dataTransfer.files;
+      if (!file.length) {
+        console.error("!file.length");
+        return;
+      }
+      console.log(file[0]);
+      var reader = new FileReader();
+      reader.onload = e => {
+        let blockData = JSON.parse(e.target.result);
+        console.log(blockData);
+
+        Vue.set(this.blocks, "stateBlocks", blockData.stateBlocks);
+        this.blocks.stateBlocks.forEach(block => {
+            this.initializeStateBlock(block.id);
+          });
+        Vue.set(this.blocks, "conditionBlocks", blockData.conditionBlocks);
+        Vue.set(this.blocks, "actionBlocks", blockData.actionBlocks);
+        Vue.set(this.blocks, "transformBlocks", blockData.transformBlocks);
+      };
+      reader.readAsText(file[0]);
     }
   }
 };
@@ -458,7 +518,7 @@ export default {
   position: relative;
   // background-color: #fffde7;
   background-color: white;
-  min-height: 800px;
+  min-height: 750px;
   resize: vertical;
   border: 1px solid #aaaaaa;
   overflow-y: scroll;

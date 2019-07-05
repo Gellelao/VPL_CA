@@ -288,7 +288,7 @@ $cellWidth: 30px;
 .grid {
   padding-top: 80px;
   padding-left: 80px;
-  padding-bottom: 80px;
+  // padding-bottom: 60px;
   border-collapse: collapse;
   display: inline-block;
 }
