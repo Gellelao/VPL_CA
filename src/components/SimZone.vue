@@ -286,9 +286,9 @@ export default {
 $cellWidth: 30px;
 
 .grid {
-  padding-top: 80px;
+  padding-top: 40px;
   padding-left: 80px;
-  // padding-bottom: 60px;
+  padding-bottom: 30px;
   border-collapse: collapse;
   display: inline-block;
 }

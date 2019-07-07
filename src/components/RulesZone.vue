@@ -46,11 +46,11 @@
         <v-toolbar>
           <v-btn @click="save">Save Rules</v-btn>
           <v-btn @click="$refs.inputUpload.click()">Load Rules</v-btn>
-          <input v-show="false" ref="inputUpload" type="file" @change="load">
+          <input v-show="false" ref="inputUpload" type="file" @change="load" />
         </v-toolbar>
       </v-flex>
       <v-flex xs6>
-        <SimZone :rules="this.rules"/>
+        <SimZone :rules="this.rules" />
       </v-flex>
     </v-layout>
   </v-content>
@@ -500,12 +500,14 @@ export default {
         console.log(blockData);
 
         Vue.set(this.blocks, "stateBlocks", blockData.stateBlocks);
-        this.blocks.stateBlocks.forEach(block => {
-            this.initializeStateBlock(block.id);
-          });
         Vue.set(this.blocks, "conditionBlocks", blockData.conditionBlocks);
         Vue.set(this.blocks, "actionBlocks", blockData.actionBlocks);
         Vue.set(this.blocks, "transformBlocks", blockData.transformBlocks);
+        Vue.nextTick(() => {
+          this.blocks.stateBlocks.forEach(block => {
+            this.initializeStateBlock(block.id);
+          });
+        });
       };
       reader.readAsText(file[0]);
     }
