@@ -22,6 +22,9 @@
               :key="block.id"
               :id="block.id"
               :source="block.source"
+              :initialNeighbourCount="block.desiredNumberOfNeighbours"
+              :initialOperator="block.operator"
+              :initialReqState="block.requiredState"
             ></ConditionBlock>
           </div>
 
@@ -234,18 +237,18 @@ export default {
         data.neighbours
       );
     });
-    this.$root.$on("updateActionDesiredState", data => {
-      Vue.set(
-        this.blocks.actionBlocks.find(x => x.id === data.id),
-        "desiredState",
-        data.desiredState
-      );
-    });
     this.$root.$on("updateConditionOperator", data => {
       Vue.set(
         this.blocks.conditionBlocks.find(x => x.id === data.id),
         "operator",
         data.operator
+      );
+    });
+    this.$root.$on("updateActionDesiredState", data => {
+      Vue.set(
+        this.blocks.actionBlocks.find(x => x.id === data.id),
+        "desiredState",
+        data.desiredState
       );
     });
     this.$root.$on("updateNeighbourhood", data => {
@@ -314,6 +317,8 @@ export default {
         source: "",
         actions: [],
         desiredNumberOfNeighbours: 1,
+        operator: "Exactly",
+        requiredState: "#ffffff",
         top: 200,
         left: count * 180 - 140
       });
