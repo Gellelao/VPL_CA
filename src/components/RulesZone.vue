@@ -515,6 +515,7 @@ export default {
       });
 
       let connections = [];
+      console.log(jsPlumb.getConnections());
       jsPlumb.getConnections().forEach(connection => {
         connections.push({
           source: connection.sourceId,
@@ -564,12 +565,6 @@ export default {
         Vue.set(this.blocks, "actionBlocks", totalData.blocks.actionBlocks);
         Vue.set(this.blocks, "transformBlocks", totalData.blocks.transformBlocks);
 
-        Vue.nextTick(() => {
-          totalData.connections.forEach(connection => {
-            jsPlumb.connect({source: connection.source, target: connection.target});
-          });
-        });
-
         // Wait for the DOM to update before setting up plumbing
         Vue.nextTick(() => {
           this.blocks.stateBlocks.forEach(block => {
@@ -583,6 +578,12 @@ export default {
           });
           this.blocks.transformBlocks.forEach(block => {
             this.initializeTransformBlock(block.id);
+          });
+        });
+
+        Vue.nextTick(() => {
+          totalData.connections.forEach(connection => {
+            jsPlumb.connect({source: connection.source, target: connection.target});
           });
         });
       };
