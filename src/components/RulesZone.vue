@@ -34,6 +34,7 @@
               :key="block.id"
               :id="block.id"
               :source="block.source"
+              :initialDesiredState="block.desiredState"
             ></ActionBlock>
           </div>
 
@@ -43,6 +44,7 @@
               :key="block.id"
               :id="block.id"
               :source="block.source"
+              :initialNeighbourhood="block.neighbourhood"
             ></TransformBlock>
           </div>
         </div>
@@ -380,6 +382,7 @@ export default {
       this.blocks.actionBlocks.push({
         id: idOfThisAction,
         source: "",
+        desiredState: "#ffffff",
         top: 400,
         left: count * 180 - 140
       });
@@ -427,6 +430,7 @@ export default {
       this.blocks.transformBlocks.push({
         id: idOfThisTransform,
         source: "",
+        neighbourhood: [[true, true, true], [true, false, true], [true, true, true]],
         top: 600,
         left: count * 180 - 140
       });

@@ -46,10 +46,12 @@
 
 <script>
 export default {
-  props: ["id", "source"],
-  data: () => ({
-    grid: [[true, true, true], [true, false, true], [true, true, true]]
-  }),
+  props: ["id", "source", "initialNeighbourhood"],
+  data: function() {
+    return {
+      grid: this.initialNeighbourhood
+    };
+  },
   mounted() {
     this.updateNeighbourhoodInParent();
   },
