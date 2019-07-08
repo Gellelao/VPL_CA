@@ -281,7 +281,6 @@ export default {
       });
     },
     initializeStateBlock(id) {
-      console.log("Initializing state block with id " + id);
       let neighbourNode = id + "_neighbours";
       let stateNode = id + "_state";
 
@@ -483,32 +482,26 @@ export default {
         }
       });
     },
+    storeBlockPosition(block){
+        let elem = document.getElementById(block.id);
+        block.left = parseInt(window.getComputedStyle(elem).left, 10);
+        block.top = parseInt(window.getComputedStyle(elem).top, 10);
+        return block;
+    },
     save() {
       console.log("SAVE");
       let blockData = this.blocks;
       blockData.stateBlocks.forEach(block => {
-        let elem = document.getElementById(block.id);
-        block.left = parseInt(window.getComputedStyle(elem).left, 10);
-        block.top = parseInt(window.getComputedStyle(elem).top, 10);
-        console.log(block);
+        block = this.storeBlockPosition(block);
       });
       blockData.conditionBlocks.forEach(block => {
-        let elem = document.getElementById(block.id);
-        block.left = parseInt(window.getComputedStyle(elem).left, 10);
-        block.top = parseInt(window.getComputedStyle(elem).top, 10);
-        console.log(block);
+        block = this.storeBlockPosition(block);
       });
       blockData.actionBlocks.forEach(block => {
-        let elem = document.getElementById(block.id);
-        block.left = parseInt(window.getComputedStyle(elem).left, 10);
-        block.top = parseInt(window.getComputedStyle(elem).top, 10);
-        console.log(block);
+        block = this.storeBlockPosition(block);
       });
       blockData.transformBlocks.forEach(block => {
-        let elem = document.getElementById(block.id);
-        block.left = parseInt(window.getComputedStyle(elem).left, 10);
-        block.top = parseInt(window.getComputedStyle(elem).top, 10);
-        console.log(block);
+        block = this.storeBlockPosition(block);
       });
       blockData = JSON.stringify(blockData);
       // Code from here: https://forum.vuejs.org/t/saving-form-data/38714
@@ -539,11 +532,9 @@ export default {
         console.error("!file.length");
         return;
       }
-      console.log(file[0]);
       var reader = new FileReader();
       reader.onload = e => {
         let blockData = JSON.parse(e.target.result);
-        console.log(blockData);
 
         Vue.set(this.blocks, "stateBlocks", blockData.stateBlocks);
         Vue.set(this.blocks, "conditionBlocks", blockData.conditionBlocks);
