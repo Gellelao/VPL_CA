@@ -257,10 +257,14 @@ export default {
     });
   },
   methods: {
-    initializeGenericBlock(id) {
+    initializeGenericBlock(id, blockData) {
       jsPlumb.draggable(id, {
-        grid: [dragGridSize, dragGridSize]
+        // grid: [dragGridSize, dragGridSize]
       });
+
+      let element = document.getElementById(id);
+      element.style.left = blockData.left + "px";
+      element.style.top = blockData.top + "px";
     },
     addState: function(event) {
       count = count + 1;
@@ -281,12 +285,8 @@ export default {
       let neighbourNode = id + "_neighbours";
       let stateNode = id + "_state";
 
-      this.initializeGenericBlock(id);
-
-      let element = document.getElementById(id);
       let blockData = this.blocks.stateBlocks.find(x => x.id === id);
-      element.style.left = blockData.left + "px";
-      element.style.top = blockData.top + "px";
+      this.initializeGenericBlock(id, blockData);
 
       jsPlumb.makeSource(
         neighbourNode,
@@ -323,12 +323,8 @@ export default {
       });
     },
     initializeConditionBlock(id) {
-      this.initializeGenericBlock(id);
-
-      let element = document.getElementById(id);
       let blockData = this.blocks.conditionBlocks.find(x => x.id === id);
-      element.style.left = blockData.left + "px";
-      element.style.top = blockData.top + "px";
+      this.initializeGenericBlock(id, blockData);
 
       jsPlumb.makeSource(
         id,
@@ -388,12 +384,8 @@ export default {
       });
     },
     initializeActionBlock(id) {
-      this.initializeGenericBlock(id);
-
-      let element = document.getElementById(id);
       let blockData = this.blocks.actionBlocks.find(x => x.id === id);
-      element.style.left = blockData.left + "px";
-      element.style.top = blockData.top + "px";
+      this.initializeGenericBlock(id, blockData);
 
       jsPlumb.makeTarget(id, {
         maxConnections: 100,
@@ -442,12 +434,8 @@ export default {
       let neighbourNode = id + "_neighbours";
       let stateNode = id + "_state";
 
-      this.initializeGenericBlock(id);
-
-      let element = document.getElementById(id);
       let blockData = this.blocks.transformBlocks.find(x => x.id === id);
-      element.style.left = blockData.left + "px";
-      element.style.top = blockData.top + "px";
+      this.initializeGenericBlock(id, blockData);
 
       jsPlumb.makeSource(
         neighbourNode,
