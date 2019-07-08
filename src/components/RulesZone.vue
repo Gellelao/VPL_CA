@@ -257,12 +257,19 @@ export default {
     });
   },
   methods: {
+    initializeGenericBlock(id) {
+      jsPlumb.draggable(id, {
+        grid: [dragGridSize, dragGridSize]
+      });
+    },
     addState: function(event) {
       count = count + 1;
       var idOfThisState = "state_" + count;
 
       this.blocks.stateBlocks.push({
-        id: idOfThisState
+        id: idOfThisState,
+        top: 10,
+        left: count * 180 - 140
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -274,9 +281,13 @@ export default {
       let neighbourNode = id + "_neighbours";
       let stateNode = id + "_state";
 
-      jsPlumb.draggable(id, {
-        grid: [dragGridSize, dragGridSize]
-      });
+      this.initializeGenericBlock(id);
+
+      let element = document.getElementById(id);
+      let blockData = this.blocks.stateBlocks.find(x => x.id === id);
+      element.style.left = blockData.left + "px";
+      element.style.top = blockData.top + "px";
+
       jsPlumb.makeSource(
         neighbourNode,
         {
@@ -302,57 +313,63 @@ export default {
         id: idOfThisCond,
         source: "",
         actions: [],
-        desiredNumberOfNeighbours: 1
+        desiredNumberOfNeighbours: 1,
+        top: 200,
+        left: count * 180 - 140
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
-        jsPlumb.draggable(idOfThisCond, {
-          grid: [dragGridSize, dragGridSize]
-        });
-        jsPlumb.makeSource(
-          idOfThisCond,
-          {
-            maxConnections: 100,
-            filter: ".thenSource",
-            anchor: "BottomRight"
-          },
-          bezierSourcePoint
-        );
-        jsPlumb.makeTarget(
-          idOfThisCond,
-          { maxConnections: 1, anchor: "Continuous" },
-          targetPoint
-        );
+        this.initializeConditionBlock(idOfThisCond);
+      });
+    },
+    initializeConditionBlock(id) {
+      this.initializeGenericBlock(id);
 
-        jsPlumb.bind("connection", info => {
-          // If a connection is made from a state block to this condition block,
-          // update the source of this block to the name of the property which was just connected to it.
-          if (
-            info.targetId == idOfThisCond &&
-            (info.sourceId.startsWith("state") ||
-              info.sourceId.startsWith("transform"))
-          ) {
-            Vue.set(
-              // Find the array entry for this block
-              this.blocks.conditionBlocks.find(x => x.id === idOfThisCond),
-              // Update the source field
-              "source",
-              // to the sourceId of the connection
-              info.sourceId
-            );
-          }
-          // If a connection is made from this condition block to an action block,
-          // push the id of that action block into the actions array of this condition block
-          else if (
-            info.sourceId == idOfThisCond &&
-            info.targetId.startsWith("action")
-          ) {
-            // Add the id of the source to the array of triggers
-            this.blocks.conditionBlocks
-              .find(x => x.id === idOfThisCond)
-              .actions.push(info.targetId);
-          }
-        });
+      let element = document.getElementById(id);
+      let blockData = this.blocks.conditionBlocks.find(x => x.id === id);
+      element.style.left = blockData.left + "px";
+      element.style.top = blockData.top + "px";
+
+      jsPlumb.makeSource(
+        id,
+        {
+          maxConnections: 100,
+          filter: ".thenSource",
+          anchor: "BottomRight"
+        },
+        bezierSourcePoint
+      );
+      jsPlumb.makeTarget(
+        id,
+        { maxConnections: 1, anchor: "Continuous" },
+        targetPoint
+      );
+
+      jsPlumb.bind("connection", info => {
+        // If a connection is made from a state block to this condition block,
+        // update the source of this block to the name of the property which was just connected to it.
+        if (
+          info.targetId == id &&
+          (info.sourceId.startsWith("state") ||
+            info.sourceId.startsWith("transform"))
+        ) {
+          Vue.set(
+            // Find the array entry for this block
+            this.blocks.conditionBlocks.find(x => x.id === id),
+            // Update the source field
+            "source",
+            // to the sourceId of the connection
+            info.sourceId
+          );
+        }
+        // If a connection is made from this condition block to an action block,
+        // push the id of that action block into the actions array of this condition block
+        else if (info.sourceId == id && info.targetId.startsWith("action")) {
+          // Add the id of the source to the array of triggers
+          this.blocks.conditionBlocks
+            .find(x => x.id === id)
+            .actions.push(info.targetId);
+        }
       });
     },
     addAction: function(event) {
@@ -361,40 +378,49 @@ export default {
 
       this.blocks.actionBlocks.push({
         id: idOfThisAction,
-        source: ""
+        source: "",
+        top: 400,
+        left: count * 180 - 140
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
-        jsPlumb.draggable(idOfThisAction, {
-          grid: [dragGridSize, dragGridSize]
-        });
-        jsPlumb.makeTarget(idOfThisAction, {
-          maxConnections: 100,
-          anchor: "Continuous"
-        });
+        this.initializeActionBlock(idOfThisAction);
+      });
+    },
+    initializeActionBlock(id) {
+      this.initializeGenericBlock(id);
 
-        // When a connection is made, update the source of the block to
-        // the name of the property which was just connected to it.
-        jsPlumb.bind("connection", info => {
-          if (
-            info.targetId == idOfThisAction &&
-            (info.sourceId.startsWith("state") ||
-              info.sourceId.startsWith("transform"))
-          ) {
-            // Style the Action connection differently to other connections
-            info.connection.addType("actionProperty");
-            info.connection.removeOverlay("arrow");
-            // Only update source if we receive a connection from a State block
-            Vue.set(
-              // Find the array entry for this block
-              this.blocks.actionBlocks.find(x => x.id === idOfThisAction),
-              // Update the source field
-              "source",
-              // to the sourceId of the connection
-              info.sourceId
-            );
-          }
-        });
+      let element = document.getElementById(id);
+      let blockData = this.blocks.actionBlocks.find(x => x.id === id);
+      element.style.left = blockData.left + "px";
+      element.style.top = blockData.top + "px";
+
+      jsPlumb.makeTarget(id, {
+        maxConnections: 100,
+        anchor: "Continuous"
+      });
+
+      // When a connection is made, update the source of the block to
+      // the name of the property which was just connected to it.
+      jsPlumb.bind("connection", info => {
+        if (
+          info.targetId == id &&
+          (info.sourceId.startsWith("state") ||
+            info.sourceId.startsWith("transform"))
+        ) {
+          // Style the Action connection differently to other connections
+          info.connection.addType("actionProperty");
+          info.connection.removeOverlay("arrow");
+          // Only update source if we receive a connection from a State block
+          Vue.set(
+            // Find the array entry for this block
+            this.blocks.actionBlocks.find(x => x.id === id),
+            // Update the source field
+            "source",
+            // to the sourceId of the connection
+            info.sourceId
+          );
+        }
       });
     },
     addTransform: function(event) {
@@ -403,68 +429,100 @@ export default {
 
       this.blocks.transformBlocks.push({
         id: idOfThisTransform,
-        source: ""
+        source: "",
+        top: 600,
+        left: count * 180 - 140
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
-        let neighbourNode = idOfThisTransform + "_neighbours";
-        let stateNode = idOfThisTransform + "_state";
+        this.initializeTransformBlock(idOfThisTransform);
+      });
+    },
+    initializeTransformBlock(id) {
+      let neighbourNode = id + "_neighbours";
+      let stateNode = id + "_state";
 
-        jsPlumb.draggable(idOfThisTransform, {
-          grid: [dragGridSize, dragGridSize]
-        });
-        jsPlumb.makeSource(
-          neighbourNode,
-          {
-            maxConnections: 100,
-            anchor: "Center"
-          },
-          bezierSourcePoint
-        );
-        jsPlumb.makeSource(
-          stateNode,
-          {
-            maxConnections: 100,
-            anchor: "Center"
-          },
-          bezierSourcePoint
-        );
-        jsPlumb.makeTarget(idOfThisTransform, {
-          // 1 max connection because each Transform should have exactly one
-          // property attached
-          maxConnections: 1,
-          anchor: "Continuous"
-        });
+      this.initializeGenericBlock(id);
 
-        // When a connection is made, update the source of the block to
-        // the name of the property which was just connected to it.
-        jsPlumb.bind("connection", info => {
-          if (info.targetId == idOfThisTransform) {
-            if (info.sourceId.startsWith("state")) {
-              // Only update source if we receive a connection from a State block
-              Vue.set(
-                // Find the array entry for this block
-                this.blocks.transformBlocks.find(
-                  x => x.id === idOfThisTransform
-                ),
-                // Update the source field
-                "source",
-                // to the sourceId of the connection
-                info.sourceId
-              );
+      let element = document.getElementById(id);
+      let blockData = this.blocks.transformBlocks.find(x => x.id === id);
+      element.style.left = blockData.left + "px";
+      element.style.top = blockData.top + "px";
 
-              // Transform Blocks should only accept connections from State Blocks,
-              // so destroy all other connections
-            } else {
-              jsPlumb.deleteConnection(info.connection);
-            }
+      jsPlumb.makeSource(
+        neighbourNode,
+        {
+          maxConnections: 100,
+          anchor: "Center"
+        },
+        bezierSourcePoint
+      );
+      jsPlumb.makeSource(
+        stateNode,
+        {
+          maxConnections: 100,
+          anchor: "Center"
+        },
+        bezierSourcePoint
+      );
+      jsPlumb.makeTarget(id, {
+        // 1 max connection because each Transform should have exactly one
+        // property attached
+        maxConnections: 1,
+        anchor: "Continuous"
+      });
+
+      // When a connection is made, update the source of the block to
+      // the name of the property which was just connected to it.
+      jsPlumb.bind("connection", info => {
+        if (info.targetId == id) {
+          if (info.sourceId.startsWith("state")) {
+            // Only update source if we receive a connection from a State block
+            Vue.set(
+              // Find the array entry for this block
+              this.blocks.transformBlocks.find(x => x.id === id),
+              // Update the source field
+              "source",
+              // to the sourceId of the connection
+              info.sourceId
+            );
+
+            // Transform Blocks should only accept connections from State Blocks,
+            // so destroy all other connections
+          } else {
+            jsPlumb.deleteConnection(info.connection);
           }
-        });
+        }
       });
     },
     save() {
       console.log("SAVE");
-      let blockData = JSON.stringify(this.blocks);
+      let blockData = this.blocks;
+      blockData.stateBlocks.forEach(block => {
+        let elem = document.getElementById(block.id);
+        block.left = parseInt(window.getComputedStyle(elem).left, 10);
+        block.top = parseInt(window.getComputedStyle(elem).top, 10);
+        console.log(block);
+      });
+      blockData.conditionBlocks.forEach(block => {
+        let elem = document.getElementById(block.id);
+        block.left = parseInt(window.getComputedStyle(elem).left, 10);
+        block.top = parseInt(window.getComputedStyle(elem).top, 10);
+        console.log(block);
+      });
+      blockData.actionBlocks.forEach(block => {
+        let elem = document.getElementById(block.id);
+        block.left = parseInt(window.getComputedStyle(elem).left, 10);
+        block.top = parseInt(window.getComputedStyle(elem).top, 10);
+        console.log(block);
+      });
+      blockData.transformBlocks.forEach(block => {
+        let elem = document.getElementById(block.id);
+        block.left = parseInt(window.getComputedStyle(elem).left, 10);
+        block.top = parseInt(window.getComputedStyle(elem).top, 10);
+        console.log(block);
+      });
+      blockData = JSON.stringify(blockData);
       // Code from here: https://forum.vuejs.org/t/saving-form-data/38714
       let blob = new Blob([blockData], { type: "text/plain;charset=utf-8;" });
       if (navigator.msSaveBlob) {
@@ -503,9 +561,19 @@ export default {
         Vue.set(this.blocks, "conditionBlocks", blockData.conditionBlocks);
         Vue.set(this.blocks, "actionBlocks", blockData.actionBlocks);
         Vue.set(this.blocks, "transformBlocks", blockData.transformBlocks);
+        // Wait for the DOM to update before setting up plumbing
         Vue.nextTick(() => {
           this.blocks.stateBlocks.forEach(block => {
             this.initializeStateBlock(block.id);
+          });
+          this.blocks.conditionBlocks.forEach(block => {
+            this.initializeConditionBlock(block.id);
+          });
+          this.blocks.actionBlocks.forEach(block => {
+            this.initializeActionBlock(block.id);
+          });
+          this.blocks.transformBlocks.forEach(block => {
+            this.initializeTransformBlock(block.id);
           });
         });
       };
