@@ -13,7 +13,7 @@
         </v-toolbar>
         <div id="points">
           <div v-if="blocks.stateBlocks.length > 0">
-            <StateBlock v-for="block in blocks.stateBlocks" :key="block.id" :id="block.id"></StateBlock>
+            <StateBlock v-for="block in blocks.stateBlocks" :key="block.id" :id="block.id" :initialColour="block.colour"></StateBlock>
           </div>
 
           <div v-if="blocks.conditionBlocks.length > 0">
@@ -272,6 +272,7 @@ export default {
 
       this.blocks.stateBlocks.push({
         id: idOfThisState,
+        colour: "#000000",
         top: 10,
         left: count * 180 - 140
       });
@@ -482,11 +483,11 @@ export default {
         }
       });
     },
-    storeBlockPosition(block){
-        let elem = document.getElementById(block.id);
-        block.left = parseInt(window.getComputedStyle(elem).left, 10);
-        block.top = parseInt(window.getComputedStyle(elem).top, 10);
-        return block;
+    storeBlockPosition(block) {
+      let elem = document.getElementById(block.id);
+      block.left = parseInt(window.getComputedStyle(elem).left, 10);
+      block.top = parseInt(window.getComputedStyle(elem).top, 10);
+      return block;
     },
     save() {
       console.log("SAVE");
@@ -503,9 +504,22 @@ export default {
       blockData.transformBlocks.forEach(block => {
         block = this.storeBlockPosition(block);
       });
-      blockData = JSON.stringify(blockData);
+
+      let connections = [];
+      jsPlumb.getConnections().forEach(connection => {
+        connections.push({
+          source: connection.sourceId,
+          target: connection.targetId
+        })
+      });
+
+      let totalInfo = JSON.stringify({
+        blocks: blockData,
+        connections: connections
+      });
+
       // Code from here: https://forum.vuejs.org/t/saving-form-data/38714
-      let blob = new Blob([blockData], { type: "text/plain;charset=utf-8;" });
+      let blob = new Blob([totalInfo], { type: "text/plain;charset=utf-8;" });
       if (navigator.msSaveBlob) {
         // IE 10+
         navigator.msSaveBlob(blob, filename);
@@ -534,12 +548,19 @@ export default {
       }
       var reader = new FileReader();
       reader.onload = e => {
-        let blockData = JSON.parse(e.target.result);
+        let totalData = JSON.parse(e.target.result);
 
-        Vue.set(this.blocks, "stateBlocks", blockData.stateBlocks);
-        Vue.set(this.blocks, "conditionBlocks", blockData.conditionBlocks);
-        Vue.set(this.blocks, "actionBlocks", blockData.actionBlocks);
-        Vue.set(this.blocks, "transformBlocks", blockData.transformBlocks);
+        Vue.set(this.blocks, "stateBlocks", totalData.blocks.stateBlocks);
+        Vue.set(this.blocks, "conditionBlocks", totalData.blocks.conditionBlocks);
+        Vue.set(this.blocks, "actionBlocks", totalData.blocks.actionBlocks);
+        Vue.set(this.blocks, "transformBlocks", totalData.blocks.transformBlocks);
+
+        Vue.nextTick(() => {
+          totalData.connections.forEach(connection => {
+            jsPlumb.connect({source: connection.source, target: connection.target});
+          });
+        });
+
         // Wait for the DOM to update before setting up plumbing
         Vue.nextTick(() => {
           this.blocks.stateBlocks.forEach(block => {
