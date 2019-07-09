@@ -36,8 +36,8 @@
 <script>
 import Swatches from "vue-swatches";
 
-const defaultWidth = 20;
-const defaultHeight = 20;
+const defaultWidth = 21;
+const defaultHeight = 21;
 const defaultNeighbourhood = [
   [true, true, true],
   [true, false, true],
@@ -286,9 +286,9 @@ export default {
 $cellWidth: 30px;
 
 .grid {
-  padding-top: 40px;
-  padding-left: 80px;
-  padding-bottom: 30px;
+  padding-top: 30px;
+  padding-left: 50px;
+  padding-bottom: 25px;
   border-collapse: collapse;
   display: inline-block;
 }

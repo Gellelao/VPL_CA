@@ -13,7 +13,12 @@
         </v-toolbar>
         <div id="points">
           <div v-if="blocks.stateBlocks.length > 0">
-            <StateBlock v-for="block in blocks.stateBlocks" :key="block.id" :id="block.id" :initialColour="block.colour"></StateBlock>
+            <StateBlock
+              v-for="block in blocks.stateBlocks"
+              :key="block.id"
+              :id="block.id"
+              :initialColour="block.colour"
+            ></StateBlock>
           </div>
 
           <div v-if="blocks.conditionBlocks.length > 0">
@@ -89,16 +94,13 @@ const defaultArrow = [
     }
   ]
 ];
-const bezierSourcePoint = {
-  endpoint: "Dot",
+const sourcePoint = {
   isSource: true,
-  connector: ["Bezier", { curviness: 50 }],
-  connectionType: "normal",
-  connectorOverlays: defaultArrow
+  isTarget: false,
 };
 const targetPoint = {
-  endpoint: "Dot",
-  isTarget: true
+  isTarget: true,
+  isSource: false,
 };
 
 export default {
@@ -207,14 +209,22 @@ export default {
   mounted() {
     console.log("mounted");
     jsPlumb.registerConnectionTypes({
-      normal: {
-        paintStyle: { stroke: "#e8d225", strokeWidth: 15 } //outlineStroke: "black", outlineWidth: 2
-      },
       actionProperty: {
         paintStyle: { stroke: "#f2eaa9", strokeWidth: 8 } //outlineStroke: "black", outlineWidth: 2
       }
     });
     jsPlumb.setContainer(document.getElementById("points"));
+    jsPlumb.importDefaults({
+      PaintStyle: {
+        stroke: "#e8d225", strokeWidth: 15
+      },
+      Endpoints: ["Dot"],
+      Connector: ["Bezier", { curviness: 50 }],
+      ConnectionOverlays: defaultArrow
+      // Endpoints: [["Dot", { radius: 7 }], ["Dot", { radius: 11 }]],
+      // DragOptions: { cursor: "crosshair" },
+      // EndpointStyles: [{ fillStyle: "#225588" }, { fillStyle: "#558822" }]
+    });
     jsPlumb.ready(() => {});
 
     // Set up events to make sure changes down in the components are reflected in the data up here
@@ -270,6 +280,8 @@ export default {
       let element = document.getElementById(id);
       element.style.left = blockData.left + "px";
       element.style.top = blockData.top + "px";
+      // So that jsPlumb knows that the element has moved
+      jsPlumb.revalidate(id);
     },
     addState: function(event) {
       count = count + 1;
@@ -299,7 +311,7 @@ export default {
           maxConnections: 100,
           anchor: "Center"
         },
-        bezierSourcePoint
+        sourcePoint
       );
       jsPlumb.makeSource(
         stateNode,
@@ -307,7 +319,7 @@ export default {
           maxConnections: 100,
           anchor: "Center"
         },
-        bezierSourcePoint
+        sourcePoint
       );
     },
     addCondition: function(event) {
@@ -340,7 +352,7 @@ export default {
           filter: ".thenSource",
           anchor: "BottomRight"
         },
-        bezierSourcePoint
+        sourcePoint
       );
       jsPlumb.makeTarget(
         id,
@@ -430,7 +442,11 @@ export default {
       this.blocks.transformBlocks.push({
         id: idOfThisTransform,
         source: "",
-        neighbourhood: [[true, true, true], [true, false, true], [true, true, true]],
+        neighbourhood: [
+          [true, true, true],
+          [true, false, true],
+          [true, true, true]
+        ],
         top: 600,
         left: count * 180 - 140
       });
@@ -452,7 +468,7 @@ export default {
           maxConnections: 100,
           anchor: "Center"
         },
-        bezierSourcePoint
+        sourcePoint
       );
       jsPlumb.makeSource(
         stateNode,
@@ -460,7 +476,7 @@ export default {
           maxConnections: 100,
           anchor: "Center"
         },
-        bezierSourcePoint
+        sourcePoint
       );
       jsPlumb.makeTarget(id, {
         // 1 max connection because each Transform should have exactly one
@@ -520,7 +536,7 @@ export default {
         connections.push({
           source: connection.sourceId,
           target: connection.targetId
-        })
+        });
       });
 
       let totalInfo = JSON.stringify({
@@ -561,9 +577,17 @@ export default {
         let totalData = JSON.parse(e.target.result);
 
         Vue.set(this.blocks, "stateBlocks", totalData.blocks.stateBlocks);
-        Vue.set(this.blocks, "conditionBlocks", totalData.blocks.conditionBlocks);
+        Vue.set(
+          this.blocks,
+          "conditionBlocks",
+          totalData.blocks.conditionBlocks
+        );
         Vue.set(this.blocks, "actionBlocks", totalData.blocks.actionBlocks);
-        Vue.set(this.blocks, "transformBlocks", totalData.blocks.transformBlocks);
+        Vue.set(
+          this.blocks,
+          "transformBlocks",
+          totalData.blocks.transformBlocks
+        );
 
         // Wait for the DOM to update before setting up plumbing
         Vue.nextTick(() => {
@@ -583,7 +607,10 @@ export default {
 
         Vue.nextTick(() => {
           totalData.connections.forEach(connection => {
-            jsPlumb.connect({source: connection.source, target: connection.target});
+            jsPlumb.connect({
+              source: connection.source,
+              target: connection.target
+            });
           });
         });
       };
@@ -619,4 +646,6 @@ export default {
   border-radius: 15px;
   background-color: rgb(90, 90, 90);
 }
+
+.jtk-endpoint { z-index: 1; }
 </style>
