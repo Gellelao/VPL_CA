@@ -226,14 +226,16 @@ export default {
       // DragOptions: { cursor: "crosshair" },
       // EndpointStyles: [{ fillStyle: "#225588" }, { fillStyle: "#558822" }]
     });
+
+    // When resizing a block we want to update the connection to reflect the new size, 
+    // and this is the best way I've found to do that:
     jsPlumb.bind("connection", info => {
+      // This first tick is when the block will be resizing, so we wait for that to pass first
       Vue.nextTick(() => {
-          // This tick is when the block will be resizing, so we wait for this to pass too
         Vue.nextTick(() => {
-        let id = info.targetId;
-        let elem = document.getElementById(id);
-        console.log("block text is " + elem.innerText);
-        jsPlumb.revalidate(info.targetId);
+          let id = info.targetId;
+          let elem = document.getElementById(id);
+          jsPlumb.revalidate(info.targetId);
         });
       });
     });
