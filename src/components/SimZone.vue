@@ -59,6 +59,11 @@ export default {
   }),
   mounted() {
     this.initializeGrid();
+
+    this.$root.$on("loadGrid", data => {
+      let newGrid = data.grid;
+      this.grid = newGrid;
+    });
   },
   computed: {
     colours() {
@@ -74,10 +79,10 @@ export default {
     }
   },
   methods: {
-    setArrays(receiver, original) {
+    setArrays(updated, original) {
       for (var i = 0; i < original.length; i++) {
         // receiver[i] = original[i].slice();
-        this.$set(receiver, i, original[i].slice());
+        this.$set(updated, i, original[i].slice());
       }
     },
     initializeGrid(width = defaultWidth, height = defaultHeight) {
@@ -263,6 +268,11 @@ export default {
       // update it in the grid
       this.$set(this.grid, x, newRow);
       // That process is necessary in order for Vue to realise that the array has changed and rerender accordingly
+
+      // We'll also send th grid up to RulesZone with an event so that it can be saved to a file form there:
+      this.$root.$emit("saveGrid", {
+        grid: this.grid
+      });
     },
     // For use by the algorithm, only affects NextGrid instead of directly altering the current grid
     // setNextCell(x, y, colour) {

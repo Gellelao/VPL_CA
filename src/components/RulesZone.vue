@@ -57,6 +57,7 @@
           <v-btn @click="save">Save Rules</v-btn>
           <v-btn @click="$refs.inputUpload.click()">Load Rules</v-btn>
           <input v-show="false" ref="inputUpload" type="file" @change="load" />
+          <v-checkbox v-model="storeGrid" :label="`Save cells too?`"></v-checkbox>
         </v-toolbar>
       </v-flex>
       <v-flex xs6>
@@ -75,6 +76,7 @@ import TransformBlock from "./TransformBlock";
 import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
 
+// Count variable appended to block id values to ensure uniqueness
 var count = 0;
 const dragGridSize = 20;
 
@@ -117,7 +119,9 @@ export default {
       conditionBlocks: [],
       actionBlocks: [],
       transformBlocks: []
-    }
+    },
+    storeGrid: false,
+    grid: null
   }),
   updated() {
     // console.log("UPDATED");
@@ -227,7 +231,7 @@ export default {
       // EndpointStyles: [{ fillStyle: "#225588" }, { fillStyle: "#558822" }]
     });
 
-    // When resizing a block we want to update the connection to reflect the new size, 
+    // When resizing a block we want to update the connection to reflect the new size,
     // and this is the best way I've found to do that:
     jsPlumb.bind("connection", info => {
       // This first tick is when the block will be resizing, so we wait for that to pass first
@@ -284,12 +288,22 @@ export default {
         data.neighbourhood
       );
     });
+    // Here we receive a copy of the grid from the SimZone, but we only ever use this for saving
+    this.$root.$on("saveGrid", data => {
+      this.grid = data.grid;
+    });
   },
   methods: {
     initializeGenericBlock(id, blockData) {
       jsPlumb.draggable(id, {
         // grid: [dragGridSize, dragGridSize]
       });
+
+      // We update the count here because this method is calld when blocks are
+      // loaded as well as when they are first created, and by updating the count
+      // in this way we avoid having duplicate ids when creating blocks after loading
+      let newCount = id.match(/\d+/)[0];
+      if (newCount >= count) count = parseInt(newCount) + 1;
 
       let element = document.getElementById(id);
       element.style.left = blockData.left + "px";
@@ -298,14 +312,14 @@ export default {
       jsPlumb.revalidate(id);
     },
     addState: function(event) {
-      count = count + 1;
+      // count = count + 1;
       var idOfThisState = "state_" + count;
 
       this.blocks.stateBlocks.push({
         id: idOfThisState,
         colour: "#000000",
         top: 10,
-        left: count * 180 - 140
+        left: 10
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -337,7 +351,7 @@ export default {
       );
     },
     addCondition: function(event) {
-      count = count + 1;
+      // count = count + 1;
       var idOfThisCond = "condition_" + count;
 
       this.blocks.conditionBlocks.push({
@@ -348,7 +362,7 @@ export default {
         operator: "Exactly",
         requiredState: "#ffffff",
         top: 200,
-        left: count * 180 - 140
+        left: 10
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -402,7 +416,7 @@ export default {
       });
     },
     addAction: function(event) {
-      count = count + 1;
+      // count = count + 1;
       var idOfThisAction = "action_" + count;
 
       this.blocks.actionBlocks.push({
@@ -410,7 +424,7 @@ export default {
         source: "",
         desiredState: "#ffffff",
         top: 400,
-        left: count * 180 - 140
+        left: 10
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -450,7 +464,7 @@ export default {
       });
     },
     addTransform: function(event) {
-      count = count + 1;
+      // count = count + 1;
       var idOfThisTransform = "transform_" + count;
 
       this.blocks.transformBlocks.push({
@@ -462,7 +476,7 @@ export default {
           [true, true, true]
         ],
         top: 600,
-        left: count * 180 - 140
+        left: 10
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -553,10 +567,18 @@ export default {
         });
       });
 
-      let totalInfo = JSON.stringify({
+      let totalInfo = {
         blocks: blockData,
         connections: connections
-      });
+      };
+
+      if (this.storeGrid) {
+        totalInfo.grid = JSON.stringify(this.grid);
+      }
+
+      totalInfo = JSON.stringify(totalInfo);
+
+      console.log(totalInfo);
 
       // Code from here: https://forum.vuejs.org/t/saving-form-data/38714
       let blob = new Blob([totalInfo], { type: "text/plain;charset=utf-8;" });
@@ -627,6 +649,13 @@ export default {
             });
           });
         });
+
+        if (totalData.grid) {
+          let jsonGrid = JSON.parse(totalData.grid)
+          this.$root.$emit("loadGrid", {
+            grid: jsonGrid
+          });
+        }
       };
       reader.readAsText(file[0]);
     }
@@ -644,14 +673,9 @@ export default {
   border: 1px solid #aaaaaa;
   overflow-y: scroll;
 }
-// ._jsPlumb_drag_select {
-//   -webkit-touch-callout: none;
-//   -webkit-user-select: none;
-//   -khtml-user-select: none;
-//   -moz-user-select: none;
-//   -ms-user-select: none;
-//   user-select: none;
-// }
+.v-input {
+  margin-top: 20px !important;
+}
 .selectColour {
   display: inline-block;
   width: 50px;
