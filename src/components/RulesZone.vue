@@ -96,11 +96,11 @@ const defaultArrow = [
 ];
 const sourcePoint = {
   isSource: true,
-  isTarget: false,
+  isTarget: false
 };
 const targetPoint = {
   isTarget: true,
-  isSource: false,
+  isSource: false
 };
 
 export default {
@@ -216,7 +216,8 @@ export default {
     jsPlumb.setContainer(document.getElementById("points"));
     jsPlumb.importDefaults({
       PaintStyle: {
-        stroke: "#e8d225", strokeWidth: 15
+        stroke: "#e8d225",
+        strokeWidth: 15
       },
       Endpoints: ["Dot"],
       Connector: ["Bezier", { curviness: 50 }],
@@ -224,6 +225,17 @@ export default {
       // Endpoints: [["Dot", { radius: 7 }], ["Dot", { radius: 11 }]],
       // DragOptions: { cursor: "crosshair" },
       // EndpointStyles: [{ fillStyle: "#225588" }, { fillStyle: "#558822" }]
+    });
+    jsPlumb.bind("connection", info => {
+      Vue.nextTick(() => {
+          // This tick is when the block will be resizing, so we wait for this to pass too
+        Vue.nextTick(() => {
+        let id = info.targetId;
+        let elem = document.getElementById(id);
+        console.log("block text is " + elem.innerText);
+        jsPlumb.revalidate(info.targetId);
+        });
+      });
     });
     jsPlumb.ready(() => {});
 
@@ -647,5 +659,7 @@ export default {
   background-color: rgb(90, 90, 90);
 }
 
-.jtk-endpoint { z-index: 1; }
+.jtk-endpoint {
+  z-index: 1;
+}
 </style>
