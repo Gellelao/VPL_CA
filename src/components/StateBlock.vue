@@ -28,10 +28,12 @@ import Swatches from "vue-swatches";
 
 export default {
   components: { Swatches },
-  props: ["id"],
-  data: () => ({
-    colour: "#000000"
-  }),
+  props: ["id", "initialColour"],
+  data: function() {
+    return {
+      colour: this.initialColour
+    };
+  },
   mounted() {
     this.updateStateInParent();
   },

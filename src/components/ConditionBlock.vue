@@ -10,7 +10,7 @@
           <option>Less than</option>
           <option>More than</option>
         </select>
-        <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number">
+        <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number" />
         <div>Neighbours are:</div>
         <div class="selectColour">
           <swatches
@@ -34,12 +34,20 @@ import Swatches from "vue-swatches";
 
 export default {
   components: { Swatches },
-  props: ["id", "source"],
-  data: () => ({
-    operator: "Exactly",
-    howManyNeighbours: 1,
-    requiredState: "1CA085"
-  }),
+  props: [
+    "id",
+    "source",
+    "initialOperator",
+    "initialNeighbourCount",
+    "initialReqState"
+  ],
+  data: function() {
+    return {
+      operator: this.initialOperator,
+      howManyNeighbours: this.initialNeighbourCount,
+      requiredState: this.initialReqState
+    };
+  },
   mounted() {
     this.updateOperatorInParent();
   },
@@ -83,7 +91,7 @@ export default {
   padding: 10px;
   border-radius: 5px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: #FFF176;
+  background-color: #fff176;
   .heading {
     // position: absolute;
     display: inline-block;
@@ -101,14 +109,14 @@ export default {
   select {
     width: 100%;
     border-radius: 5px;
-    background-color: #FDD835;
+    background-color: #fdd835;
     margin-bottom: 4px;
     padding-left: 4px;
   }
   input {
     width: 100%;
     border-radius: 5px;
-    background-color: #FDD835;
+    background-color: #fdd835;
     padding-left: 4px;
   }
   .thenSource {
