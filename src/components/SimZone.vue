@@ -316,6 +316,5 @@ td {
 .speedSlider {
   width: 130px;
   padding-right: 20px;
-  padding-top: 20px;
 }
 </style>

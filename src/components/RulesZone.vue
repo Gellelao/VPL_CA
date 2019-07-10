@@ -55,7 +55,7 @@
         </div>
         <v-toolbar>
           <v-btn @click="save">Save Rules</v-btn>
-          <v-btn @click="$refs.inputUpload.click()">Load Rules</v-btn>
+          <v-btn @click="upload">Load Rules</v-btn>
           <input v-show="false" ref="inputUpload" type="file" @change="load" />
           <v-checkbox v-model="storeGrid" :label="`Save cells too?`"></v-checkbox>
           <v-btn @click="clearRules">Clear Rules</v-btn>
@@ -537,6 +537,10 @@ export default {
         }
       });
     },
+    upload(){
+      this.$refs.inputUpload.value = '';
+      this.$refs.inputUpload.click();
+    },
     storeBlockPosition(block) {
       let elem = document.getElementById(block.id);
       block.left = parseInt(window.getComputedStyle(elem).left, 10);
@@ -660,25 +664,35 @@ export default {
       reader.readAsText(file[0]);
     },
     removeBlock(id){
-      jsPlumb.detachAllConnections(id, []);
-      jsPlumb.removeAllEndpoints(id);
+      // jsPlumb.detachAllConnections(id, []);
+      // jsPlumb.removeAllEndpoints(id);
       // jsPlumb.detach(id);
       jsPlumb.remove(id);
     },
     clearRules() {
       count = 0;
+      jsPlumb.deleteEveryConnection();
       this.blocks.stateBlocks.forEach(block => {
+        // let neighbourNode = document.getElementById(block.id + "_neighbours");
+        // let stateNode = document.getElementById(block.id + "_state");
+
+        // this.removeBlock(neighbourNode);
+        // this.removeBlock(stateNode);
+        // this.removeBlock(block.id);
+
+        // console.log("removing " + block.id);
+        // jsPlumb.empty(block.id);
         this.removeBlock(block.id);
       });
-      // this.blocks.conditionBlocks.forEach(block => {
-      //   this.removeBlock(block.id);
-      // });
-      // this.blocks.actionBlocks.forEach(block => {
-      //   this.removeBlock(block.id);
-      // });
-      // this.blocks.transformBlocks.forEach(block => {
-      //   this.removeBlock(block.id);
-      // });
+      this.blocks.conditionBlocks.forEach(block => {
+        this.removeBlock(block.id);
+      });
+      this.blocks.actionBlocks.forEach(block => {
+        this.removeBlock(block.id);
+      });
+      this.blocks.transformBlocks.forEach(block => {
+        this.removeBlock(block.id);
+      });
       
       // The elements are now gone from jsPlumb and the screen but we need to clear out the storage too:
       Vue.nextTick(() => {
