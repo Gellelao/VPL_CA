@@ -664,24 +664,13 @@ export default {
       reader.readAsText(file[0]);
     },
     removeBlock(id){
-      // jsPlumb.detachAllConnections(id, []);
-      // jsPlumb.removeAllEndpoints(id);
-      // jsPlumb.detach(id);
       jsPlumb.remove(id);
     },
     clearRules() {
       count = 0;
       jsPlumb.deleteEveryConnection();
+      
       this.blocks.stateBlocks.forEach(block => {
-        // let neighbourNode = document.getElementById(block.id + "_neighbours");
-        // let stateNode = document.getElementById(block.id + "_state");
-
-        // this.removeBlock(neighbourNode);
-        // this.removeBlock(stateNode);
-        // this.removeBlock(block.id);
-
-        // console.log("removing " + block.id);
-        // jsPlumb.empty(block.id);
         this.removeBlock(block.id);
       });
       this.blocks.conditionBlocks.forEach(block => {
