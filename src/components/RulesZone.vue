@@ -58,6 +58,7 @@
           <v-btn @click="$refs.inputUpload.click()">Load Rules</v-btn>
           <input v-show="false" ref="inputUpload" type="file" @change="load" />
           <v-checkbox v-model="storeGrid" :label="`Save cells too?`"></v-checkbox>
+          <v-btn @click="clearRules">Clear Rules</v-btn>
         </v-toolbar>
       </v-flex>
       <v-flex xs6>
@@ -559,7 +560,6 @@ export default {
       });
 
       let connections = [];
-      console.log(jsPlumb.getConnections());
       jsPlumb.getConnections().forEach(connection => {
         connections.push({
           source: connection.sourceId,
@@ -577,8 +577,6 @@ export default {
       }
 
       totalInfo = JSON.stringify(totalInfo);
-
-      console.log(totalInfo);
 
       // Code from here: https://forum.vuejs.org/t/saving-form-data/38714
       let blob = new Blob([totalInfo], { type: "text/plain;charset=utf-8;" });
@@ -602,6 +600,8 @@ export default {
     },
     load(e) {
       console.log("LOAD");
+      // Clear the existing rules before loading
+      this.clearRules()
       // Code from https://codepen.io/Atinux/pen/qOvawK/
       var file = e.target.files || e.dataTransfer.files;
       if (!file.length) {
@@ -651,13 +651,42 @@ export default {
         });
 
         if (totalData.grid) {
-          let jsonGrid = JSON.parse(totalData.grid)
+          let jsonGrid = JSON.parse(totalData.grid);
           this.$root.$emit("loadGrid", {
             grid: jsonGrid
           });
         }
       };
       reader.readAsText(file[0]);
+    },
+    removeBlock(id){
+      jsPlumb.detachAllConnections(id, []);
+      jsPlumb.removeAllEndpoints(id);
+      // jsPlumb.detach(id);
+      jsPlumb.remove(id);
+    },
+    clearRules() {
+      count = 0;
+      this.blocks.stateBlocks.forEach(block => {
+        this.removeBlock(block.id);
+      });
+      // this.blocks.conditionBlocks.forEach(block => {
+      //   this.removeBlock(block.id);
+      // });
+      // this.blocks.actionBlocks.forEach(block => {
+      //   this.removeBlock(block.id);
+      // });
+      // this.blocks.transformBlocks.forEach(block => {
+      //   this.removeBlock(block.id);
+      // });
+      
+      // The elements are now gone from jsPlumb and the screen but we need to clear out the storage too:
+      Vue.nextTick(() => {
+        this.blocks.stateBlocks = [];
+        this.blocks.conditionBlocks = [];
+        this.blocks.actionBlocks = [];
+        this.blocks.transformBlocks = [];
+      });
     }
   }
 };
