@@ -121,7 +121,7 @@ export default {
       actionBlocks: [],
       transformBlocks: []
     },
-    storeGrid: false,
+    storeGrid: true,
     grid: null
   }),
   updated() {

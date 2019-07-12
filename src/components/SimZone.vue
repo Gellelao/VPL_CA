@@ -269,7 +269,7 @@ export default {
       this.$set(this.grid, x, newRow);
       // That process is necessary in order for Vue to realise that the array has changed and rerender accordingly
 
-      // We'll also send th grid up to RulesZone with an event so that it can be saved to a file form there:
+      // We'll also send the grid up to RulesZone with an event so that it can be saved to a file from there:
       this.$root.$emit("saveGrid", {
         grid: this.grid
       });
