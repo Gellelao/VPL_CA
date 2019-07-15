@@ -2,16 +2,25 @@
   <div>
     <v-toolbar>
       <v-spacer></v-spacer>
-      <v-slider
-        class="speedSlider"
-        v-model="speed"
-        step="200"
-        min="0"
-        :max="largestDelay"
-        label="Speed"
-      ></v-slider>
-      <v-btn @click="initializeGrid()">Randomize Grid</v-btn>
-      <v-btn @click="fillGrid()">Fill Grid</v-btn>
+      <div class="mx-2"></div>
+      <v-btn @click="initializeGrid()">
+        Randomize
+        <v-icon light right>casino</v-icon>
+      </v-btn>
+      <v-btn id="fillBtn" @click="fillGrid()">Fill</v-btn>
+      <swatches swatch-size="20" v-model="fillColour" colors="text-basic">
+        <v-btn id="fillIcon" slot="trigger" :color="fillColour">
+          <template v-if="fillColour == '#000000'">
+            <v-icon color="white">format_color_fill</v-icon>
+          </template>
+          <div v-else>
+            <v-icon>format_color_fill</v-icon>
+          </div>
+        </v-btn>
+      </swatches>
+      <div class="mx-2"></div>
+      <v-divider vertical></v-divider>
+      <div class="mx-2"></div>
       <v-btn @click="updateCells">Update cells</v-btn>
       <!-- The following v-btn is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
       <v-btn @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</v-btn>
@@ -27,9 +36,21 @@
         </td>
       </tr>
     </div>
-    <div class="form__label">
-      <swatches v-model="penColour" colors="text-basic" inline></swatches>
-    </div>
+    <v-toolbar>
+        <swatches shapes="circles" background-color="rgba(0,0,0,0)" v-model="penColour" colors="text-basic" inline></swatches>
+      <v-divider vertical></v-divider>
+      <div class="mx-2"></div>
+      <v-slider
+        class="speedSlider"
+        v-model="speed"
+        step="200"
+        min="0"
+        :max="largestDelay"
+        ticks="always"
+        tick-size="2"
+        label="Simulation Speed"
+      ></v-slider>
+    </v-toolbar>
   </div>
 </template>
 
@@ -54,6 +75,7 @@ export default {
     timer: null,
     isRunning: false,
     penColour: "#000000",
+    fillColour: "#FFFFFF",
     speed: 2000,
     largestDelay: 2000
   }),
@@ -106,7 +128,7 @@ export default {
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
-          newRow.push(this.penColour);
+          newRow.push(this.fillColour);
         }
         this.grid.push(newRow);
       }
@@ -313,8 +335,16 @@ td {
   /* border-radius: 10px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
 }
-.speedSlider {
-  width: 130px;
-  padding-right: 20px;
+// .speedSlider {
+//   width: 130px;
+//   padding-right: 20px;
+// }
+#fillBtn {
+  margin-right: 0px;
+}
+#fillIcon {
+  margin-left: 0px;
+  min-width: 40px;
+  padding: 0px;
 }
 </style>
