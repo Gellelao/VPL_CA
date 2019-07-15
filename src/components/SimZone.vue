@@ -24,6 +24,7 @@
       <v-btn @click="updateCells">Update cells</v-btn>
       <!-- The following v-btn is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
       <v-btn @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</v-btn>
+      <v-divider vertical></v-divider>
       <v-toolbar-title class="headline text-uppercase">
         <span>Simulation</span>
       </v-toolbar-title>

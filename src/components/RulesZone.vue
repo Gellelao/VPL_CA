@@ -153,6 +153,7 @@ export default {
           let action = this.blocks.actionBlocks.find(x => x.id === elem);
           if (!action.source || !action.desiredState) {
             validActions = false;
+            return;
           }
           let index = action.source.lastIndexOf("_");
           var property = action.source.substr(index + 1); // Use this to determine whether or not we'll set our own state or our neighbours states
@@ -416,6 +417,36 @@ export default {
             .actions.push(info.targetId);
         }
       });
+      // Reverse those changes when detaching connections
+      jsPlumb.bind("connectionDetached", info => {
+        // If a connection is made from a state block to this condition block,
+        // update the source of this block empty
+        if (
+          info.targetId == id &&
+          (info.sourceId.startsWith("state") ||
+            info.sourceId.startsWith("transform"))
+        ) {
+          Vue.set(
+            // Find the array entry for this block
+            this.blocks.conditionBlocks.find(x => x.id === id),
+            // Update the source field
+            "source",
+            // to the sourceId of the connection
+            ""
+          );
+        }
+        // If a connection is made from this condition block to an action block,
+        // pop the id of that action block out of the actions array of this condition block
+        else if (info.sourceId == id && info.targetId.startsWith("action")) {
+          let index = this.blocks.conditionBlocks
+            .find(x => x.id === id).actions
+            .indexOf(info.targetId);
+          this.$delete(
+            this.blocks.conditionBlocks.find(x => x.id === id).actions,
+            index
+          );
+        }
+      });
     },
     addAction: function(event) {
       // count = count + 1;
@@ -444,7 +475,6 @@ export default {
 
       // When a connection is made, update the source of the block to
       // the name of the property which was just connected to it.
-      console.log("Binding on connection for Action " + id);
       jsPlumb.bind("connection", info => {
         if (
           info.targetId == id &&
@@ -465,27 +495,20 @@ export default {
           );
         }
       });
-      console.log("Binding on detach for Action " + id);
-      // The reverse of the above bind, we set the source to undefined when detached
-      jsPlumb.bind("beforeDetach", info => {
-        console.log("DETACHING ACTION");
-        console.log(info);
-        console.log(id);
-        console.log(info.targetId);
-        console.log(info.sourceId);
+      // The reverse of the above bind, we set the source to empty when detached
+      jsPlumb.bind("connectionDetached", info => {
         if (
           info.targetId == id &&
           (info.sourceId.startsWith("state") ||
             info.sourceId.startsWith("transform"))
         ) {
-          console.log("Got in here");
           // Only update source if we receive a connection from a State block
           Vue.set(
             // Find the array entry for this block
             this.blocks.actionBlocks.find(x => x.id === id),
-            // Update the source field to undefined
+            // Update the source field to empty
             "source",
-            undefined
+            ""
           );
         }
       });
@@ -559,6 +582,22 @@ export default {
             // so destroy all other connections
           } else {
             jsPlumb.deleteConnection(info.connection);
+          }
+        }
+      });
+      // When detaching the conneciton, reverse our changes to the source field of this block
+      jsPlumb.bind("connectionDetached", info => {
+        if (info.targetId == id) {
+          if (info.sourceId.startsWith("state")) {
+            // Only update source if we receive a connection from a State block
+            Vue.set(
+              // Find the array entry for this block
+              this.blocks.transformBlocks.find(x => x.id === id),
+              // Update the source field
+              "source",
+              // to empty
+              ""
+            );
           }
         }
       });
