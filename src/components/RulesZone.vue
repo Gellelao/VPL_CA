@@ -238,12 +238,11 @@ export default {
       // This first tick is when the block will be resizing, so we wait for that to pass first
       Vue.nextTick(() => {
         Vue.nextTick(() => {
-          let id = info.targetId;
-          let elem = document.getElementById(id);
           jsPlumb.revalidate(info.targetId);
         });
       });
     });
+
     jsPlumb.ready(() => {});
 
     // Set up events to make sure changes down in the components are reflected in the data up here
@@ -300,7 +299,7 @@ export default {
         // grid: [dragGridSize, dragGridSize]
       });
 
-      // We update the count here because this method is calld when blocks are
+      // We update the count here because this method is called when blocks are
       // loaded as well as when they are first created, and by updating the count
       // in this way we avoid having duplicate ids when creating blocks after loading
       let newCount = id.match(/\d+/)[0];
@@ -310,7 +309,9 @@ export default {
       element.style.left = blockData.left + "px";
       element.style.top = blockData.top + "px";
       // So that jsPlumb knows that the element has moved
-      jsPlumb.revalidate(id);
+      Vue.nextTick(() => {
+        jsPlumb.revalidate(id);
+      });
     },
     addState: function(event) {
       // count = count + 1;
@@ -361,7 +362,7 @@ export default {
         actions: [],
         desiredNumberOfNeighbours: 1,
         operator: "Exactly",
-        requiredState: "#ffffff",
+        requiredState: "#FFFFFF",
         top: 200,
         left: 10
       });
@@ -423,7 +424,7 @@ export default {
       this.blocks.actionBlocks.push({
         id: idOfThisAction,
         source: "",
-        desiredState: "#ffffff",
+        desiredState: "#FFFFFF",
         top: 400,
         left: 10
       });
@@ -443,6 +444,7 @@ export default {
 
       // When a connection is made, update the source of the block to
       // the name of the property which was just connected to it.
+      console.log("Binding on connection for Action " + id);
       jsPlumb.bind("connection", info => {
         if (
           info.targetId == id &&
@@ -460,6 +462,30 @@ export default {
             "source",
             // to the sourceId of the connection
             info.sourceId
+          );
+        }
+      });
+      console.log("Binding on detach for Action " + id);
+      // The reverse of the above bind, we set the source to undefined when detached
+      jsPlumb.bind("beforeDetach", info => {
+        console.log("DETACHING ACTION");
+        console.log(info);
+        console.log(id);
+        console.log(info.targetId);
+        console.log(info.sourceId);
+        if (
+          info.targetId == id &&
+          (info.sourceId.startsWith("state") ||
+            info.sourceId.startsWith("transform"))
+        ) {
+          console.log("Got in here");
+          // Only update source if we receive a connection from a State block
+          Vue.set(
+            // Find the array entry for this block
+            this.blocks.actionBlocks.find(x => x.id === id),
+            // Update the source field to undefined
+            "source",
+            undefined
           );
         }
       });
@@ -537,8 +563,8 @@ export default {
         }
       });
     },
-    upload(){
-      this.$refs.inputUpload.value = '';
+    upload() {
+      this.$refs.inputUpload.value = "";
       this.$refs.inputUpload.click();
     },
     storeBlockPosition(block) {
@@ -605,7 +631,7 @@ export default {
     load(e) {
       console.log("LOAD");
       // Clear the existing rules before loading
-      this.clearRules()
+      this.clearRules();
       // Code from https://codepen.io/Atinux/pen/qOvawK/
       var file = e.target.files || e.dataTransfer.files;
       if (!file.length) {
@@ -663,13 +689,13 @@ export default {
       };
       reader.readAsText(file[0]);
     },
-    removeBlock(id){
+    removeBlock(id) {
       jsPlumb.remove(id);
     },
     clearRules() {
       count = 0;
       jsPlumb.deleteEveryConnection();
-      
+
       this.blocks.stateBlocks.forEach(block => {
         this.removeBlock(block.id);
       });
@@ -682,7 +708,7 @@ export default {
       this.blocks.transformBlocks.forEach(block => {
         this.removeBlock(block.id);
       });
-      
+
       // The elements are now gone from jsPlumb and the screen but we need to clear out the storage too:
       Vue.nextTick(() => {
         this.blocks.stateBlocks = [];
