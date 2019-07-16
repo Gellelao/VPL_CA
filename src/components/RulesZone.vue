@@ -132,25 +132,27 @@ export default {
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
-      this.blocks.conditionBlocks.forEach(elem => {
+      this.blocks.conditionBlocks.forEach(cond => {
         // We need conditions to have all of the required info before we make a rule out of them
-        if (elem.actions.length == 0 || !elem.source) {
+        if (cond.actions.length == 0 || !cond.source) {
           return;
         }
 
-        let index = elem.source.lastIndexOf("_");
-        var property = elem.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
+        let index = cond.source.lastIndexOf("_");
+        var property = cond.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
 
         // We need a required state if we're basing the condition on neighbours
-        if (property === "neighbours" && !elem.requiredState) {
+        if (property === "neighbours" && !cond.requiredState) {
           return;
         }
 
         // Create list of Action objects
-        var actions = [];
-        var validActions = true;
-        elem.actions.forEach(elem => {
-          let action = this.blocks.actionBlocks.find(x => x.id === elem);
+        let actions = [];
+        let validActions = true;
+        cond.actions.forEach(actionId => {
+          // Using the condition's array of actions (which are strings of the action ids),
+          // find the corresponding Action object from the actionBlocks array
+          let action = this.blocks.actionBlocks.find(x => x.id === actionId);
           if (!action.source || !action.desiredState) {
             validActions = false;
             return;
@@ -177,7 +179,7 @@ export default {
         if (!validActions) return;
 
         var neighbourhood = undefined;
-        let sourceId = elem.source;
+        let sourceId = cond.source;
 
         // If there is a transform block present, go find the original state source
         // and update the sourceId to point to that instead of the transform block
@@ -195,9 +197,9 @@ export default {
         sourceId = sourceId.substr(0, index);
         let source = this.blocks.stateBlocks.find(x => x.id === sourceId);
         var stateColour = source.colour;
-        var requiredState = elem.requiredState;
-        var operator = elem.operator;
-        var desiredNumberOfNeighbours = elem.desiredNumberOfNeighbours;
+        var requiredState = cond.requiredState;
+        var operator = cond.operator;
+        var desiredNumberOfNeighbours = cond.desiredNumberOfNeighbours;
 
         rules.push({
           stateColour,
@@ -411,6 +413,7 @@ export default {
         // If a connection is made from this condition block to an action block,
         // push the id of that action block into the actions array of this condition block
         else if (info.sourceId == id && info.targetId.startsWith("action")) {
+          console.log("IM ADDING AN ACTION NOW");
           // Add the id of the source to the array of triggers
           this.blocks.conditionBlocks
             .find(x => x.id === id)
@@ -436,7 +439,7 @@ export default {
           );
         }
         // If a connection is made from this condition block to an action block,
-        // pop the id of that action block out of the actions array of this condition block
+        // delete the id of that action block out of the actions array of this condition block
         else if (info.sourceId == id && info.targetId.startsWith("action")) {
           let index = this.blocks.conditionBlocks
             .find(x => x.id === id).actions
