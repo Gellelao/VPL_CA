@@ -308,7 +308,7 @@ export default {
       // We update the count here because this method is called when blocks are
       // loaded as well as when they are first created, and by updating the count
       // in this way we avoid having duplicate ids when creating blocks after loading
-      let newCount = id.match(/\d+/)[0];
+      let newCount = id.match(/\d+/)[0]; //find the number attached to this id
       if (newCount >= count) count = parseInt(newCount) + 1;
 
       let element = document.getElementById(id);
@@ -739,6 +739,7 @@ export default {
     clearRules() {
       count = 0;
       jsPlumb.deleteEveryConnection();
+      jsPlumb.deleteEveryEndpoint();
 
       this.blocks.stateBlocks.forEach(block => {
         this.removeBlock(block.id);
