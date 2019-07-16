@@ -5,17 +5,17 @@
       <div class="mx-2"></div>
       <v-btn @click="initializeGrid()">
         Randomize
-        <v-icon light right>casino</v-icon>
+        <v-icon color="grey" right>casino</v-icon>
       </v-btn>
       <v-btn id="fillBtn" @click="fillGrid()">Fill</v-btn>
-      <swatches swatch-size="20" v-model="fillColour" colors="text-basic">
-        <v-btn id="fillIcon" slot="trigger" :color="fillColour">
-          <template v-if="fillColour == '#000000'">
-            <v-icon color="white">format_color_fill</v-icon>
-          </template>
+      <swatches shapes="circles" swatch-size="20" v-model="fillColour" colors="text-basic">
+        <v-btn id="fillIcon" slot="trigger" color="#dbdbdb">
+          <!-- <template v-if="fillColour == '#000000'"> -->
+            <v-icon :color="fillColour">format_color_fill</v-icon>
+          <!-- </template>
           <div v-else>
             <v-icon>format_color_fill</v-icon>
-          </div>
+          </div> -->
         </v-btn>
       </swatches>
       <div class="mx-2"></div>

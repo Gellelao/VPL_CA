@@ -235,16 +235,7 @@ export default {
       // EndpointStyles: [{ fillStyle: "#225588" }, { fillStyle: "#558822" }]
     });
 
-    // When resizing a block we want to update the connection to reflect the new size,
-    // and this is the best way I've found to do that:
-    jsPlumb.bind("connection", info => {
-      // This first tick is when the block will be resizing, so we wait for that to pass first
-      Vue.nextTick(() => {
-        Vue.nextTick(() => {
-          jsPlumb.revalidate(info.targetId);
-        });
-      });
-    });
+    this.revalidateOnConnect();
 
     jsPlumb.ready(() => {});
 
@@ -297,6 +288,18 @@ export default {
     });
   },
   methods: {
+    revalidateOnConnect() {
+    // When resizing a block we want to update the connection to reflect the new size,
+    // and this is the best way I've found to do that:
+      jsPlumb.bind("connection", info => {
+      // This first tick is when the block will be resizing, so we wait for that to pass first
+      Vue.nextTick(() => {
+        Vue.nextTick(() => {
+          jsPlumb.revalidate(info.targetId);
+        });
+      });
+    });
+    },
     initializeGenericBlock(id, blockData) {
       jsPlumb.draggable(id, {
         // grid: [dragGridSize, dragGridSize]
@@ -413,7 +416,6 @@ export default {
         // If a connection is made from this condition block to an action block,
         // push the id of that action block into the actions array of this condition block
         else if (info.sourceId == id && info.targetId.startsWith("action")) {
-          console.log("IM ADDING AN ACTION NOW");
           // Add the id of the source to the array of triggers
           this.blocks.conditionBlocks
             .find(x => x.id === id)
@@ -758,6 +760,12 @@ export default {
         this.blocks.actionBlocks = [];
         this.blocks.transformBlocks = [];
       });
+
+      // Also important to unbind the events we created for each block:
+      jsPlumb.unbind();
+
+      // But then remember to recreate the one binding we do want to keep:
+      this.revalidateOnConnect();
     }
   }
 };
