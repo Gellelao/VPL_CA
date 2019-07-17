@@ -337,10 +337,6 @@ td {
   /* border-radius: 10px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
 }
-// .speedSlider {
-//   width: 130px;
-//   padding-right: 20px;
-// }
 #fillBtn {
   margin-right: 0px;
 }

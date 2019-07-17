@@ -1,69 +1,84 @@
 <template>
   <v-content>
-    <v-layout align-start justify-center row>
+    <v-layout justify-center row fill-height>
       <v-flex xs6>
-        <v-toolbar>
-          <v-toolbar-title class="headline text-uppercase">
-            <span>Rules</span>
-          </v-toolbar-title>
-          <v-btn @click="addState">Add a new State</v-btn>
-          <v-btn @click="addCondition">Add a new Condition</v-btn>
-          <v-btn @click="addAction">Add a new Action</v-btn>
-          <v-btn @click="addTransform">Add a new Transform</v-btn>
-        </v-toolbar>
-        <div id="points">
-          <div v-if="blocks.stateBlocks.length > 0">
-            <StateBlock
-              v-for="block in blocks.stateBlocks"
-              :key="block.id"
-              :id="block.id"
-              :initialColour="block.colour"
-            ></StateBlock>
-          </div>
+        <v-layout column fill-height>
 
-          <div v-if="blocks.conditionBlocks.length > 0">
-            <ConditionBlock
-              v-for="block in blocks.conditionBlocks"
-              :key="block.id"
-              :id="block.id"
-              :source="block.source"
-              :initialNeighbourCount="block.desiredNumberOfNeighbours"
-              :initialOperator="block.operator"
-              :initialReqState="block.requiredState"
-            ></ConditionBlock>
-          </div>
+            <v-toolbar>
+              <v-toolbar-title class="headline text-uppercase">
+                <span>Rules</span>
+              </v-toolbar-title>
+              <v-btn @click="addState">Add a new State</v-btn>
+              <v-btn @click="addCondition">Add a new Condition</v-btn>
+              <v-btn @click="addAction">Add a new Action</v-btn>
+              <v-btn @click="addTransform">Add a new Transform</v-btn>
+            </v-toolbar>
 
-          <div v-if="blocks.actionBlocks.length > 0">
-            <ActionBlock
-              v-for="block in blocks.actionBlocks"
-              :key="block.id"
-              :id="block.id"
-              :source="block.source"
-              :initialDesiredState="block.desiredState"
-            ></ActionBlock>
-          </div>
+            <v-container fluid fill-height>
+            <v-layout>
+            <v-flex d-flex justify-center align-center class="text-xs-center">
+              <div id="points">
+              <div v-if="blocks.stateBlocks.length > 0">
+                <StateBlock
+                  v-for="block in blocks.stateBlocks"
+                  :key="block.id"
+                  :id="block.id"
+                  :initialColour="block.colour"
+                ></StateBlock>
+              </div>
 
-          <div v-if="blocks.transformBlocks.length > 0">
-            <TransformBlock
-              v-for="block in blocks.transformBlocks"
-              :key="block.id"
-              :id="block.id"
-              :source="block.source"
-              :initialNeighbourhood="block.neighbourhood"
-            ></TransformBlock>
-          </div>
-        </div>
-        <v-toolbar>
-          <v-btn @click="save">Save Rules</v-btn>
-          <v-btn @click="upload">Load Rules</v-btn>
-          <input v-show="false" ref="inputUpload" type="file" @change="load" />
-          <v-checkbox v-model="storeGrid" :label="`Save cells too?`"></v-checkbox>
-          <v-btn @click="clearRules">Clear Rules</v-btn>
-        </v-toolbar>
+              <div v-if="blocks.conditionBlocks.length > 0">
+                <ConditionBlock
+                  v-for="block in blocks.conditionBlocks"
+                  :key="block.id"
+                  :id="block.id"
+                  :source="block.source"
+                  :initialNeighbourCount="block.desiredNumberOfNeighbours"
+                  :initialOperator="block.operator"
+                  :initialReqState="block.requiredState"
+                ></ConditionBlock>
+              </div>
+
+              <div v-if="blocks.actionBlocks.length > 0">
+                <ActionBlock
+                  v-for="block in blocks.actionBlocks"
+                  :key="block.id"
+                  :id="block.id"
+                  :source="block.source"
+                  :initialDesiredState="block.desiredState"
+                ></ActionBlock>
+              </div>
+
+              <div v-if="blocks.transformBlocks.length > 0">
+                <TransformBlock
+                  v-for="block in blocks.transformBlocks"
+                  :key="block.id"
+                  :id="block.id"
+                  :source="block.source"
+                  :initialNeighbourhood="block.neighbourhood"
+                ></TransformBlock>
+              </div>
+            </div>
+            </v-flex>
+          </v-layout>
+            
+
+        </v-container>
+
+            <v-toolbar>
+              <v-btn @click="save">Save Rules</v-btn>
+              <v-btn @click="upload">Load Rules</v-btn>
+              <input v-show="false" ref="inputUpload" type="file" @change="load" />
+              <v-checkbox v-model="storeGrid" :label="`Save cells too?`"></v-checkbox>
+              <v-btn @click="clearRules">Clear Rules</v-btn>
+            </v-toolbar>
+        </v-layout>
       </v-flex>
+
       <v-flex xs6>
         <SimZone :rules="this.rules" />
       </v-flex>
+      
     </v-layout>
   </v-content>
 </template>
@@ -289,16 +304,16 @@ export default {
   },
   methods: {
     revalidateOnConnect() {
-    // When resizing a block we want to update the connection to reflect the new size,
-    // and this is the best way I've found to do that:
+      // When resizing a block we want to update the connection to reflect the new size,
+      // and this is the best way I've found to do that:
       jsPlumb.bind("connection", info => {
-      // This first tick is when the block will be resizing, so we wait for that to pass first
-      Vue.nextTick(() => {
+        // This first tick is when the block will be resizing, so we wait for that to pass first
         Vue.nextTick(() => {
-          jsPlumb.revalidate(info.targetId);
+          Vue.nextTick(() => {
+            jsPlumb.revalidate(info.targetId);
+          });
         });
       });
-    });
     },
     initializeGenericBlock(id, blockData) {
       jsPlumb.draggable(id, {
@@ -412,10 +427,9 @@ export default {
             // to the sourceId of the connection
             info.sourceId
           );
-        }
-        // If a connection is made from this condition block to an action block,
-        // push the id of that action block into the actions array of this condition block
-        else if (info.sourceId == id && info.targetId.startsWith("action")) {
+        } else if (info.sourceId == id && info.targetId.startsWith("action")) {
+          // If a connection is made from this condition block to an action block,
+          // push the id of that action block into the actions array of this condition block
           // Add the id of the source to the array of triggers
           this.blocks.conditionBlocks
             .find(x => x.id === id)
@@ -439,13 +453,12 @@ export default {
             // to the sourceId of the connection
             ""
           );
-        }
-        // If a connection is made from this condition block to an action block,
-        // delete the id of that action block out of the actions array of this condition block
-        else if (info.sourceId == id && info.targetId.startsWith("action")) {
+        } else if (info.sourceId == id && info.targetId.startsWith("action")) {
+          // If a connection is made from this condition block to an action block,
+          // delete the id of that action block out of the actions array of this condition block
           let index = this.blocks.conditionBlocks
-            .find(x => x.id === id).actions
-            .indexOf(info.targetId);
+            .find(x => x.id === id)
+            .actions.indexOf(info.targetId);
           this.$delete(
             this.blocks.conditionBlocks.find(x => x.id === id).actions,
             index
@@ -777,10 +790,11 @@ export default {
   position: relative;
   // background-color: #fffde7;
   background-color: white;
-  min-height: 750px;
+  // min-height: 750px;
   resize: vertical;
   border: 1px solid #aaaaaa;
   overflow-y: scroll;
+  height: 100%;
 }
 .v-input {
   margin-top: 20px !important;
@@ -793,7 +807,6 @@ export default {
   border-radius: 15px;
   background-color: rgb(90, 90, 90);
 }
-
 .jtk-endpoint {
   z-index: 1;
 }
