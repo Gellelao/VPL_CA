@@ -4,16 +4,16 @@
       <span class="heading">Action</span>
     </v-toolbar-title>
     <template v-if="property === 'neighbours'">
-        <div>Turn my neighbours into:</div>
-        <div class="selectColour">
-          <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
-        </div>
+      <div>Turn my neighbours into:</div>
+      <div class="selectColour">
+        <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
+      </div>
     </template>
     <template v-else-if="property === 'state'">
-        <div>Become:</div>
-        <div class="selectColour">
-          <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
-        </div>
+      <div>Become:</div>
+      <div class="selectColour">
+        <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
+      </div>
     </template>
     <div v-else>Connect a property</div>
   </div>
@@ -24,10 +24,12 @@ import Swatches from "vue-swatches";
 
 export default {
   components: { Swatches },
-  props: ["id", "source"],
-  data: () => ({
-    desiredState: "1CA085"
-  }),
+  props: ["id", "source", "initialDesiredState"],
+  data: function() {
+    return {
+      desiredState: this.initialDesiredState
+    };
+  },
   computed: {
     property() {
       let index = this.source.lastIndexOf("_");
@@ -55,7 +57,7 @@ export default {
   // height: 160px;
   border-radius: 30px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: #FDD835;
+  background-color: #fdd835;
 
   .heading {
     // position: absolute;

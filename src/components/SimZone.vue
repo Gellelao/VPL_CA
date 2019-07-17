@@ -2,40 +2,65 @@
   <div>
     <v-toolbar>
       <v-spacer></v-spacer>
+      <div class="mx-2"></div>
+      <v-btn @click="initializeGrid()">
+        Randomize
+        <v-icon color="grey" right>casino</v-icon>
+      </v-btn>
+      <v-btn id="fillBtn" @click="fillGrid()">Fill</v-btn>
+      <swatches shapes="circles" swatch-size="20" v-model="fillColour" colors="text-basic">
+        <v-btn id="fillIcon" slot="trigger" color="#dbdbdb">
+          <!-- <template v-if="fillColour == '#000000'"> -->
+            <v-icon :color="fillColour">format_color_fill</v-icon>
+          <!-- </template>
+          <div v-else>
+            <v-icon>format_color_fill</v-icon>
+          </div> -->
+        </v-btn>
+      </swatches>
+      <div class="mx-2"></div>
+      <v-divider vertical></v-divider>
+      <div class="mx-2"></div>
+      <v-btn @click="updateCells">Update cells</v-btn>
+      <!-- The following v-btn is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
+      <v-btn @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</v-btn>
+      <div class="mx-2"></div>
+      <v-divider vertical></v-divider>
+      <v-toolbar-title class="headline text-uppercase">
+        <span>Simulation</span>
+      </v-toolbar-title>
+    </v-toolbar>
+    <!-- Rules: {{rules}} -->
+    <div class="grid">
+      <tr v-for="(row, x) in grid" :key="x">
+        <td v-for="(col, y) in row" :key="y">
+          <div class="cell" :style="{'background-color': grid[x][y]}" @click="setCell(x, y)"></div>
+        </td>
+      </tr>
+    </div>
+    <v-toolbar>
+        <swatches shapes="circles" background-color="rgba(0,0,0,0)" v-model="penColour" colors="text-basic" inline></swatches>
+      <v-divider vertical></v-divider>
+      <div class="mx-2"></div>
       <v-slider
         class="speedSlider"
         v-model="speed"
         step="200"
         min="0"
         :max="largestDelay"
-        label="Speed"
+        ticks="always"
+        tick-size="2"
+        label="Simulation Speed"
       ></v-slider>
-      <v-btn @click="initializeGrid()">Initialize Grid</v-btn>
-      <v-btn @click="fillGrid()">Fill Grid</v-btn>
-      <v-btn @click="updateCells">Update cells</v-btn>
-      <!-- The following v-btn is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
-      <v-btn @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</v-btn>
-      <v-toolbar-title class="headline text-uppercase">
-        <span>Simulation</span>
-      </v-toolbar-title>
     </v-toolbar>
-    <!-- Rules: {{rules}} -->
-    <tr v-for="(row, x) in grid" :key="x">
-      <td v-for="(col, y) in row" :key="y">
-        <div class="cell" :style="{'background-color': grid[x][y]}" @click="setCell(x, y)"></div>
-      </td>
-    </tr>
-    <div class="form__label">
-      <swatches v-model="penColour" colors="text-basic" inline></swatches>
-    </div>
   </div>
 </template>
 
 <script>
 import Swatches from "vue-swatches";
 
-const defaultWidth = 40;
-const defaultHeight = 40;
+const defaultWidth = 21;
+const defaultHeight = 21;
 const defaultNeighbourhood = [
   [true, true, true],
   [true, false, true],
@@ -52,11 +77,17 @@ export default {
     timer: null,
     isRunning: false,
     penColour: "#000000",
+    fillColour: "#FFFFFF",
     speed: 2000,
     largestDelay: 2000
   }),
   mounted() {
     this.initializeGrid();
+
+    this.$root.$on("loadGrid", data => {
+      let newGrid = data.grid;
+      this.grid = newGrid;
+    });
   },
   computed: {
     colours() {
@@ -66,16 +97,16 @@ export default {
       });
       return Array.from(colours);
     },
-    updateDelay(){
+    updateDelay() {
       // Add 100 to avoid having zero delay
       return this.largestDelay - this.speed + 100;
     }
   },
   methods: {
-    setArrays(receiver, original) {
+    setArrays(updated, original) {
       for (var i = 0; i < original.length; i++) {
         // receiver[i] = original[i].slice();
-        this.$set(receiver, i, original[i].slice());
+        this.$set(updated, i, original[i].slice());
       }
     },
     initializeGrid(width = defaultWidth, height = defaultHeight) {
@@ -99,7 +130,7 @@ export default {
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
-          newRow.push(this.penColour);
+          newRow.push(this.fillColour);
         }
         this.grid.push(newRow);
       }
@@ -261,6 +292,11 @@ export default {
       // update it in the grid
       this.$set(this.grid, x, newRow);
       // That process is necessary in order for Vue to realise that the array has changed and rerender accordingly
+
+      // We'll also send the grid up to RulesZone with an event so that it can be saved to a file from there:
+      this.$root.$emit("saveGrid", {
+        grid: this.grid
+      });
     },
     // For use by the algorithm, only affects NextGrid instead of directly altering the current grid
     // setNextCell(x, y, colour) {
@@ -281,10 +317,18 @@ export default {
 </script>
 
 <style scoped lang="scss">
-$cellWidth: 20px;
+$cellWidth: 30px;
 
-tr {
-  column-gap: 0px;
+.grid {
+  padding-top: 30px;
+  padding-left: 50px;
+  padding-bottom: 25px;
+  border-collapse: collapse;
+  display: inline-block;
+}
+th,
+td {
+  border: 3px solid grey;
 }
 .cell {
   width: $cellWidth;
@@ -293,9 +337,16 @@ tr {
   /* border-radius: 10px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
 }
-.speedSlider{
-  width: 200px;
-  padding: 20px;
-  top: 20px;
+// .speedSlider {
+//   width: 130px;
+//   padding-right: 20px;
+// }
+#fillBtn {
+  margin-right: 0px;
+}
+#fillIcon {
+  margin-left: 0px;
+  min-width: 40px;
+  padding: 0px;
 }
 </style>
