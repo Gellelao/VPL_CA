@@ -121,7 +121,7 @@ export default {
       actionBlocks: [],
       transformBlocks: []
     },
-    storeGrid: false,
+    storeGrid: true,
     grid: null
   }),
   updated() {
@@ -132,27 +132,30 @@ export default {
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
-      this.blocks.conditionBlocks.forEach(elem => {
+      this.blocks.conditionBlocks.forEach(cond => {
         // We need conditions to have all of the required info before we make a rule out of them
-        if (elem.actions.length == 0 || !elem.source) {
+        if (cond.actions.length == 0 || !cond.source) {
           return;
         }
 
-        let index = elem.source.lastIndexOf("_");
-        var property = elem.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
+        let index = cond.source.lastIndexOf("_");
+        var property = cond.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
 
         // We need a required state if we're basing the condition on neighbours
-        if (property === "neighbours" && !elem.requiredState) {
+        if (property === "neighbours" && !cond.requiredState) {
           return;
         }
 
         // Create list of Action objects
-        var actions = [];
-        var validActions = true;
-        elem.actions.forEach(elem => {
-          let action = this.blocks.actionBlocks.find(x => x.id === elem);
+        let actions = [];
+        let validActions = true;
+        cond.actions.forEach(actionId => {
+          // Using the condition's array of actions (which are strings of the action ids),
+          // find the corresponding Action object from the actionBlocks array
+          let action = this.blocks.actionBlocks.find(x => x.id === actionId);
           if (!action.source || !action.desiredState) {
             validActions = false;
+            return;
           }
           let index = action.source.lastIndexOf("_");
           var property = action.source.substr(index + 1); // Use this to determine whether or not we'll set our own state or our neighbours states
@@ -176,7 +179,7 @@ export default {
         if (!validActions) return;
 
         var neighbourhood = undefined;
-        let sourceId = elem.source;
+        let sourceId = cond.source;
 
         // If there is a transform block present, go find the original state source
         // and update the sourceId to point to that instead of the transform block
@@ -194,9 +197,9 @@ export default {
         sourceId = sourceId.substr(0, index);
         let source = this.blocks.stateBlocks.find(x => x.id === sourceId);
         var stateColour = source.colour;
-        var requiredState = elem.requiredState;
-        var operator = elem.operator;
-        var desiredNumberOfNeighbours = elem.desiredNumberOfNeighbours;
+        var requiredState = cond.requiredState;
+        var operator = cond.operator;
+        var desiredNumberOfNeighbours = cond.desiredNumberOfNeighbours;
 
         rules.push({
           stateColour,
@@ -232,18 +235,8 @@ export default {
       // EndpointStyles: [{ fillStyle: "#225588" }, { fillStyle: "#558822" }]
     });
 
-    // When resizing a block we want to update the connection to reflect the new size,
-    // and this is the best way I've found to do that:
-    jsPlumb.bind("connection", info => {
-      // This first tick is when the block will be resizing, so we wait for that to pass first
-      Vue.nextTick(() => {
-        Vue.nextTick(() => {
-          let id = info.targetId;
-          let elem = document.getElementById(id);
-          jsPlumb.revalidate(info.targetId);
-        });
-      });
-    });
+    this.revalidateOnConnect();
+
     jsPlumb.ready(() => {});
 
     // Set up events to make sure changes down in the components are reflected in the data up here
@@ -295,22 +288,36 @@ export default {
     });
   },
   methods: {
+    revalidateOnConnect() {
+    // When resizing a block we want to update the connection to reflect the new size,
+    // and this is the best way I've found to do that:
+      jsPlumb.bind("connection", info => {
+      // This first tick is when the block will be resizing, so we wait for that to pass first
+      Vue.nextTick(() => {
+        Vue.nextTick(() => {
+          jsPlumb.revalidate(info.targetId);
+        });
+      });
+    });
+    },
     initializeGenericBlock(id, blockData) {
       jsPlumb.draggable(id, {
         // grid: [dragGridSize, dragGridSize]
       });
 
-      // We update the count here because this method is calld when blocks are
+      // We update the count here because this method is called when blocks are
       // loaded as well as when they are first created, and by updating the count
       // in this way we avoid having duplicate ids when creating blocks after loading
-      let newCount = id.match(/\d+/)[0];
+      let newCount = id.match(/\d+/)[0]; //find the number attached to this id
       if (newCount >= count) count = parseInt(newCount) + 1;
 
       let element = document.getElementById(id);
       element.style.left = blockData.left + "px";
       element.style.top = blockData.top + "px";
       // So that jsPlumb knows that the element has moved
-      jsPlumb.revalidate(id);
+      Vue.nextTick(() => {
+        jsPlumb.revalidate(id);
+      });
     },
     addState: function(event) {
       // count = count + 1;
@@ -361,7 +368,7 @@ export default {
         actions: [],
         desiredNumberOfNeighbours: 1,
         operator: "Exactly",
-        requiredState: "#ffffff",
+        requiredState: "#FFFFFF",
         top: 200,
         left: 10
       });
@@ -415,6 +422,36 @@ export default {
             .actions.push(info.targetId);
         }
       });
+      // Reverse those changes when detaching connections
+      jsPlumb.bind("connectionDetached", info => {
+        // If a connection is made from a state block to this condition block,
+        // update the source of this block empty
+        if (
+          info.targetId == id &&
+          (info.sourceId.startsWith("state") ||
+            info.sourceId.startsWith("transform"))
+        ) {
+          Vue.set(
+            // Find the array entry for this block
+            this.blocks.conditionBlocks.find(x => x.id === id),
+            // Update the source field
+            "source",
+            // to the sourceId of the connection
+            ""
+          );
+        }
+        // If a connection is made from this condition block to an action block,
+        // delete the id of that action block out of the actions array of this condition block
+        else if (info.sourceId == id && info.targetId.startsWith("action")) {
+          let index = this.blocks.conditionBlocks
+            .find(x => x.id === id).actions
+            .indexOf(info.targetId);
+          this.$delete(
+            this.blocks.conditionBlocks.find(x => x.id === id).actions,
+            index
+          );
+        }
+      });
     },
     addAction: function(event) {
       // count = count + 1;
@@ -423,7 +460,7 @@ export default {
       this.blocks.actionBlocks.push({
         id: idOfThisAction,
         source: "",
-        desiredState: "#ffffff",
+        desiredState: "#FFFFFF",
         top: 400,
         left: 10
       });
@@ -460,6 +497,23 @@ export default {
             "source",
             // to the sourceId of the connection
             info.sourceId
+          );
+        }
+      });
+      // The reverse of the above bind, we set the source to empty when detached
+      jsPlumb.bind("connectionDetached", info => {
+        if (
+          info.targetId == id &&
+          (info.sourceId.startsWith("state") ||
+            info.sourceId.startsWith("transform"))
+        ) {
+          // Only update source if we receive a connection from a State block
+          Vue.set(
+            // Find the array entry for this block
+            this.blocks.actionBlocks.find(x => x.id === id),
+            // Update the source field to empty
+            "source",
+            ""
           );
         }
       });
@@ -536,9 +590,25 @@ export default {
           }
         }
       });
+      // When detaching the conneciton, reverse our changes to the source field of this block
+      jsPlumb.bind("connectionDetached", info => {
+        if (info.targetId == id) {
+          if (info.sourceId.startsWith("state")) {
+            // Only update source if we receive a connection from a State block
+            Vue.set(
+              // Find the array entry for this block
+              this.blocks.transformBlocks.find(x => x.id === id),
+              // Update the source field
+              "source",
+              // to empty
+              ""
+            );
+          }
+        }
+      });
     },
-    upload(){
-      this.$refs.inputUpload.value = '';
+    upload() {
+      this.$refs.inputUpload.value = "";
       this.$refs.inputUpload.click();
     },
     storeBlockPosition(block) {
@@ -605,7 +675,7 @@ export default {
     load(e) {
       console.log("LOAD");
       // Clear the existing rules before loading
-      this.clearRules()
+      this.clearRules();
       // Code from https://codepen.io/Atinux/pen/qOvawK/
       var file = e.target.files || e.dataTransfer.files;
       if (!file.length) {
@@ -663,13 +733,14 @@ export default {
       };
       reader.readAsText(file[0]);
     },
-    removeBlock(id){
+    removeBlock(id) {
       jsPlumb.remove(id);
     },
     clearRules() {
       count = 0;
       jsPlumb.deleteEveryConnection();
-      
+      jsPlumb.deleteEveryEndpoint();
+
       this.blocks.stateBlocks.forEach(block => {
         this.removeBlock(block.id);
       });
@@ -682,7 +753,7 @@ export default {
       this.blocks.transformBlocks.forEach(block => {
         this.removeBlock(block.id);
       });
-      
+
       // The elements are now gone from jsPlumb and the screen but we need to clear out the storage too:
       Vue.nextTick(() => {
         this.blocks.stateBlocks = [];
@@ -690,6 +761,12 @@ export default {
         this.blocks.actionBlocks = [];
         this.blocks.transformBlocks = [];
       });
+
+      // Also important to unbind the events we created for each block:
+      jsPlumb.unbind();
+
+      // But then remember to recreate the one binding we do want to keep:
+      this.revalidateOnConnect();
     }
   }
 };

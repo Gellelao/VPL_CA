@@ -2,19 +2,30 @@
   <div>
     <v-toolbar>
       <v-spacer></v-spacer>
-      <v-slider
-        class="speedSlider"
-        v-model="speed"
-        step="200"
-        min="0"
-        :max="largestDelay"
-        label="Speed"
-      ></v-slider>
-      <v-btn @click="initializeGrid()">Randomize Grid</v-btn>
-      <v-btn @click="fillGrid()">Fill Grid</v-btn>
+      <div class="mx-2"></div>
+      <v-btn @click="initializeGrid()">
+        Randomize
+        <v-icon color="grey" right>casino</v-icon>
+      </v-btn>
+      <v-btn id="fillBtn" @click="fillGrid()">Fill</v-btn>
+      <swatches shapes="circles" swatch-size="20" v-model="fillColour" colors="text-basic">
+        <v-btn id="fillIcon" slot="trigger" color="#dbdbdb">
+          <!-- <template v-if="fillColour == '#000000'"> -->
+            <v-icon :color="fillColour">format_color_fill</v-icon>
+          <!-- </template>
+          <div v-else>
+            <v-icon>format_color_fill</v-icon>
+          </div> -->
+        </v-btn>
+      </swatches>
+      <div class="mx-2"></div>
+      <v-divider vertical></v-divider>
+      <div class="mx-2"></div>
       <v-btn @click="updateCells">Update cells</v-btn>
       <!-- The following v-btn is from this project: https://github.com/iaucab/cellular-automaton-with-vue -->
       <v-btn @click="isRunning ? stop() : start()">{{ isRunning ? 'stop' : 'start' }}</v-btn>
+      <div class="mx-2"></div>
+      <v-divider vertical></v-divider>
       <v-toolbar-title class="headline text-uppercase">
         <span>Simulation</span>
       </v-toolbar-title>
@@ -27,9 +38,21 @@
         </td>
       </tr>
     </div>
-    <div class="form__label">
-      <swatches v-model="penColour" colors="text-basic" inline></swatches>
-    </div>
+    <v-toolbar>
+        <swatches shapes="circles" background-color="rgba(0,0,0,0)" v-model="penColour" colors="text-basic" inline></swatches>
+      <v-divider vertical></v-divider>
+      <div class="mx-2"></div>
+      <v-slider
+        class="speedSlider"
+        v-model="speed"
+        step="200"
+        min="0"
+        :max="largestDelay"
+        ticks="always"
+        tick-size="2"
+        label="Simulation Speed"
+      ></v-slider>
+    </v-toolbar>
   </div>
 </template>
 
@@ -54,6 +77,7 @@ export default {
     timer: null,
     isRunning: false,
     penColour: "#000000",
+    fillColour: "#FFFFFF",
     speed: 2000,
     largestDelay: 2000
   }),
@@ -106,7 +130,7 @@ export default {
       for (let y = 0; y < height; y++) {
         let newRow = [];
         for (let x = 0; x < width; x++) {
-          newRow.push(this.penColour);
+          newRow.push(this.fillColour);
         }
         this.grid.push(newRow);
       }
@@ -269,7 +293,7 @@ export default {
       this.$set(this.grid, x, newRow);
       // That process is necessary in order for Vue to realise that the array has changed and rerender accordingly
 
-      // We'll also send th grid up to RulesZone with an event so that it can be saved to a file form there:
+      // We'll also send the grid up to RulesZone with an event so that it can be saved to a file from there:
       this.$root.$emit("saveGrid", {
         grid: this.grid
       });
@@ -313,8 +337,16 @@ td {
   /* border-radius: 10px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75); */
 }
-.speedSlider {
-  width: 130px;
-  padding-right: 20px;
+// .speedSlider {
+//   width: 130px;
+//   padding-right: 20px;
+// }
+#fillBtn {
+  margin-right: 0px;
+}
+#fillIcon {
+  margin-left: 0px;
+  min-width: 40px;
+  padding: 0px;
 }
 </style>
