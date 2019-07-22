@@ -3,7 +3,7 @@
     <v-toolbar>
       <v-spacer></v-spacer>
       <div class="mx-2"></div>
-      <v-btn @click="initializeGrid()">
+      <v-btn @click="randomizeGrid()">
         Randomize
         <v-icon color="grey" right>casino</v-icon>
       </v-btn>
@@ -58,6 +58,7 @@
 
 <script>
 import Swatches from "vue-swatches";
+import Vue from "vue";
 
 const defaultWidth = 21;
 const defaultHeight = 21;
@@ -82,7 +83,7 @@ export default {
     largestDelay: 2000
   }),
   mounted() {
-    this.initializeGrid();
+    this.randomizeGrid();
 
     this.$root.$on("loadGrid", data => {
       let newGrid = data.grid;
@@ -109,7 +110,16 @@ export default {
         this.$set(updated, i, original[i].slice());
       }
     },
-    initializeGrid(width = defaultWidth, height = defaultHeight) {
+    sendGrid(){
+      // Send the grid up to RulesZone with an event so that it can be saved to a file from there:
+      // Use nextTick to ensure grid has finshed changing
+      Vue.nextTick(() => {
+        this.$root.$emit("saveGrid", {
+          grid: this.grid
+        });
+      });
+    },
+    randomizeGrid(width = defaultWidth, height = defaultHeight) {
       this.grid = [];
       for (let y = 0; y < height; y++) {
         let newRow = [];
@@ -123,7 +133,7 @@ export default {
         }
         this.grid.push(newRow);
       }
-      // this.setArrays(this.grid, this.nextGrid);
+      this.sendGrid();
     },
     fillGrid(width = defaultWidth, height = defaultHeight) {
       this.grid = [];
@@ -134,7 +144,7 @@ export default {
         }
         this.grid.push(newRow);
       }
-      // this.setArrays(this.grid, this.nextGrid);
+      this.sendGrid();
     },
     updateCells() {
       this.setArrays(this.nextGrid, this.grid);
@@ -294,9 +304,7 @@ export default {
       // That process is necessary in order for Vue to realise that the array has changed and rerender accordingly
 
       // We'll also send the grid up to RulesZone with an event so that it can be saved to a file from there:
-      this.$root.$emit("saveGrid", {
-        grid: this.grid
-      });
+      this.sendGrid();
     },
     // For use by the algorithm, only affects NextGrid instead of directly altering the current grid
     // setNextCell(x, y, colour) {

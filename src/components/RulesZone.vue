@@ -140,8 +140,6 @@ export default {
   },
   computed: {
     rules() {
-      console.log("");
-      console.log("Calling rules method of computed");
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
@@ -162,9 +160,7 @@ export default {
         // Create list of Action objects
         let actions = [];
         let validActions = true;
-        console.log("Looping though actions of " + cond.id);
         cond.actions.forEach(actionId => {
-          console.log(actionId);
           // Using the condition's array of actions (which are strings of the action ids),
           // find the corresponding Action object from the actionBlocks array
           let action = this.blocks.actionBlocks.find(x => x.id === actionId);
@@ -184,7 +180,6 @@ export default {
             neighbourhood = transformSource.neighbourhood;
           }
 
-          console.log("Pushing that action into actions array of the rule");
           actions.push({
             property,
             desiredState: action.desiredState,
@@ -227,9 +222,6 @@ export default {
           actions
         });
       });
-      console.log(
-        "Finihed rules method, returning this: " + JSON.stringify(rules)
-      );
       return rules;
     }
   },
@@ -628,26 +620,31 @@ export default {
       this.$refs.inputUpload.value = "";
       this.$refs.inputUpload.click();
     },
-    storeBlockPosition(block) {
+    saveBlock(block) {
       let elem = document.getElementById(block.id);
       block.left = parseInt(window.getComputedStyle(elem).left, 10);
       block.top = parseInt(window.getComputedStyle(elem).top, 10);
+      // Clear the source and actions infromaion because this will be set when connections are made
+      // And we don't want to load existing actions then add them again when we make the connections
+      if ("source" in block) block.source = "";
+      if ("actions" in block) block.actions = [];
       return block;
     },
     save() {
       console.log("SAVE");
-      let blockData = this.blocks;
+      // We want to copy the blocks object, not store a reference to it
+      let blockData = JSON.parse(JSON.stringify(this.blocks));
       blockData.stateBlocks.forEach(block => {
-        block = this.storeBlockPosition(block);
+        block = this.saveBlock(block);
       });
       blockData.conditionBlocks.forEach(block => {
-        block = this.storeBlockPosition(block);
+        block = this.saveBlock(block);
       });
       blockData.actionBlocks.forEach(block => {
-        block = this.storeBlockPosition(block);
+        block = this.saveBlock(block);
       });
       blockData.transformBlocks.forEach(block => {
-        block = this.storeBlockPosition(block);
+        block = this.saveBlock(block);
       });
 
       let connections = [];
@@ -703,15 +700,15 @@ export default {
       reader.onload = e => {
         let totalData = JSON.parse(e.target.result);
 
-        //         if (totalData.grid && totalData.grid != null) {
-        // console.log("loading grid")
-        //           let jsonGrid = JSON.parse(totalData.grid);
-        //           this.$root.$emit("loadGrid", {
-        //             grid: jsonGrid
-        //           });
-        //         }
+        if (totalData.grid && totalData.grid != null) {
+          console.log("Loading grid");
+          let jsonGrid = JSON.parse(totalData.grid);
+          this.$root.$emit("loadGrid", {
+            grid: jsonGrid
+          });
+        }
 
-        console.log("setting blocks");
+        console.log("Setting blocks");
         Vue.set(this.blocks, "stateBlocks", totalData.blocks.stateBlocks);
         Vue.set(
           this.blocks,
@@ -727,7 +724,7 @@ export default {
 
         // Wait for the DOM to update before setting up plumbing
         Vue.nextTick(() => {
-          console.log("initializing blocks");
+          console.log("Initializing blocks");
           this.blocks.stateBlocks.forEach(block => {
             this.initializeStateBlock(block.id);
           });
@@ -743,7 +740,7 @@ export default {
         });
 
         Vue.nextTick(() => {
-          console.log("make connections");
+          console.log("Making connections");
           totalData.connections.forEach(connection => {
             jsPlumb.connect({
               source: connection.source,
@@ -758,7 +755,7 @@ export default {
       jsPlumb.remove(id);
     },
     clearRules() {
-      console.log("clearing");
+      console.log("CLEAR");
       count = 0;
       jsPlumb.deleteEveryConnection();
       jsPlumb.deleteEveryEndpoint();
