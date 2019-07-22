@@ -3,82 +3,78 @@
     <v-layout justify-center row fill-height>
       <v-flex xs6>
         <v-layout column fill-height>
+          <v-toolbar>
+            <v-toolbar-title class="headline text-uppercase">
+              <span>Rules</span>
+            </v-toolbar-title>
+            <v-btn @click="addState">Add a new State</v-btn>
+            <v-btn @click="addCondition">Add a new Condition</v-btn>
+            <v-btn @click="addAction">Add a new Action</v-btn>
+            <v-btn @click="addTransform">Add a new Transform</v-btn>
+          </v-toolbar>
 
-            <v-toolbar>
-              <v-toolbar-title class="headline text-uppercase">
-                <span>Rules</span>
-              </v-toolbar-title>
-              <v-btn @click="addState">Add a new State</v-btn>
-              <v-btn @click="addCondition">Add a new Condition</v-btn>
-              <v-btn @click="addAction">Add a new Action</v-btn>
-              <v-btn @click="addTransform">Add a new Transform</v-btn>
-            </v-toolbar>
-
-            <v-container fluid fill-height>
+          <v-container fluid fill-height>
             <v-layout>
-            <v-flex d-flex justify-center align-center class="text-xs-center">
-              <div id="points">
-              <div v-if="blocks.stateBlocks.length > 0">
-                <StateBlock
-                  v-for="block in blocks.stateBlocks"
-                  :key="block.id"
-                  :id="block.id"
-                  :initialColour="block.colour"
-                ></StateBlock>
-              </div>
+              <v-flex d-flex justify-center align-center class="text-xs-center">
+                <div id="points">
+                  <div v-if="blocks.stateBlocks.length > 0">
+                    <StateBlock
+                      v-for="block in blocks.stateBlocks"
+                      :key="block.id"
+                      :id="block.id"
+                      :initialColour="block.colour"
+                    ></StateBlock>
+                  </div>
 
-              <div v-if="blocks.conditionBlocks.length > 0">
-                <ConditionBlock
-                  v-for="block in blocks.conditionBlocks"
-                  :key="block.id"
-                  :id="block.id"
-                  :source="block.source"
-                  :initialNeighbourCount="block.desiredNumberOfNeighbours"
-                  :initialOperator="block.operator"
-                  :initialReqState="block.requiredState"
-                ></ConditionBlock>
-              </div>
+                  <div v-if="blocks.conditionBlocks.length > 0">
+                    <ConditionBlock
+                      v-for="block in blocks.conditionBlocks"
+                      :key="block.id"
+                      :id="block.id"
+                      :source="block.source"
+                      :initialNeighbourCount="block.desiredNumberOfNeighbours"
+                      :initialOperator="block.operator"
+                      :initialReqState="block.requiredState"
+                    ></ConditionBlock>
+                  </div>
 
-              <div v-if="blocks.actionBlocks.length > 0">
-                <ActionBlock
-                  v-for="block in blocks.actionBlocks"
-                  :key="block.id"
-                  :id="block.id"
-                  :source="block.source"
-                  :initialDesiredState="block.desiredState"
-                ></ActionBlock>
-              </div>
+                  <div v-if="blocks.actionBlocks.length > 0">
+                    <ActionBlock
+                      v-for="block in blocks.actionBlocks"
+                      :key="block.id"
+                      :id="block.id"
+                      :source="block.source"
+                      :initialDesiredState="block.desiredState"
+                    ></ActionBlock>
+                  </div>
 
-              <div v-if="blocks.transformBlocks.length > 0">
-                <TransformBlock
-                  v-for="block in blocks.transformBlocks"
-                  :key="block.id"
-                  :id="block.id"
-                  :source="block.source"
-                  :initialNeighbourhood="block.neighbourhood"
-                ></TransformBlock>
-              </div>
-            </div>
-            </v-flex>
-          </v-layout>
-            
+                  <div v-if="blocks.transformBlocks.length > 0">
+                    <TransformBlock
+                      v-for="block in blocks.transformBlocks"
+                      :key="block.id"
+                      :id="block.id"
+                      :source="block.source"
+                      :initialNeighbourhood="block.neighbourhood"
+                    ></TransformBlock>
+                  </div>
+                </div>
+              </v-flex>
+            </v-layout>
+          </v-container>
 
-        </v-container>
-
-            <v-toolbar>
-              <v-btn @click="save">Save Rules</v-btn>
-              <v-btn @click="upload">Load Rules</v-btn>
-              <input v-show="false" ref="inputUpload" type="file" @change="load" />
-              <v-checkbox v-model="storeGrid" :label="`Save cells too?`"></v-checkbox>
-              <v-btn @click="clearRules">Clear Rules</v-btn>
-            </v-toolbar>
+          <v-toolbar>
+            <v-btn @click="save">Save Rules</v-btn>
+            <v-btn @click="upload">Load Rules</v-btn>
+            <input v-show="false" ref="inputUpload" type="file" @change="load" />
+            <v-checkbox v-model="storeGrid" :label="`Save cells too?`"></v-checkbox>
+            <v-btn @click="clearRules">Clear Rules</v-btn>
+          </v-toolbar>
         </v-layout>
       </v-flex>
 
       <v-flex xs6>
         <SimZone :rules="this.rules" />
       </v-flex>
-      
     </v-layout>
   </v-content>
 </template>
@@ -144,6 +140,8 @@ export default {
   },
   computed: {
     rules() {
+      console.log("");
+      console.log("Calling rules method of computed");
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
@@ -164,7 +162,9 @@ export default {
         // Create list of Action objects
         let actions = [];
         let validActions = true;
+        console.log("Looping though actions of " + cond.id);
         cond.actions.forEach(actionId => {
+          console.log(actionId);
           // Using the condition's array of actions (which are strings of the action ids),
           // find the corresponding Action object from the actionBlocks array
           let action = this.blocks.actionBlocks.find(x => x.id === actionId);
@@ -184,6 +184,7 @@ export default {
             neighbourhood = transformSource.neighbourhood;
           }
 
+          console.log("Pushing that action into actions array of the rule");
           actions.push({
             property,
             desiredState: action.desiredState,
@@ -226,6 +227,9 @@ export default {
           actions
         });
       });
+      console.log(
+        "Finihed rules method, returning this: " + JSON.stringify(rules)
+      );
       return rules;
     }
   },
@@ -699,6 +703,15 @@ export default {
       reader.onload = e => {
         let totalData = JSON.parse(e.target.result);
 
+        //         if (totalData.grid && totalData.grid != null) {
+        // console.log("loading grid")
+        //           let jsonGrid = JSON.parse(totalData.grid);
+        //           this.$root.$emit("loadGrid", {
+        //             grid: jsonGrid
+        //           });
+        //         }
+
+        console.log("setting blocks");
         Vue.set(this.blocks, "stateBlocks", totalData.blocks.stateBlocks);
         Vue.set(
           this.blocks,
@@ -714,6 +727,7 @@ export default {
 
         // Wait for the DOM to update before setting up plumbing
         Vue.nextTick(() => {
+          console.log("initializing blocks");
           this.blocks.stateBlocks.forEach(block => {
             this.initializeStateBlock(block.id);
           });
@@ -729,6 +743,7 @@ export default {
         });
 
         Vue.nextTick(() => {
+          console.log("make connections");
           totalData.connections.forEach(connection => {
             jsPlumb.connect({
               source: connection.source,
@@ -736,13 +751,6 @@ export default {
             });
           });
         });
-
-        if (totalData.grid) {
-          let jsonGrid = JSON.parse(totalData.grid);
-          this.$root.$emit("loadGrid", {
-            grid: jsonGrid
-          });
-        }
       };
       reader.readAsText(file[0]);
     },
@@ -750,6 +758,7 @@ export default {
       jsPlumb.remove(id);
     },
     clearRules() {
+      console.log("clearing");
       count = 0;
       jsPlumb.deleteEveryConnection();
       jsPlumb.deleteEveryEndpoint();
