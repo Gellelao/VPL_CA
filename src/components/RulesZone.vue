@@ -17,6 +17,16 @@
             <v-layout>
               <v-flex d-flex justify-center align-center class="text-xs-center">
                 <div id="points">
+                  <div v-if="trashOpen">
+                  <v-icon x-large>delete_forever</v-icon>
+                    <div class="trash">
+                      
+                    </div>
+                  </div>
+                  <div v-else>
+                    <v-icon x-large>delete</v-icon>
+                  </div>
+
                   <div v-if="blocks.stateBlocks.length > 0">
                     <StateBlock
                       v-for="block in blocks.stateBlocks"
@@ -133,7 +143,8 @@ export default {
       transformBlocks: []
     },
     storeGrid: true,
-    grid: null
+    grid: null,
+    trashOpen: false,
   }),
   updated() {
     // console.log("UPDATED");
@@ -313,6 +324,8 @@ export default {
     },
     initializeGenericBlock(id, blockData) {
       jsPlumb.draggable(id, {
+        start: () => {this.trashOpen = true},
+        stop: () => {this.trashOpen = false}
         // grid: [dragGridSize, dragGridSize]
       });
 
@@ -807,6 +820,13 @@ html, body {
   border: 1px solid #aaaaaa;
   overflow-y: auto;
   height: 100%;
+
+  .v-icon{
+    z-index: 2;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+  }
 }
 .v-input {
   margin-top: 20px !important;
@@ -821,5 +841,24 @@ html, body {
 }
 .jtk-endpoint {
   z-index: 1;
+}
+.trash{
+  position: absolute;
+  z-index: 1;
+  width:140px;
+  height: 140px;
+  border-radius: 100%;
+  top: -60px;
+  left: -60px;
+  background-color: rgb(211, 0, 0);
+  -webkit-box-shadow: 10px 10px 39px 0px rgba(181,0,0,0.5);
+  -moz-box-shadow: 10px 10px 39px 0px rgba(181,0,0,0.5);
+  box-shadow: 10px 10px 39px 0px rgba(181,0,0,0.5);
+
+  // .v-icon{
+  //   position: absolute;
+  //   right: 30px;
+  //   bottom: 30px;
+  // }
 }
 </style>
