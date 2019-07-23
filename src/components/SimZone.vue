@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-layout column fill-height>
     <v-toolbar>
       <v-spacer></v-spacer>
       <div class="mx-2"></div>
@@ -11,11 +11,11 @@
       <swatches shapes="circles" swatch-size="20" v-model="fillColour" colors="text-basic">
         <v-btn id="fillIcon" slot="trigger" color="#dbdbdb">
           <!-- <template v-if="fillColour == '#000000'"> -->
-            <v-icon :color="fillColour">format_color_fill</v-icon>
+          <v-icon :color="fillColour">format_color_fill</v-icon>
           <!-- </template>
           <div v-else>
             <v-icon>format_color_fill</v-icon>
-          </div> -->
+          </div>-->
         </v-btn>
       </swatches>
       <div class="mx-2"></div>
@@ -31,15 +31,29 @@
       </v-toolbar-title>
     </v-toolbar>
     <!-- Rules: {{rules}} -->
-    <div class="grid">
-      <tr v-for="(row, x) in grid" :key="x">
-        <td v-for="(col, y) in row" :key="y">
-          <div class="cell" :style="{'background-color': grid[x][y]}" @click="setCell(x, y)"></div>
-        </td>
-      </tr>
-    </div>
+
+    <v-container fluid fill-height>
+      <v-layout>
+        <v-flex d-flex justify-center align-center class="text-xs-center">
+          <div class="grid">
+            <tr v-for="(row, x) in grid" :key="x">
+              <td v-for="(col, y) in row" :key="y">
+                <div class="cell" :style="{'background-color': grid[x][y]}" @click="setCell(x, y)"></div>
+              </td>
+            </tr>
+          </div>
+        </v-flex>
+      </v-layout>
+    </v-container>
+
     <v-toolbar>
-        <swatches shapes="circles" background-color="rgba(0,0,0,0)" v-model="penColour" colors="text-basic" inline></swatches>
+      <swatches
+        shapes="circles"
+        background-color="rgba(0,0,0,0)"
+        v-model="penColour"
+        colors="text-basic"
+        inline
+      ></swatches>
       <v-divider vertical></v-divider>
       <div class="mx-2"></div>
       <v-slider
@@ -53,7 +67,7 @@
         label="Simulation Speed"
       ></v-slider>
     </v-toolbar>
-  </div>
+  </v-layout>
 </template>
 
 <script>
@@ -110,7 +124,7 @@ export default {
         this.$set(updated, i, original[i].slice());
       }
     },
-    sendGrid(){
+    sendGrid() {
       // Send the grid up to RulesZone with an event so that it can be saved to a file from there:
       // Use nextTick to ensure grid has finshed changing
       Vue.nextTick(() => {
@@ -328,9 +342,7 @@ export default {
 $cellWidth: 30px;
 
 .grid {
-  padding-top: 30px;
-  padding-left: 50px;
-  padding-bottom: 25px;
+  padding-left: 40px;
   border-collapse: collapse;
   display: inline-block;
 }
