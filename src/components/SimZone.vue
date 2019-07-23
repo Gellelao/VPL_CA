@@ -47,6 +47,7 @@
     </v-container>
 
     <v-toolbar>
+      Pen Colour
       <swatches
         shapes="circles"
         background-color="rgba(0,0,0,0)"

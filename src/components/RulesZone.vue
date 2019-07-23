@@ -452,6 +452,7 @@ export default {
       });
       // Reverse those changes when detaching connections
       jsPlumb.bind("connectionDetached", info => {
+        console.log("CONNECTION DETACHED FOR CONDITION");
         // If a connection is made from a state block to this condition block,
         // update the source of this block empty
         if (
@@ -770,10 +771,41 @@ export default {
       reader.readAsText(file[0]);
     },
     removeBlock(id) {
-      jsPlumb.remove(id);
-      this.revalidateSourcless(id);
+      // Special case for State and Transform blocks because those blocks
+      // are not the elements making the connections - its the propertiy nodes. So we need
+      // to delete those nodes first. (This was avoided in the clear() method
+      // by first deleting ALL connections but we can't do that here)
+      if(id.startsWith("state") || id.startsWith("transform")){
+        jsPlumb.remove(id + "_neighbours");
+        jsPlumb.remove(id + "_state");
+      }
+      Vue.nextTick(() => {
+        jsPlumb.remove(id);
+        console.log("I've removed " + id);
+
+        // this.revalidateSourceless();
+      });
+      Vue.nextTick(() => {
+        // Remove the data of that element
+        for (var blockset in this.blocks) {
+          if (this.blocks.hasOwnProperty(blockset)) {
+            console.log("Looking for " + id);
+            let block = this.blocks[blockset].find(x => x.id === id);
+            console.log("Found " + block);
+            if(!block)continue;
+            let index = this.blocks[blockset].indexOf(block);
+            console.log(index);
+            console.log(JSON.stringify(this.blocks[blockset]));
+            this.$delete(
+              this.blocks[blockset],
+              index
+            );
+            break;
+          }
+        }
+      });
     },
-    revalidateSourcless(id) {
+    revalidateSourceless() {
       // This method finds all blocks with no source, and revalidates them.
       // Useful after deleting a block because that block may have been a source
       // to other blocks, and those will now have source = "" due to the deletion.
@@ -798,14 +830,15 @@ export default {
     clearRules() {
       console.log("CLEAR");
       count = 0;
-      jsPlumb.deleteEveryConnection();
-      jsPlumb.deleteEveryEndpoint();
+
+      // jsPlumb.deleteEveryConnection();
+      // jsPlumb.deleteEveryEndpoint();
+      jsPlumb.reset();
 
       for (var blockset in this.blocks) {
         if (this.blocks.hasOwnProperty(blockset)) {
           this.blocks[blockset].forEach(block => {
-            // We call this directly instead of the removeBlock() method because we don't want
-            // the overhead of revalidating other blocks - we're removing everything anwyay!
+            // We don't need the overhead of the removeBlock() method when we are deleting all blocks anyway
             jsPlumb.remove(block.id);
           });
         }
@@ -876,6 +909,7 @@ body {
   border-radius: 100%;
   top: -60px;
   left: -60px;
+  // background-color: rgba(180, 180, 180, 0.322);
   background-color: rgba(211, 0, 0, 0.8);
   -webkit-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
   -moz-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
