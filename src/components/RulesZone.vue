@@ -13,7 +13,7 @@
             <v-btn @click="addTransform">Add a new Transform</v-btn>
           </v-toolbar>
 
-          <v-container fluid fill-height>
+          <v-container fluid fill-height class="rulesContainer">
             <v-layout>
               <v-flex d-flex justify-center align-center class="text-xs-center">
                 <div id="points">
@@ -795,6 +795,9 @@ export default {
 html, body {
   overflow-y:hidden !important;
 }
+.rulesContainer{
+  padding: 0px !important;
+}
 #points {
   position: relative;
   // background-color: #fffde7;
@@ -802,7 +805,7 @@ html, body {
   // min-height: 750px;
   // resize: vertical;
   border: 1px solid #aaaaaa;
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100%;
 }
 .v-input {
