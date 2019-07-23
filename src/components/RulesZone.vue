@@ -18,10 +18,8 @@
               <v-flex d-flex justify-center align-center class="text-xs-center">
                 <div id="points">
                   <div v-if="trashOpen">
-                  <v-icon x-large>delete_forever</v-icon>
-                    <div class="trash">
-                      
-                    </div>
+                    <v-icon x-large>delete_forever</v-icon>
+                    <div class="trash"></div>
                   </div>
                   <div v-else>
                     <v-icon x-large>delete</v-icon>
@@ -101,6 +99,7 @@ import "vue-swatches/dist/vue-swatches.min.css";
 // Count variable appended to block id values to ensure uniqueness
 var count = 0;
 const dragGridSize = 20;
+const blockStartingX = 40;
 
 // Define common jsplumb styles
 const defaultArrow = [
@@ -144,7 +143,7 @@ export default {
     },
     storeGrid: true,
     grid: null,
-    trashOpen: false,
+    trashOpen: false
   }),
   updated() {
     // console.log("UPDATED");
@@ -324,8 +323,14 @@ export default {
     },
     initializeGenericBlock(id, blockData) {
       jsPlumb.draggable(id, {
-        start: () => {this.trashOpen = true},
-        stop: () => {this.trashOpen = false}
+        start: () => {
+          this.trashOpen = true;
+        },
+        stop: params => {
+          this.trashOpen = false;
+          if (params.e.clientX <= 30 && params.e.clientY <= 90)
+            this.removeBlock(params.el.id);
+        }
         // grid: [dragGridSize, dragGridSize]
       });
 
@@ -350,8 +355,8 @@ export default {
       this.blocks.stateBlocks.push({
         id: idOfThisState,
         colour: "#000000",
-        top: 10,
-        left: 10
+        top: 30,
+        left: blockStartingX
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -393,8 +398,8 @@ export default {
         desiredNumberOfNeighbours: 1,
         operator: "Exactly",
         requiredState: "#FFFFFF",
-        top: 200,
-        left: 10
+        top: 220,
+        left: blockStartingX
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -483,8 +488,8 @@ export default {
         id: idOfThisAction,
         source: "",
         desiredState: "#FFFFFF",
-        top: 400,
-        left: 10
+        top: 430,
+        left: blockStartingX
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -553,7 +558,7 @@ export default {
           [true, true, true]
         ],
         top: 600,
-        left: 10
+        left: blockStartingX
       });
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
@@ -766,6 +771,29 @@ export default {
     },
     removeBlock(id) {
       jsPlumb.remove(id);
+      this.revalidateSourcless(id);
+    },
+    revalidateSourcless(id) {
+      // This method finds all blocks with no source, and revalidates them.
+      // Useful after deleting a block because that block may have been a source
+      // to other blocks, and those will now have source = "" due to the deletion.
+      // It is likely that this means the blocks need to update their shape, and
+      // we do this by calling revalidate on them here
+      let allChildrenIds = [];
+      for (var blockset in this.blocks) {
+        if (this.blocks.hasOwnProperty(blockset)) {
+          this.blocks[blockset].forEach(block => {
+            if (block.hasOwnProperty("source") && block.source == "") {
+              allChildrenIds.push(block.id);
+            }
+          });
+        }
+      }
+      Vue.nextTick(() => {
+        allChildrenIds.forEach(id => {
+          jsPlumb.revalidate(id);
+        });
+      });
     },
     clearRules() {
       console.log("CLEAR");
@@ -773,18 +801,15 @@ export default {
       jsPlumb.deleteEveryConnection();
       jsPlumb.deleteEveryEndpoint();
 
-      this.blocks.stateBlocks.forEach(block => {
-        this.removeBlock(block.id);
-      });
-      this.blocks.conditionBlocks.forEach(block => {
-        this.removeBlock(block.id);
-      });
-      this.blocks.actionBlocks.forEach(block => {
-        this.removeBlock(block.id);
-      });
-      this.blocks.transformBlocks.forEach(block => {
-        this.removeBlock(block.id);
-      });
+      for (var blockset in this.blocks) {
+        if (this.blocks.hasOwnProperty(blockset)) {
+          this.blocks[blockset].forEach(block => {
+            // We call this directly instead of the removeBlock() method because we don't want
+            // the overhead of revalidating other blocks - we're removing everything anwyay!
+            jsPlumb.remove(block.id);
+          });
+        }
+      }
 
       // The elements are now gone from jsPlumb and the screen but we need to clear out the storage too:
       Vue.nextTick(() => {
@@ -805,10 +830,11 @@ export default {
 </script>
 
 <style lang="scss">
-html, body {
-  overflow-y:hidden !important;
+html,
+body {
+  overflow-y: hidden !important;
 }
-.rulesContainer{
+.rulesContainer {
   padding: 0px !important;
 }
 #points {
@@ -821,7 +847,7 @@ html, body {
   overflow-y: auto;
   height: 100%;
 
-  .v-icon{
+  .v-icon {
     z-index: 2;
     position: absolute;
     top: 10px;
@@ -842,18 +868,18 @@ html, body {
 .jtk-endpoint {
   z-index: 1;
 }
-.trash{
+.trash {
   position: absolute;
   z-index: 1;
-  width:140px;
+  width: 140px;
   height: 140px;
   border-radius: 100%;
   top: -60px;
   left: -60px;
-  background-color: rgb(211, 0, 0);
-  -webkit-box-shadow: 10px 10px 39px 0px rgba(181,0,0,0.5);
-  -moz-box-shadow: 10px 10px 39px 0px rgba(181,0,0,0.5);
-  box-shadow: 10px 10px 39px 0px rgba(181,0,0,0.5);
+  background-color: rgba(211, 0, 0, 0.8);
+  -webkit-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
+  -moz-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
+  box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
 
   // .v-icon{
   //   position: absolute;
