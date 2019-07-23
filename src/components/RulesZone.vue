@@ -792,7 +792,7 @@ export default {
 </script>
 
 <style lang="scss">
-html {
+html, body {
   overflow-y:hidden !important;
 }
 #points {
