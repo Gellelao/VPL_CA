@@ -792,12 +792,15 @@ export default {
 </script>
 
 <style lang="scss">
+html {
+  overflow-y:hidden !important;
+}
 #points {
   position: relative;
   // background-color: #fffde7;
   background-color: white;
   // min-height: 750px;
-  resize: vertical;
+  // resize: vertical;
   border: 1px solid #aaaaaa;
   overflow-y: scroll;
   height: 100%;
