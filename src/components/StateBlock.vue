@@ -8,18 +8,8 @@
       <swatches v-model="colour" colors="text-basic" @input="updateStateInParent"></swatches>
       <!-- </div> -->
     </div>
-    <v-tooltip bottom>
-      <template v-slot:activator="{ on }">
-        <div :id="id+'_neighbours'" v-on="on" class="neighboursSource"></div>
-      </template>
-      <span>Neighbours</span>
-    </v-tooltip>
-    <v-tooltip bottom>
-      <template v-slot:activator="{ on }">
-        <div :id="id+'_state'" v-on="on" class="stateSource"></div>
-      </template>
-      <span>State</span>
-    </v-tooltip>
+    <div :id="id+'_neighbours'" class="neighboursSource"></div>
+    <div :id="id+'_state'" class="stateSource"></div>
   </div>
 </template>
 
