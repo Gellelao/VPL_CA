@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build && chmod -R 755 ~/public_html/ && chmod a+x ~",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
