@@ -476,6 +476,7 @@ export default {
             // to the sourceId of the connection
             ""
           );
+          this.revalidateSourceless();
         } else if (info.sourceId == id && info.targetId.startsWith("action")) {
           // If a connection is made from this condition block to an action block,
           // delete the id of that action block out of the actions array of this condition block
@@ -551,6 +552,7 @@ export default {
             "source",
             ""
           );
+          this.revalidateSourceless();
         }
       });
     },
