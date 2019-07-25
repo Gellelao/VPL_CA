@@ -18,8 +18,13 @@
               <v-flex d-flex justify-center align-center class="text-xs-center">
                 <div id="points">
                   <div v-if="trashOpen">
-                    <v-icon x-large>delete_forever</v-icon>
-                    <div class="trash"></div>
+                    <div v-if="mouseOverTrash">
+                      <v-icon x-large>delete_forever</v-icon>
+                    </div>
+                    <div v-else>
+                      <v-icon x-large>delete</v-icon>
+                    </div>
+                    <div class="trash" :class="{ 'red': mouseOverTrash }"></div>
                   </div>
                   <div v-else>
                     <v-icon x-large>delete</v-icon>
@@ -143,7 +148,8 @@ export default {
     },
     storeGrid: true,
     grid: null,
-    trashOpen: false
+    trashOpen: false,
+    mouseOverTrash: false
   }),
   updated() {
     // console.log("UPDATED");
@@ -326,10 +332,13 @@ export default {
         start: () => {
           this.trashOpen = true;
         },
+        drag: params => {
+          this.mouseOverTrash =
+            Math.hypot(params.e.clientX, params.e.clientY - 64) <= 80;
+        },
         stop: params => {
           this.trashOpen = false;
-          if (params.e.clientX <= 30 && params.e.clientY <= 90)
-            this.removeBlock(params.el.id);
+          if (this.mouseOverTrash) this.removeBlock(params.el.id);
         }
         // grid: [dragGridSize, dragGridSize]
       });
@@ -452,7 +461,6 @@ export default {
       });
       // Reverse those changes when detaching connections
       jsPlumb.bind("connectionDetached", info => {
-        console.log("CONNECTION DETACHED FOR CONDITION");
         // If a connection is made from a state block to this condition block,
         // update the source of this block empty
         if (
@@ -775,31 +783,21 @@ export default {
       // are not the elements making the connections - its the propertiy nodes. So we need
       // to delete those nodes first. (This was avoided in the clear() method
       // by first deleting ALL connections but we can't do that here)
-      if(id.startsWith("state") || id.startsWith("transform")){
+      if (id.startsWith("state") || id.startsWith("transform")) {
         jsPlumb.remove(id + "_neighbours");
         jsPlumb.remove(id + "_state");
       }
+      // We need to wait till the next tick here so that the blocks can resize
       Vue.nextTick(() => {
         jsPlumb.remove(id);
-        console.log("I've removed " + id);
 
-        // this.revalidateSourceless();
-      });
-      Vue.nextTick(() => {
         // Remove the data of that element
         for (var blockset in this.blocks) {
           if (this.blocks.hasOwnProperty(blockset)) {
-            console.log("Looking for " + id);
             let block = this.blocks[blockset].find(x => x.id === id);
-            console.log("Found " + block);
-            if(!block)continue;
+            if (!block) continue;
             let index = this.blocks[blockset].indexOf(block);
-            console.log(index);
-            console.log(JSON.stringify(this.blocks[blockset]));
-            this.$delete(
-              this.blocks[blockset],
-              index
-            );
+            this.$delete(this.blocks[blockset], index);
             break;
           }
         }
@@ -909,16 +907,18 @@ body {
   border-radius: 100%;
   top: -60px;
   left: -60px;
-  // background-color: rgba(180, 180, 180, 0.322);
-  background-color: rgba(211, 0, 0, 0.8);
-  -webkit-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
-  -moz-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
-  box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
+  background-color: rgba(180, 180, 180, 0.322);
 
   // .v-icon{
   //   position: absolute;
   //   right: 30px;
   //   bottom: 30px;
   // }
+}
+.red {
+  background-color: rgba(211, 0, 0, 0.8);
+  -webkit-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
+  -moz-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
+  box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
 }
 </style>
