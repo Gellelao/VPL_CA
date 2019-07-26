@@ -222,7 +222,7 @@ export default {
 
         index = sourceId.lastIndexOf("_");
         sourceId = sourceId.substr(0, index);
-        let source = this.blocks.stateBlocks.find(x => x.id === sourceId);
+        let source = this.blocks.stateBlocks.find(x => x.id == sourceId);
         var stateColour = source.colour;
         var requiredState = cond.requiredState;
         var operator = cond.operator;
@@ -269,42 +269,42 @@ export default {
     // Set up events to make sure changes down in the components are reflected in the data up here
     this.$root.$on("updateStateColour", data => {
       Vue.set(
-        this.blocks.stateBlocks.find(x => x.id === data.id),
+        this.blocks.stateBlocks.find(x => x.id == data.id),
         "colour",
         data.colour
       );
     });
     this.$root.$on("updateConditionRequiredState", data => {
       Vue.set(
-        this.blocks.conditionBlocks.find(x => x.id === data.id),
+        this.blocks.conditionBlocks.find(x => x.id == data.id),
         "requiredState",
         data.requiredState
       );
     });
     this.$root.$on("updateConditionNeighbours", data => {
       Vue.set(
-        this.blocks.conditionBlocks.find(x => x.id === data.id),
+        this.blocks.conditionBlocks.find(x => x.id == data.id),
         "desiredNumberOfNeighbours",
         data.neighbours
       );
     });
     this.$root.$on("updateConditionOperator", data => {
       Vue.set(
-        this.blocks.conditionBlocks.find(x => x.id === data.id),
+        this.blocks.conditionBlocks.find(x => x.id == data.id),
         "operator",
         data.operator
       );
     });
     this.$root.$on("updateActionDesiredState", data => {
       Vue.set(
-        this.blocks.actionBlocks.find(x => x.id === data.id),
+        this.blocks.actionBlocks.find(x => x.id == data.id),
         "desiredState",
         data.desiredState
       );
     });
     this.$root.$on("updateNeighbourhood", data => {
       Vue.set(
-        this.blocks.transformBlocks.find(x => x.id === data.id),
+        this.blocks.transformBlocks.find(x => x.id == data.id),
         "neighbourhood",
         data.neighbourhood
       );
@@ -334,7 +334,8 @@ export default {
         },
         drag: params => {
           this.mouseOverTrash =
-            Math.hypot(params.e.clientX, params.e.clientY - 64) <= 80;
+            Math.hypot(params.e.clientX, params.e.clientY - 64) <= 80 ||
+            (params.e.clientX <= 0 && params.e.clientY < 64);
         },
         stop: params => {
           this.trashOpen = false;
@@ -476,6 +477,7 @@ export default {
             // to the sourceId of the connection
             ""
           );
+          this.revalidateSourceless();
         } else if (info.sourceId == id && info.targetId.startsWith("action")) {
           // If a connection is made from this condition block to an action block,
           // delete the id of that action block out of the actions array of this condition block
@@ -551,6 +553,7 @@ export default {
             "source",
             ""
           );
+          this.revalidateSourceless();
         }
       });
     },
