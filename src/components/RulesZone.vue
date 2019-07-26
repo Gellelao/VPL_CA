@@ -477,7 +477,9 @@ export default {
             // to the sourceId of the connection
             ""
           );
-          this.revalidateSourceless();
+          Vue.nextTick(() => {
+            jsPlumb.revalidate(id);
+          });
         } else if (info.sourceId == id && info.targetId.startsWith("action")) {
           // If a connection is made from this condition block to an action block,
           // delete the id of that action block out of the actions array of this condition block
@@ -553,7 +555,9 @@ export default {
             "source",
             ""
           );
-          this.revalidateSourceless();
+          Vue.nextTick(() => {
+            jsPlumb.revalidate(id);
+          });
         }
       });
     },
@@ -644,6 +648,9 @@ export default {
             );
           }
         }
+        Vue.nextTick(() => {
+          jsPlumb.revalidate(id);
+        });
       });
     },
     upload() {
@@ -804,28 +811,6 @@ export default {
             break;
           }
         }
-      });
-    },
-    revalidateSourceless() {
-      // This method finds all blocks with no source, and revalidates them.
-      // Useful after deleting a block because that block may have been a source
-      // to other blocks, and those will now have source = "" due to the deletion.
-      // It is likely that this means the blocks need to update their shape, and
-      // we do this by calling revalidate on them here
-      let allChildrenIds = [];
-      for (var blockset in this.blocks) {
-        if (this.blocks.hasOwnProperty(blockset)) {
-          this.blocks[blockset].forEach(block => {
-            if (block.hasOwnProperty("source") && block.source == "") {
-              allChildrenIds.push(block.id);
-            }
-          });
-        }
-      }
-      Vue.nextTick(() => {
-        allChildrenIds.forEach(id => {
-          jsPlumb.revalidate(id);
-        });
       });
     },
     clearRules() {
