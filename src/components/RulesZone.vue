@@ -77,8 +77,21 @@
 
           <v-toolbar>
             <v-btn @click="save">Save Rules</v-btn>
-            <v-btn @click="upload">Load Rules</v-btn>
-            <input v-show="false" ref="inputUpload" type="file" @change="load" />
+            <v-btn id="loadFile" @click="upload">Load Rules</v-btn>
+            <v-menu top offset-y>
+              <template v-slot:activator="{ on }">
+                <v-btn id="loadPreset" v-on="on">
+                  <v-icon>expand_less</v-icon>
+                </v-btn>
+              </template>
+
+              <v-list>
+                <v-list-tile v-for="(item, i) in presets" :key="i" @click="loadPreset(item.data)">
+                  <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                </v-list-tile>
+              </v-list>
+            </v-menu>
+            <input v-show="false" ref="inputUpload" type="file" @change="loadFile" />
             <v-checkbox v-model="storeGrid" :label="`Save cells too?`"></v-checkbox>
             <v-btn @click="clearRules">Clear Rules</v-btn>
           </v-toolbar>
@@ -100,6 +113,9 @@ import ActionBlock from "./ActionBlock";
 import TransformBlock from "./TransformBlock";
 import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
+import basics from '../../rules/basics.json';
+import wireworld from '../../rules/unfinished_wireworld.json';
+import blueYellow from '../../rules/blue_and_yellow.json';
 
 // Count variable appended to block id values to ensure uniqueness
 var count = 0;
@@ -149,7 +165,12 @@ export default {
     storeGrid: true,
     grid: null,
     trashOpen: false,
-    mouseOverTrash: false
+    mouseOverTrash: false,
+    presets: [
+      { title: "Basics", data: basics },
+      { title: "Wireworld", data: wireworld },
+      { title: "BlueYellow", data: blueYellow }
+    ]
   }),
   updated() {
     // console.log("UPDATED");
@@ -723,70 +744,74 @@ export default {
         }
       }
     },
-    load(e) {
+    load(totalData) {
       console.log("LOAD");
+
+      if (totalData.grid && totalData.grid != null) {
+        console.log("Loading grid");
+        let jsonGrid = JSON.parse(totalData.grid);
+        this.$root.$emit("loadGrid", {
+          grid: jsonGrid
+        });
+      }
+
+      console.log("Setting blocks");
+      Vue.set(this.blocks, "stateBlocks", totalData.blocks.stateBlocks);
+      Vue.set(this.blocks, "conditionBlocks", totalData.blocks.conditionBlocks);
+      Vue.set(this.blocks, "actionBlocks", totalData.blocks.actionBlocks);
+      Vue.set(this.blocks, "transformBlocks", totalData.blocks.transformBlocks);
+
+      // Wait for the DOM to update before setting up plumbing
+      Vue.nextTick(() => {
+        console.log("Initializing blocks");
+        this.blocks.stateBlocks.forEach(block => {
+          this.initializeStateBlock(block.id);
+        });
+        this.blocks.conditionBlocks.forEach(block => {
+          this.initializeConditionBlock(block.id);
+        });
+        this.blocks.actionBlocks.forEach(block => {
+          this.initializeActionBlock(block.id);
+        });
+        this.blocks.transformBlocks.forEach(block => {
+          this.initializeTransformBlock(block.id);
+        });
+      });
+
+      Vue.nextTick(() => {
+        console.log("Making connections");
+        totalData.connections.forEach(connection => {
+          jsPlumb.connect({
+            source: connection.source,
+            target: connection.target
+          });
+        });
+      });
+    },
+    loadFile(e) {
       // Clear the existing rules before loading
       this.clearRules();
-      // Code from https://codepen.io/Atinux/pen/qOvawK/
-      var file = e.target.files || e.dataTransfer.files;
-      if (!file.length) {
-        console.error("!file.length");
-        return;
-      }
-      var reader = new FileReader();
-      reader.onload = e => {
-        let totalData = JSON.parse(e.target.result);
-
-        if (totalData.grid && totalData.grid != null) {
-          console.log("Loading grid");
-          let jsonGrid = JSON.parse(totalData.grid);
-          this.$root.$emit("loadGrid", {
-            grid: jsonGrid
-          });
+      Vue.nextTick(() => {
+        var file = e.target.files || e.dataTransfer.files;
+        if (!file.length) {
+          console.error("!file.length");
+          return;
         }
-
-        console.log("Setting blocks");
-        Vue.set(this.blocks, "stateBlocks", totalData.blocks.stateBlocks);
-        Vue.set(
-          this.blocks,
-          "conditionBlocks",
-          totalData.blocks.conditionBlocks
-        );
-        Vue.set(this.blocks, "actionBlocks", totalData.blocks.actionBlocks);
-        Vue.set(
-          this.blocks,
-          "transformBlocks",
-          totalData.blocks.transformBlocks
-        );
-
-        // Wait for the DOM to update before setting up plumbing
-        Vue.nextTick(() => {
-          console.log("Initializing blocks");
-          this.blocks.stateBlocks.forEach(block => {
-            this.initializeStateBlock(block.id);
-          });
-          this.blocks.conditionBlocks.forEach(block => {
-            this.initializeConditionBlock(block.id);
-          });
-          this.blocks.actionBlocks.forEach(block => {
-            this.initializeActionBlock(block.id);
-          });
-          this.blocks.transformBlocks.forEach(block => {
-            this.initializeTransformBlock(block.id);
-          });
-        });
-
-        Vue.nextTick(() => {
-          console.log("Making connections");
-          totalData.connections.forEach(connection => {
-            jsPlumb.connect({
-              source: connection.source,
-              target: connection.target
-            });
-          });
-        });
-      };
-      reader.readAsText(file[0]);
+        var reader = new FileReader();
+        reader.onload = e => {
+          let totalData = JSON.parse(e.target.result);
+          this.load(totalData);
+        };
+        reader.readAsText(file[0]);
+      });
+    },
+    loadPreset(preset) {
+      // Clear the existing rules before loading
+      this.clearRules();
+      Vue.nextTick(() => {
+        console.log("preset: " + preset);
+        this.load(preset);
+      });
     },
     removeBlock(id) {
       // Special case for State and Transform blocks because those blocks
@@ -831,12 +856,10 @@ export default {
       }
 
       // The elements are now gone from jsPlumb and the screen but we need to clear out the storage too:
-      Vue.nextTick(() => {
-        this.blocks.stateBlocks = [];
-        this.blocks.conditionBlocks = [];
-        this.blocks.actionBlocks = [];
-        this.blocks.transformBlocks = [];
-      });
+      this.blocks.stateBlocks = [];
+      this.blocks.conditionBlocks = [];
+      this.blocks.actionBlocks = [];
+      this.blocks.transformBlocks = [];
 
       // Also important to unbind the events we created for each block:
       jsPlumb.unbind();
@@ -908,5 +931,13 @@ body {
   -webkit-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
   -moz-box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
   box-shadow: 10px 10px 39px 0px rgba(181, 0, 0, 0.5);
+}
+#loadFile {
+  margin-right: 0px;
+}
+#loadPreset {
+  margin-left: 0px;
+  min-width: 40px;
+  padding: 0px;
 }
 </style>
