@@ -473,7 +473,10 @@ export default {
             // to the sourceId of the connection
             info.sourceId
           );
-        } else if (info.sourceId == thenNode && info.targetId.startsWith("action")) {
+        } else if (
+          info.sourceId == thenNode &&
+          info.targetId.startsWith("action")
+        ) {
           // If a connection is made from this condition block to an action block,
           // push the id of that action block into the actions array of this condition block
           // Add the id of the source to the array of triggers
@@ -548,28 +551,32 @@ export default {
           (info.sourceId.startsWith("state") ||
             info.sourceId.startsWith("transform"))
         ) {
-          // Style the Action connection differently to other connections
-          info.connection.addType("actionProperty");
-          info.connection.removeOverlay("arrow");
-          // Only update source if we receive a connection from a State or Transform block
+          // if this action already has a sourceConnection, detach it because an Action can only have one source
+          let existingConnection = this.blocks.actionBlocks.find(
+            x => x.id === id
+          ).sourceConnection;
+          if (existingConnection) jsPlumb.deleteConnection(existingConnection);
           Vue.set(
-            // Find the array entry for this block
-            this.blocks.actionBlocks.find(x => x.id === id),
-            // Update the source field
-            "source",
-            // to the sourceId of the connection
-            info.sourceId
-          );
-          // if has a sourceConnection, detach it because n Action can only have one source
-          let connectionId = this.blocks.actionBlocks.find(x => x.id === id).sourceConnection;
-          console.log(connectionId);
-          if(connectionId)jsPlumb.deleteConnection(connectionId);
-          Vue.set(
-            // Find the array entry for this block
+            // Update the sourceConnection to the new one
             this.blocks.actionBlocks.find(x => x.id === id),
             "sourceConnection",
             info.connection
           );
+          // Style the Action connection differently to other connections
+          info.connection.addType("actionProperty");
+          info.connection.removeOverlay("arrow");
+          // Only update source if we receive a connection from a State or Transform block
+          // Do it in the next tick because we need to wait for the other connection to be detached first
+          Vue.nextTick(() => {
+            Vue.set(
+              // Find the array entry for this block
+              this.blocks.actionBlocks.find(x => x.id === id),
+              // Update the source field
+              "source",
+              // to the sourceId of the connection
+              info.sourceId
+            );
+          });
         }
       });
       // The reverse of the above bind, we set the source to empty when detached
@@ -647,6 +654,10 @@ export default {
       // the name of the property which was just connected to it.
       jsPlumb.bind("connection", info => {
         if (info.targetId == id) {
+          // For now there is no implementation for connecting the State node to Transforms, so delete those connections
+          if (info.sourceId.endsWith("state")) {
+            jsPlumb.deleteConnection(info.connection);
+          }
           if (info.sourceId.startsWith("state")) {
             // Only update source if we receive a connection from a State block
             Vue.set(
