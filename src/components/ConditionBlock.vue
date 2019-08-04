@@ -25,7 +25,9 @@
       <div class="body">Apply action regardless</div>
     </template>
     <div class="body" v-else>Connect a property</div>
-    <div class="thenSource"></div>
+    <div :id="id+'_then'" class="thenSource">
+      <v-chip>Then</v-chip>
+    </div>
   </div>
 </template>
 
@@ -102,6 +104,7 @@ export default {
   }
   .body {
     display: inline-block;
+    margin-bottom: 15px;
     // position: absolute;
     // top: 40px;
     // left: 10px;
@@ -122,12 +125,12 @@ export default {
   .thenSource {
     display: inline-block;
     position: absolute;
-    background-color: rgb(49, 155, 247);
-    width: 30px;
-    height: 30px;
-    right: -15px;
-    bottom: -15px;
-    border-radius: 100%;
+    // background-color: rgb(49, 155, 247);
+    // width: 30px;
+    // height: 30px;
+    right: 28px;
+    bottom: -25px;
+    // border-radius: 100%;
   }
 }
 </style>

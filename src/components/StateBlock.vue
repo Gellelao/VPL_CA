@@ -8,8 +8,12 @@
       <swatches v-model="colour" colors="text-basic" @input="updateStateInParent"></swatches>
       <!-- </div> -->
     </div>
-    <div :id="id+'_neighbours'" class="neighboursSource"></div>
-    <div :id="id+'_state'" class="stateSource"></div>
+    <div :id="id+'_neighbours'" class="neighboursSource">
+      <v-chip >Others</v-chip>
+    </div>
+    <div :id="id+'_state'" class="stateSource">
+      <v-chip >Myself</v-chip>
+    </div>
   </div>
 </template>
 
@@ -63,24 +67,6 @@ export default {
     border-radius: 5px;
     background-color: rgb(90, 90, 90);
     /* box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75); */
-  }
-  .neighboursSource {
-    position: absolute;
-    background-color: rgb(54, 173, 43);
-    width: 30px;
-    height: 30px;
-    right: 20px;
-    bottom: 0px;
-    border-radius: 100%;
-  }
-  .stateSource {
-    position: absolute;
-    background-color: rgb(173, 0, 0);
-    width: 30px;
-    height: 30px;
-    left: 20px;
-    bottom: -0px;
-    border-radius: 100%;
   }
 }
 </style>

@@ -26,10 +26,10 @@
     <div class="body" v-else>Connect a property</div>
     <!-- put the property nodes in v-shows so that they stay on the dom -->
     <div v-show="property === 'neighbours'">
-      <div :id="id+'_neighbours'" class="neighboursSource"></div>
+      <div :id="id+'_neighbours'" class="neighboursSource"><v-chip >Others</v-chip></div>
     </div>
     <div v-show="property === 'state'">
-      <div :id="id+'_state'" class="stateSource"></div>
+      <div :id="id+'_state'" class="stateSource"><v-chip >Myself</v-chip></div>
     </div>
   </div>
 </template>
@@ -92,21 +92,8 @@ export default {
     font-size: 18px;
     margin-bottom: 12px;
   }
-  .neighboursSource {
-    position: absolute;
-    background-color: rgb(54, 173, 43);
-    width: 30px;
-    height: 30px;
+  .neighboursSource, .stateSource {
     bottom: -15px;
-    border-radius: 100%;
-  }
-  .stateSource {
-    position: absolute;
-    background-color: rgb(173, 0, 0);
-    width: 30px;
-    height: 30px;
-    bottom: -15px;
-    border-radius: 100%;
   }
   .body {
     display: inline-block;

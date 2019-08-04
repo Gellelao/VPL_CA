@@ -113,9 +113,9 @@ import ActionBlock from "./ActionBlock";
 import TransformBlock from "./TransformBlock";
 import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
-import basics from '../../rules/basics.json';
-import wireworld from '../../rules/unfinished_wireworld.json';
-import blueYellow from '../../rules/blue_and_yellow.json';
+import basics from "../../rules/basics.json";
+import wireworld from "../../rules/unfinished_wireworld.json";
+import blueYellow from "../../rules/blue_and_yellow.json";
 
 // Count variable appended to block id values to ensure uniqueness
 var count = 0;
@@ -441,12 +441,13 @@ export default {
       let blockData = this.blocks.conditionBlocks.find(x => x.id === id);
       this.initializeGenericBlock(id, blockData);
 
+      let thenNode = id + "_then";
+
       jsPlumb.makeSource(
-        id,
+        thenNode,
         {
           maxConnections: 100,
-          filter: ".thenSource",
-          anchor: "BottomRight"
+          anchor: "Center"
         },
         sourcePoint
       );
@@ -472,7 +473,7 @@ export default {
             // to the sourceId of the connection
             info.sourceId
           );
-        } else if (info.sourceId == id && info.targetId.startsWith("action")) {
+        } else if (info.sourceId == thenNode && info.targetId.startsWith("action")) {
           // If a connection is made from this condition block to an action block,
           // push the id of that action block into the actions array of this condition block
           // Add the id of the source to the array of triggers
@@ -550,7 +551,7 @@ export default {
           // Style the Action connection differently to other connections
           info.connection.addType("actionProperty");
           info.connection.removeOverlay("arrow");
-          // Only update source if we receive a connection from a State block
+          // Only update source if we receive a connection from a State or Transform block
           Vue.set(
             // Find the array entry for this block
             this.blocks.actionBlocks.find(x => x.id === id),
@@ -558,6 +559,16 @@ export default {
             "source",
             // to the sourceId of the connection
             info.sourceId
+          );
+          // if has a sourceConnection, detach it because n Action can only have one source
+          let connectionId = this.blocks.actionBlocks.find(x => x.id === id).sourceConnection;
+          console.log(connectionId);
+          if(connectionId)jsPlumb.deleteConnection(connectionId);
+          Vue.set(
+            // Find the array entry for this block
+            this.blocks.actionBlocks.find(x => x.id === id),
+            "sourceConnection",
+            info.connection
           );
         }
       });
@@ -822,6 +833,9 @@ export default {
         jsPlumb.remove(id + "_neighbours");
         jsPlumb.remove(id + "_state");
       }
+      if (id.startsWith("condition")) {
+        jsPlumb.remove(id + "_then");
+      }
       // We need to wait till the next tick here so that the blocks can resize
       Vue.nextTick(() => {
         jsPlumb.remove(id);
@@ -939,5 +953,25 @@ body {
   margin-left: 0px;
   min-width: 40px;
   padding: 0px;
+}
+.neighboursSource {
+  position: absolute;
+  // background-color: rgb(54, 173, 43);
+  // width: 30px;
+  // height: 30px;
+  display: inline-block;
+  right: 0px;
+  bottom: -10px;
+  border-radius: 100%;
+}
+.stateSource {
+  position: absolute;
+  // background-color: rgb(173, 0, 0);
+  // width: 30px;
+  // height: 30px;
+  display: inline-block;
+  left: 0px;
+  bottom: -10px;
+  border-radius: 100%;
 }
 </style>
