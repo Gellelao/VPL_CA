@@ -266,11 +266,11 @@ export default {
     console.log("mounted");
     jsPlumb.registerConnectionTypes({
       actionProperty: {
-        cssClass:"actionProperty",
+        cssClass: "actionProperty",
         paintStyle: {
           // stroke: "#f2eaa9",
           strokeWidth: 8
-          } //outlineStroke: "black", outlineWidth: 2
+        } //outlineStroke: "black", outlineWidth: 2
       }
     });
     jsPlumb.setContainer(document.getElementById("points"));
@@ -279,12 +279,11 @@ export default {
         // stroke: "#e8d225",
         strokeWidth: 15
       },
-      Endpoints: ["Dot", {radius: 70}],
+      // Endpoints : [ "Dot", null ],
+      EndpointStyle: { radius: 20 },
+      // EndpointStyles : [ { radius : 20 }, { radius : 20 } ],
       Connector: ["Bezier", { curviness: 50 }],
-      ConnectionOverlays: defaultArrow,
-      // Endpoints: [["Dot", { radius: 7 }], ["Dot", { radius: 11 }]],
-      // DragOptions: { cursor: "crosshair" },
-      // EndpointStyles: [{ radius: 70, width: 100, height: 100 }, { radius: 70, width: 100, height: 100 }]
+      ConnectionOverlays: defaultArrow
     });
 
     this.revalidateOnConnect();
@@ -347,7 +346,11 @@ export default {
         // This first tick is when the block will be resizing, so we wait for that to pass first
         Vue.nextTick(() => {
           Vue.nextTick(() => {
-            jsPlumb.revalidate(info.targetId);
+            // This is getting out of hand... need to wait for a third tick because when we connect to an
+            // Action block we wait a tick for the existing connection to be cleared first
+            Vue.nextTick(() => {
+              jsPlumb.revalidate(info.targetId);
+            });
           });
         });
       });
@@ -938,19 +941,19 @@ body {
   border-radius: 15px;
   background-color: var(--colorpicker-background);
 }
-svg.jtk-connector path{
+svg.jtk-connector path {
   stroke: var(--action-primary);
 }
-svg.actionProperty path{
+svg.actionProperty path {
   stroke: var(--condition-primary);
 }
 .jtk-endpoint {
   z-index: 1;
-  svg circle{
-    fill: var(--background);
-    stroke: var(--endpoint);
-    stroke-width: 8;
-    r: 10;
+  svg circle {
+    fill: var(--transform-secondary);
+    stroke: var(--transform-primary);
+    stroke-width: 2;
+    r: 15;
     // width: 50px;
     // height: 50px;
   }
@@ -1004,5 +1007,10 @@ svg.actionProperty path{
   left: 0px;
   bottom: -10px;
   border-radius: 100%;
+}
+.condition {
+  border-width: 2px;
+  border-color: var(--condition-secondary);
+  border-style: solid;
 }
 </style>

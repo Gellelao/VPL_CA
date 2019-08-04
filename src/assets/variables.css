@@ -1,6 +1,6 @@
 :root {
     --condition-primary: #79B473;
-    --condition-secondary: #79B473;
+    --condition-secondary: rgb(91, 136, 86);
     --action-primary: #70A37F;
     --action-secondary: #70A37F;
     --state-primary: #41658A;
