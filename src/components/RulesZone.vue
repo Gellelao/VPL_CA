@@ -266,21 +266,25 @@ export default {
     console.log("mounted");
     jsPlumb.registerConnectionTypes({
       actionProperty: {
-        paintStyle: { stroke: "#f2eaa9", strokeWidth: 8 } //outlineStroke: "black", outlineWidth: 2
+        cssClass:"actionProperty",
+        paintStyle: {
+          // stroke: "#f2eaa9",
+          strokeWidth: 8
+          } //outlineStroke: "black", outlineWidth: 2
       }
     });
     jsPlumb.setContainer(document.getElementById("points"));
     jsPlumb.importDefaults({
       PaintStyle: {
-        stroke: "#e8d225",
+        // stroke: "#e8d225",
         strokeWidth: 15
       },
-      Endpoints: ["Dot"],
+      Endpoints: ["Dot", {radius: 70}],
       Connector: ["Bezier", { curviness: 50 }],
-      ConnectionOverlays: defaultArrow
+      ConnectionOverlays: defaultArrow,
       // Endpoints: [["Dot", { radius: 7 }], ["Dot", { radius: 11 }]],
       // DragOptions: { cursor: "crosshair" },
-      // EndpointStyles: [{ fillStyle: "#225588" }, { fillStyle: "#558822" }]
+      // EndpointStyles: [{ radius: 70, width: 100, height: 100 }, { radius: 70, width: 100, height: 100 }]
     });
 
     this.revalidateOnConnect();
@@ -897,6 +901,8 @@ export default {
 </script>
 
 <style lang="scss">
+@import "../assets/variables.css";
+
 html,
 body {
   overflow-y: hidden !important;
@@ -907,7 +913,7 @@ body {
 #points {
   position: relative;
   // background-color: #fffde7;
-  background-color: white;
+  background-color: var(--background);
   // min-height: 750px;
   // resize: vertical;
   border: 1px solid #aaaaaa;
@@ -930,10 +936,24 @@ body {
   height: 50px;
   padding: 4px;
   border-radius: 15px;
-  background-color: rgb(90, 90, 90);
+  background-color: var(--colorpicker-background);
+}
+svg.jtk-connector path{
+  stroke: var(--action-primary);
+}
+svg.actionProperty path{
+  stroke: var(--condition-primary);
 }
 .jtk-endpoint {
   z-index: 1;
+  svg circle{
+    fill: var(--background);
+    stroke: var(--endpoint);
+    stroke-width: 8;
+    r: 10;
+    // width: 50px;
+    // height: 50px;
+  }
 }
 .trash {
   position: absolute;

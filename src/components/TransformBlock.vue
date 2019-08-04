@@ -83,7 +83,7 @@ export default {
   // height: 160px;
   border-radius: 3px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: #fda635;
+  background-color: var(--transform-primary);
 
   .heading {
     // position: absolute;
@@ -108,10 +108,10 @@ export default {
     width: 30px;
     height: 30px;
     border: rgb(48, 48, 48);
-    background-color: #fda635;
+    background-color: var(--transform-primary);
   }
   .on {
-    background-color: #a16a23;
+    background-color: var(--transform-secondary);;
   }
   th,
   td {

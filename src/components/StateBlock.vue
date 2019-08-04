@@ -50,7 +50,7 @@ export default {
   height: 150px;
   border-radius: 100%;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: #fff9c4;
+  background-color: var(--state-primary);
 
   .heading {
     position: absolute;
@@ -59,14 +59,8 @@ export default {
   }
   .selectColour {
     position: absolute;
-    width: 50px;
-    height: 50px;
     top: 60px;
     left: 50px;
-    padding: 4px;
-    border-radius: 5px;
-    background-color: rgb(90, 90, 90);
-    /* box-shadow: 2px 2px 2px 2px rgba(190, 190, 190, 0.75); */
   }
 }
 </style>

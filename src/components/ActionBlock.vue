@@ -57,7 +57,7 @@ export default {
   // height: 160px;
   border-radius: 30px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: #fdd835;
+  background-color: var(--action-primary);
 
   .heading {
     // position: absolute;

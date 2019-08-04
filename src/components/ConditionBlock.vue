@@ -93,7 +93,7 @@ export default {
   padding: 10px;
   border-radius: 5px;
   box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
-  background-color: #fff176;
+  background-color: var(--condition-primary);
   .heading {
     // position: absolute;
     display: inline-block;
@@ -112,14 +112,14 @@ export default {
   select {
     width: 100%;
     border-radius: 5px;
-    background-color: #fdd835;
+    background-color: var(--condition-secondary);
     margin-bottom: 4px;
     padding-left: 4px;
   }
   input {
     width: 100%;
     border-radius: 5px;
-    background-color: #fdd835;
+    background-color: var(--condition-secondary);
     padding-left: 4px;
   }
   .thenSource {
