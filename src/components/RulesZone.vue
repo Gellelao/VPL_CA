@@ -559,15 +559,21 @@ export default {
             info.sourceId.startsWith("transform"))
         ) {
           // if this action already has a sourceConnection, detach it because an Action can only have one source
-          let existingConnection = this.blocks.actionBlocks.find(
+          let existingConnectionId = this.blocks.actionBlocks.find(
             x => x.id === id
-          ).sourceConnection;
-          if (existingConnection) jsPlumb.deleteConnection(existingConnection);
+          ).sourceConnectionId;
+          // Find all the connections targetting this block, and delete them if they have the same connection id
+          // as the existing connection. Effectively remove the previous connection before making a new one
+          jsPlumb.select({target: id}).each((connection => {
+            console.log("connection.id: " + connection.id);
+            console.log("existingConnectionId: " + existingConnectionId);
+            if(connection.id == existingConnectionId)jsPlumb.deleteConnection(connection);
+          }));
           Vue.set(
             // Update the sourceConnection to the new one
             this.blocks.actionBlocks.find(x => x.id === id),
-            "sourceConnection",
-            info.connection
+            "sourceConnectionId",
+            info.connection.id
           );
           // Style the Action connection differently to other connections
           info.connection.addType("actionProperty");
@@ -996,12 +1002,17 @@ svg.actionProperty path {
   bottom: -10px;
   border-radius: 100%;
 }
-.state, .condition, .action, .transform{
-  box-shadow: 10px 10px 6px -10px rgba(0,0,0,0.2);
+.state,
+.condition,
+.action,
+.transform {
+  box-shadow: 10px 10px 6px -10px rgba(0, 0, 0, 0.2);
   border-width: 3px;
   border-style: solid;
 }
-.condition, .action, .transform{
+.condition,
+.action,
+.transform {
   border-radius: 10px;
 }
 </style>
