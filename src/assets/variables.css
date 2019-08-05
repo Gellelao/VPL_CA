@@ -1,0 +1,18 @@
+:root {
+    --condition-primary: #B5E2FA;
+    --condition-secondary: #A5CEE4;
+    --action-primary: #F49BA1;
+    --action-secondary: #EA5D67;
+    --state-primary: #FFF9C4;
+    --state-secondary: #FDD835;
+    --transform-primary: #BCD979;
+    --transform-secondary: #9DAD6F;
+    --state-node: #DBCFB0;
+    --neighbours-node: #686868;
+    --background: #FFFFFF;
+    --colorpicker-background: #C9C9EE;
+    --default-connector: #D3D6D5;
+    --action-connector: #EEEEEE;
+    --endpoint-primary: #8D9292;
+    --endpoint-secondary: #7C8282;
+  }

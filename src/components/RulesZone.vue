@@ -113,9 +113,9 @@ import ActionBlock from "./ActionBlock";
 import TransformBlock from "./TransformBlock";
 import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
-import basics from '../../rules/basics.json';
-import wireworld from '../../rules/unfinished_wireworld.json';
-import blueYellow from '../../rules/blue_and_yellow.json';
+import basics from "../../rules/basics.json";
+import wireworld from "../../rules/unfinished_wireworld.json";
+import blueYellow from "../../rules/blue_and_yellow.json";
 
 // Count variable appended to block id values to ensure uniqueness
 var count = 0;
@@ -266,21 +266,24 @@ export default {
     console.log("mounted");
     jsPlumb.registerConnectionTypes({
       actionProperty: {
-        paintStyle: { stroke: "#f2eaa9", strokeWidth: 8 } //outlineStroke: "black", outlineWidth: 2
+        cssClass: "actionProperty",
+        paintStyle: {
+          // stroke: "#f2eaa9",
+          strokeWidth: 8
+        } //outlineStroke: "black", outlineWidth: 2
       }
     });
     jsPlumb.setContainer(document.getElementById("points"));
     jsPlumb.importDefaults({
       PaintStyle: {
-        stroke: "#e8d225",
+        // stroke: "#e8d225",
         strokeWidth: 15
       },
-      Endpoints: ["Dot"],
+      // Endpoints : [ "Dot", null ],
+      EndpointStyle: { radius: 20 },
+      // EndpointStyles : [ { radius : 20 }, { radius : 20 } ],
       Connector: ["Bezier", { curviness: 50 }],
       ConnectionOverlays: defaultArrow
-      // Endpoints: [["Dot", { radius: 7 }], ["Dot", { radius: 11 }]],
-      // DragOptions: { cursor: "crosshair" },
-      // EndpointStyles: [{ fillStyle: "#225588" }, { fillStyle: "#558822" }]
     });
 
     this.revalidateOnConnect();
@@ -343,7 +346,11 @@ export default {
         // This first tick is when the block will be resizing, so we wait for that to pass first
         Vue.nextTick(() => {
           Vue.nextTick(() => {
-            jsPlumb.revalidate(info.targetId);
+            // This is getting out of hand... need to wait for a third tick because when we connect to an
+            // Action block we wait a tick for the existing connection to be cleared first
+            Vue.nextTick(() => {
+              jsPlumb.revalidate(info.targetId);
+            });
           });
         });
       });
@@ -441,12 +448,13 @@ export default {
       let blockData = this.blocks.conditionBlocks.find(x => x.id === id);
       this.initializeGenericBlock(id, blockData);
 
+      let thenNode = id + "_then";
+
       jsPlumb.makeSource(
-        id,
+        thenNode,
         {
           maxConnections: 100,
-          filter: ".thenSource",
-          anchor: "BottomRight"
+          anchor: "Center"
         },
         sourcePoint
       );
@@ -472,7 +480,10 @@ export default {
             // to the sourceId of the connection
             info.sourceId
           );
-        } else if (info.sourceId == id && info.targetId.startsWith("action")) {
+        } else if (
+          info.sourceId == thenNode &&
+          info.targetId.startsWith("action")
+        ) {
           // If a connection is made from this condition block to an action block,
           // push the id of that action block into the actions array of this condition block
           // Add the id of the source to the array of triggers
@@ -547,18 +558,36 @@ export default {
           (info.sourceId.startsWith("state") ||
             info.sourceId.startsWith("transform"))
         ) {
+          // if this action already has a sourceConnection, detach it because an Action can only have one source
+          let existingConnectionId = this.blocks.actionBlocks.find(
+            x => x.id === id
+          ).sourceConnectionId;
+          // Find all the connections targetting this block, and delete them if they have the same connection id
+          // as the existing connection. Effectively remove the previous connection before making a new one
+          jsPlumb.select({target: id}).each((connection => {
+            if(connection.id == existingConnectionId)jsPlumb.deleteConnection(connection);
+          }));
+          Vue.set(
+            // Update the sourceConnection to the new one
+            this.blocks.actionBlocks.find(x => x.id === id),
+            "sourceConnectionId",
+            info.connection.id
+          );
           // Style the Action connection differently to other connections
           info.connection.addType("actionProperty");
           info.connection.removeOverlay("arrow");
-          // Only update source if we receive a connection from a State block
-          Vue.set(
-            // Find the array entry for this block
-            this.blocks.actionBlocks.find(x => x.id === id),
-            // Update the source field
-            "source",
-            // to the sourceId of the connection
-            info.sourceId
-          );
+          // Only update source if we receive a connection from a State or Transform block
+          // Do it in the next tick because we need to wait for the other connection to be detached first
+          Vue.nextTick(() => {
+            Vue.set(
+              // Find the array entry for this block
+              this.blocks.actionBlocks.find(x => x.id === id),
+              // Update the source field
+              "source",
+              // to the sourceId of the connection
+              info.sourceId
+            );
+          });
         }
       });
       // The reverse of the above bind, we set the source to empty when detached
@@ -636,6 +665,10 @@ export default {
       // the name of the property which was just connected to it.
       jsPlumb.bind("connection", info => {
         if (info.targetId == id) {
+          // For now there is no implementation for connecting the State node to Transforms, so delete those connections
+          if (info.sourceId.endsWith("state")) {
+            jsPlumb.deleteConnection(info.connection);
+          }
           if (info.sourceId.startsWith("state")) {
             // Only update source if we receive a connection from a State block
             Vue.set(
@@ -822,6 +855,9 @@ export default {
         jsPlumb.remove(id + "_neighbours");
         jsPlumb.remove(id + "_state");
       }
+      if (id.startsWith("condition")) {
+        jsPlumb.remove(id + "_then");
+      }
       // We need to wait till the next tick here so that the blocks can resize
       Vue.nextTick(() => {
         jsPlumb.remove(id);
@@ -872,6 +908,8 @@ export default {
 </script>
 
 <style lang="scss">
+@import "../assets/variables.css";
+
 html,
 body {
   overflow-y: hidden !important;
@@ -882,7 +920,7 @@ body {
 #points {
   position: relative;
   // background-color: #fffde7;
-  background-color: white;
+  background-color: var(--background);
   // min-height: 750px;
   // resize: vertical;
   border: 1px solid #aaaaaa;
@@ -905,10 +943,21 @@ body {
   height: 50px;
   padding: 4px;
   border-radius: 15px;
-  background-color: rgb(90, 90, 90);
+}
+svg.jtk-connector path {
+  stroke: var(--default-connector);
+}
+svg.actionProperty path {
+  stroke: var(--action-connector);
 }
 .jtk-endpoint {
   z-index: 1;
+  svg circle {
+    fill: var(--endpoint-primary);
+    stroke: var(--endpoint-secondary);
+    stroke-width: 3;
+    r: 13;
+  }
 }
 .trash {
   position: absolute;
@@ -919,12 +968,6 @@ body {
   top: -60px;
   left: -60px;
   background-color: rgba(180, 180, 180, 0.322);
-
-  // .v-icon{
-  //   position: absolute;
-  //   right: 30px;
-  //   bottom: 30px;
-  // }
 }
 .red {
   background-color: rgba(211, 0, 0, 0.8);
@@ -939,5 +982,35 @@ body {
   margin-left: 0px;
   min-width: 40px;
   padding: 0px;
+}
+.neighboursSource {
+  position: absolute;
+  // background-color: rgb(54, 173, 43);
+  // width: 30px;
+  // height: 30px;
+  display: inline-block;
+  right: 0px;
+  bottom: -10px;
+  border-radius: 100%;
+}
+.stateSource {
+  position: absolute;
+  display: inline-block;
+  left: 0px;
+  bottom: -10px;
+  border-radius: 100%;
+}
+.state,
+.condition,
+.action,
+.transform {
+  box-shadow: 10px 10px 6px -10px rgba(0, 0, 0, 0.2);
+  border-width: 3px;
+  border-style: solid;
+}
+.condition,
+.action,
+.transform {
+  border-radius: 10px;
 }
 </style>
