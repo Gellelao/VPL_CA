@@ -9,10 +9,10 @@
     --transform-secondary: #9DAD6F;
     --state-node: #DBCFB0;
     --neighbours-node: #686868;
-    --background: #F9F7F0;
+    --background: #FFFFFF;
     --colorpicker-background: #C9C9EE;
     --default-connector: #D3D6D5;
-    --action-connector: #DBDBDB;
+    --action-connector: #EEEEEE;
     --endpoint-primary: #8D9292;
     --endpoint-secondary: #7C8282;
   }
