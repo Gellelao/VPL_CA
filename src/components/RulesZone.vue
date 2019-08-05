@@ -565,8 +565,6 @@ export default {
           // Find all the connections targetting this block, and delete them if they have the same connection id
           // as the existing connection. Effectively remove the previous connection before making a new one
           jsPlumb.select({target: id}).each((connection => {
-            console.log("connection.id: " + connection.id);
-            console.log("existingConnectionId: " + existingConnectionId);
             if(connection.id == existingConnectionId)jsPlumb.deleteConnection(connection);
           }));
           Vue.set(
