@@ -939,23 +939,20 @@ body {
   height: 50px;
   padding: 4px;
   border-radius: 15px;
-  background-color: var(--colorpicker-background);
 }
 svg.jtk-connector path {
-  stroke: var(--action-primary);
+  stroke: var(--default-connector);
 }
 svg.actionProperty path {
-  stroke: var(--condition-primary);
+  stroke: var(--action-connector);
 }
 .jtk-endpoint {
   z-index: 1;
   svg circle {
-    fill: var(--transform-secondary);
-    stroke: var(--transform-primary);
-    stroke-width: 2;
-    r: 15;
-    // width: 50px;
-    // height: 50px;
+    fill: var(--endpoint-primary);
+    stroke: var(--endpoint-secondary);
+    stroke-width: 3;
+    r: 13;
   }
 }
 .trash {
@@ -967,12 +964,6 @@ svg.actionProperty path {
   top: -60px;
   left: -60px;
   background-color: rgba(180, 180, 180, 0.322);
-
-  // .v-icon{
-  //   position: absolute;
-  //   right: 30px;
-  //   bottom: 30px;
-  // }
 }
 .red {
   background-color: rgba(211, 0, 0, 0.8);
@@ -1000,17 +991,17 @@ svg.actionProperty path {
 }
 .stateSource {
   position: absolute;
-  // background-color: rgb(173, 0, 0);
-  // width: 30px;
-  // height: 30px;
   display: inline-block;
   left: 0px;
   bottom: -10px;
   border-radius: 100%;
 }
-.condition {
-  border-width: 2px;
-  border-color: var(--condition-secondary);
+.state, .condition, .action, .transform{
+  box-shadow: 10px 10px 6px -10px rgba(0,0,0,0.2);
+  border-width: 3px;
   border-style: solid;
+}
+.condition, .action, .transform{
+  border-radius: 10px;
 }
 </style>

@@ -1,17 +1,18 @@
 :root {
-    --condition-primary: #79B473;
-    --condition-secondary: rgb(91, 136, 86);
-    --action-primary: #70A37F;
-    --action-secondary: #70A37F;
-    --state-primary: #41658A;
-    --state-secondary: #41658A;
-    --transform-primary: #414073;
-    --transform-secondary: #2A294A;
+    --condition-primary: #B5E2FA;
+    --condition-secondary: #A5CEE4;
+    --action-primary: #F49BA1;
+    --action-secondary: #EA5D67;
+    --state-primary: #FFF9C4;
+    --state-secondary: #FDD835;
+    --transform-primary: #BCD979;
+    --transform-secondary: #9DAD6F;
     --state-node: #DBCFB0;
     --neighbours-node: #686868;
-    --background: #C9C9EE;
+    --background: #F9F7F0;
     --colorpicker-background: #C9C9EE;
-    --default-connector: #C9C9EE;
-    --action-connector: #C9C9EE;
-    --endpoint: #DBCFB0;
+    --default-connector: #D3D6D5;
+    --action-connector: #DBDBDB;
+    --endpoint-primary: #8D9292;
+    --endpoint-secondary: #7C8282;
   }

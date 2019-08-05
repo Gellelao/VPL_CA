@@ -87,50 +87,37 @@ export default {
   text-align: center;
   z-index: 2;
   position: absolute;
-  width: 120px;
-  // min-height: 70px;
-  // max-height: 170px;
+  // width: 120px;
   padding: 10px;
-  border-radius: 5px;
-  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: var(--condition-primary);
+  border-color: var(--condition-secondary);
+
   .heading {
-    // position: absolute;
     display: inline-block;
-    // top: 10px;
-    // left: 10px;
     font-size: 18px;
     margin-bottom: 12px;
   }
   .body {
     display: inline-block;
     margin-bottom: 15px;
-    // position: absolute;
-    // top: 40px;
-    // left: 10px;
+    max-width: 120px;
   }
-  select {
+  .selectColour {
+    background-color: var(--condition-secondary);
+  }
+  input, select {
     width: 100%;
+    display: block;
     border-radius: 5px;
     background-color: var(--condition-secondary);
     margin-bottom: 4px;
-    padding-left: 4px;
-  }
-  input {
-    width: 100%;
-    border-radius: 5px;
-    background-color: var(--condition-secondary);
-    padding-left: 4px;
+    padding: 4px 10px;
   }
   .thenSource {
     display: inline-block;
     position: absolute;
-    // background-color: rgb(49, 155, 247);
-    // width: 30px;
-    // height: 30px;
-    right: 28px;
+    right: 39px;
     bottom: -25px;
-    // border-radius: 100%;
   }
 }
 </style>

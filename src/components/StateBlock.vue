@@ -1,7 +1,7 @@
 <template>
   <div :id="id" class="state">
     <v-toolbar-title class="text-uppercase">
-      <span class="heading">State</span>
+      <span class="heading">Colour</span>
     </v-toolbar-title>
     <div class="selectColour">
       <!-- <div class="form__input"> -->
@@ -9,10 +9,10 @@
       <!-- </div> -->
     </div>
     <div :id="id+'_neighbours'" class="neighboursSource">
-      <v-chip >Others</v-chip>
+      <v-chip>Others</v-chip>
     </div>
     <div :id="id+'_state'" class="stateSource">
-      <v-chip >Myself</v-chip>
+      <v-chip>Myself</v-chip>
     </div>
   </div>
 </template>
@@ -46,21 +46,21 @@ export default {
 .state {
   z-index: 2;
   position: absolute;
+    display: inline-block;
   width: 150px;
   height: 150px;
   border-radius: 100%;
-  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: var(--state-primary);
+  border-color: var(--state-secondary);
 
   .heading {
-    position: absolute;
-    top: 30px;
-    left: 42px;
+    display: inline-block;
+    margin-top: 25px;
   }
   .selectColour {
-    position: absolute;
-    top: 60px;
-    left: 50px;
+    display: inline-block;
+    margin-top: 5px;
+    background-color: var(--state-secondary);
   }
 }
 </style>

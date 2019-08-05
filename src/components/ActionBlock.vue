@@ -53,18 +53,15 @@ export default {
   z-index: 2;
   position: absolute;
   padding: 10px;
-  // width: 110px;
-  // height: 160px;
-  border-radius: 30px;
-  box-shadow: 5px 5px 5px 0px rgba(190, 190, 190, 0.75);
   background-color: var(--action-primary);
+  border-color: var(--action-secondary);
 
   .heading {
-    // position: absolute;
-    // top: 10px;
-    // left: 10px;
     font-size: 18px;
     margin-bottom: 12px;
+  }
+  .selectColour {
+    background-color: var(--action-secondary);
   }
 }
 </style>
