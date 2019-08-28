@@ -201,6 +201,11 @@ export default {
           // Using the condition's array of actions (which are strings of the action ids),
           // find the corresponding Action object from the actionBlocks array
           let action = this.blocks.actionBlocks.find(x => x.id === actionId);
+          if(!action){
+            console.error("Could not find action " + actionId + " but it was in the actions array of Condition " + cond.id);
+            validActions = false;
+            return;
+          }
           if (!action.source || !action.desiredState) {
             validActions = false;
             return;
