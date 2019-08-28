@@ -255,6 +255,12 @@ export default {
                   }
                   break;
                 }
+                case "Between": {
+                  if (actualNeighbours > rule.neighbourRange[0] && actualNeighbours < rule.neighbourRange[1]) {
+                    updateInfo = this.processActions(x, y, rule.actions);
+                  }
+                  break;
+                }
                 default: {
                   // do nothing
                 }

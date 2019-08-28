@@ -9,8 +9,16 @@
           <option>Exactly</option>
           <option>Less than</option>
           <option>More than</option>
+          <option>Between</option>
         </select>
-        <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number" />
+        <template v-if="operator === 'Between'">
+          <input class="rangeInput" v-model.number="neighbourRange[0]" @input="updateNeighbourRangeInParent" type="number" />
+          and
+          <input class="rangeInput" v-model.number="neighbourRange[1]" @input="updateNeighbourRangeInParent" type="number" />
+        </template>
+          <div v-else>
+            <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number" />
+          </div>
         <div>Neighbours are:</div>
         <div class="selectColour">
           <swatches
@@ -41,12 +49,14 @@ export default {
     "source",
     "initialOperator",
     "initialNeighbourCount",
+    "initialNeighbourRange",
     "initialReqState"
   ],
   data: function() {
     return {
       operator: this.initialOperator,
       howManyNeighbours: this.initialNeighbourCount,
+      neighbourRange: this.initialNeighbourRange,
       requiredState: this.initialReqState
     };
   },
@@ -70,6 +80,12 @@ export default {
       this.$root.$emit("updateConditionNeighbours", {
         id: this.id,
         neighbours: this.howManyNeighbours
+      });
+    },
+    updateNeighbourRangeInParent() {
+      this.$root.$emit("updateConditionNeighbourRange", {
+        id: this.id,
+        range: this.neighbourRange
       });
     },
     updateOperatorInParent() {
@@ -118,6 +134,10 @@ export default {
     position: absolute;
     right: 39px;
     bottom: -25px;
+  }
+  .rangeInput{
+    display: inline-block;
+    width: 37%;
   }
 }
 </style>

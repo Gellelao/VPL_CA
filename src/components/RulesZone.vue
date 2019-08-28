@@ -46,6 +46,7 @@
                       :id="block.id"
                       :source="block.source"
                       :initialNeighbourCount="block.desiredNumberOfNeighbours"
+                      :initialNeighbourRange="block.neighbourRange"
                       :initialOperator="block.operator"
                       :initialReqState="block.requiredState"
                     ></ConditionBlock>
@@ -253,6 +254,7 @@ export default {
         var requiredState = cond.requiredState;
         var operator = cond.operator;
         var desiredNumberOfNeighbours = cond.desiredNumberOfNeighbours;
+        var neighbourRange = cond.neighbourRange;
 
         rules.push({
           stateColour,
@@ -261,6 +263,7 @@ export default {
           operator,
           neighbourhood,
           desiredNumberOfNeighbours,
+          neighbourRange,
           actions
         });
       });
@@ -315,6 +318,13 @@ export default {
         this.blocks.conditionBlocks.find(x => x.id == data.id),
         "desiredNumberOfNeighbours",
         data.neighbours
+      );
+    });
+    this.$root.$on("updateConditionNeighbourRange", data => {
+      Vue.set(
+        this.blocks.conditionBlocks.find(x => x.id == data.id),
+        "neighbourRange",
+        data.range
       );
     });
     this.$root.$on("updateConditionOperator", data => {
@@ -439,6 +449,7 @@ export default {
         source: "",
         actions: [],
         desiredNumberOfNeighbours: 1,
+        neighbourRange: [0, 9],
         operator: "Exactly",
         requiredState: "#FFFFFF",
         top: 220,
