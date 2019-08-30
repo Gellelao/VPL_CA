@@ -197,27 +197,19 @@ export default {
     processActions(x, y, actions) {
       var actionsResult = {};
       actions.forEach(action => {
-        switch (action.property) {
-          case "neighbours": {
-            actionsResult.neighbours = this.setMyNeighbours(
-              x,
-              y,
-              action.desiredState,
-              action.neighbourhood
-            );
-            break;
-          }
-          case "state": {
-            actionsResult.self = {
-              x,
-              y,
-              colour: action.desiredState
-            };
-            break;
-          }
-          default: {
-            // do nothing
-          }
+        if (action.affectsNeighbours) {
+          actionsResult.neighbours = this.setMyNeighbours(
+            x,
+            y,
+            action.desiredState,
+            action.neighbourhood
+          );
+        } else {
+          actionsResult.self = {
+            x,
+            y,
+            colour: action.desiredState
+          };
         }
       });
       return actionsResult;
@@ -231,55 +223,51 @@ export default {
         // Only consider rules that match the state of this cell
         if (rule.stateColour === cellState) {
           let neighbours = this.getMyNeighbours(x, y, rule.neighbourhood);
-          switch (rule.property) {
-            case "neighbours": {
-              let actualNeighbours = neighbours.filter(
-                cell => cell === rule.requiredState
-              ).length;
-              switch (rule.operator) {
-                case "Exactly": {
-                  if (actualNeighbours === rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule.actions);
-                  }
-                  break;
+
+          // See if we need to check the condition at all (will usually be true)
+          if (rule.checkCondition) {
+            let actualNeighbours = neighbours.filter(
+              cell => cell === rule.requiredState
+            ).length;
+            switch (rule.operator) {
+              case "Exactly": {
+                if (actualNeighbours === rule.desiredNumberOfNeighbours) {
+                  updateInfo = this.processActions(x, y, rule.actions);
                 }
-                case "Less than": {
-                  if (actualNeighbours < rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule.actions);
-                  }
-                  break;
-                }
-                case "More than": {
-                  if (actualNeighbours > rule.desiredNumberOfNeighbours) {
-                    updateInfo = this.processActions(x, y, rule.actions);
-                  }
-                  break;
-                }
-                case "Between": {
-                  if (actualNeighbours > rule.neighbourRange[0] && actualNeighbours < rule.neighbourRange[1]) {
-                    updateInfo = this.processActions(x, y, rule.actions);
-                  }
-                  break;
-                }
-                default: {
-                  // do nothing
-                }
+                break;
               }
-              break;
+              case "Less than": {
+                if (actualNeighbours < rule.desiredNumberOfNeighbours) {
+                  updateInfo = this.processActions(x, y, rule.actions);
+                }
+                break;
+              }
+              case "More than": {
+                if (actualNeighbours > rule.desiredNumberOfNeighbours) {
+                  updateInfo = this.processActions(x, y, rule.actions);
+                }
+                break;
+              }
+              case "Between": {
+                if (
+                  actualNeighbours > rule.neighbourRange[0] &&
+                  actualNeighbours < rule.neighbourRange[1]
+                ) {
+                  updateInfo = this.processActions(x, y, rule.actions);
+                }
+                break;
+              }
+              default: {
+                // do nothing
+              }
             }
-            case "state": {
-              updateInfo = this.processActions(x, y, rule.actions);
-              break;
-            }
-            default: {
-              // do nothing
-            }
+          } else {
+            // This means we don't need to check the condition, so apply the action regardless
+            updateInfo = this.processActions(x, y, rule.actions);
           }
         }
       });
-      // if(updateInfo){
-      //   this.nextGrid[x][y] = futureCellState;
-      // }
+
       return updateInfo;
     },
     getMyNeighbours(x, y, neighbourhood = defaultNeighbourhood) {

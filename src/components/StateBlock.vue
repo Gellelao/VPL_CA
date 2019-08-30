@@ -9,10 +9,7 @@
       <!-- </div> -->
     </div>
     <div :id="id+'_neighbours'" class="neighboursSource">
-      <v-chip>Others</v-chip>
-    </div>
-    <div :id="id+'_state'" class="stateSource">
-      <v-chip>Myself</v-chip>
+      <v-chip>If</v-chip>
     </div>
   </div>
 </template>

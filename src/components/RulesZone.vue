@@ -59,6 +59,7 @@
                       :id="block.id"
                       :source="block.source"
                       :initialDesiredState="block.desiredState"
+                      :initialAffectsNeighbours="block.affectsNeighbours"
                     ></ActionBlock>
                   </div>
 
@@ -187,13 +188,13 @@ export default {
           return;
         }
 
-        let index = cond.source.lastIndexOf("_");
-        var property = cond.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
-
-        // We need a required state if we're basing the condition on neighbours
-        if (property === "neighbours" && !cond.requiredState) {
+        // We need a required state to have a valid rule
+        if (!cond.requiredState) {
           return;
         }
+
+        // This rule has a condition, so tell the simZone to check the condition before applying the rule!
+        var checkCondition = true;
 
         // Create list of Action objects
         let actions = [];
@@ -207,24 +208,28 @@ export default {
             validActions = false;
             return;
           }
-          if (!action.source || !action.desiredState) {
+          
+          if (!action.desiredState) {
             validActions = false;
             return;
           }
-          let index = action.source.lastIndexOf("_");
-          var property = action.source.substr(index + 1); // Use this to determine whether or not we'll set our own state or our neighbours states
+          var affectsNeighbours = action.affectsNeighbours; // Use this to determine whether or not we'll set our own state or our neighbours states
 
           var neighbourhood = undefined;
-          let sourceId = action.source.substr(0, index);
-          if (sourceId.startsWith("transform")) {
-            let transformSource = this.blocks.transformBlocks.find(
-              x => x.id === sourceId
-            );
-            neighbourhood = transformSource.neighbourhood;
-          }
+
+          // To make transforms work ina  chain, the Condition is going to need to ask the Transform for whatever Actions it's connected to
+          // And the Transforms will need to store an array of the Actions they're connected to
+
+          // let sourceId = action.source.substr(0, index);
+          // if (sourceId.startsWith("transform")) {
+          //   let transformSource = this.blocks.transformBlocks.find(
+          //     x => x.id === sourceId
+          //   );
+          //   neighbourhood = transformSource.neighbourhood;
+          // }
 
           actions.push({
-            property,
+            affectsNeighbours,
             desiredState: action.desiredState,
             neighbourhood
           });
@@ -247,7 +252,7 @@ export default {
           neighbourhood = transformSource.neighbourhood;
         }
 
-        index = sourceId.lastIndexOf("_");
+        let index = sourceId.lastIndexOf("_");
         sourceId = sourceId.substr(0, index);
         let source = this.blocks.stateBlocks.find(x => x.id == sourceId);
         var stateColour = source.colour;
@@ -258,7 +263,7 @@ export default {
 
         rules.push({
           stateColour,
-          property,
+          checkCondition,
           requiredState,
           operator,
           neighbourhood,
@@ -547,9 +552,9 @@ export default {
 
       this.blocks.actionBlocks.push({
         id: idOfThisAction,
-        source: "",
         desiredState: "#FFFFFF",
-        top: 430,
+        affectsNeighbours: false,
+        top: 500,
         left: blockStartingX
       });
       // Wait for the DOM to update before setting up plumbing
@@ -574,36 +579,8 @@ export default {
           (info.sourceId.startsWith("state") ||
             info.sourceId.startsWith("transform"))
         ) {
-          // if this action already has a sourceConnection, detach it because an Action can only have one source
-          let existingConnectionId = this.blocks.actionBlocks.find(
-            x => x.id === id
-          ).sourceConnectionId;
-          // Find all the connections targetting this block, and delete them if they have the same connection id
-          // as the existing connection. Effectively remove the previous connection before making a new one
-          jsPlumb.select({target: id}).each((connection => {
-            if(connection.id == existingConnectionId)jsPlumb.deleteConnection(connection);
-          }));
-          Vue.set(
-            // Update the sourceConnection to the new one
-            this.blocks.actionBlocks.find(x => x.id === id),
-            "sourceConnectionId",
-            info.connection.id
-          );
-          // Style the Action connection differently to other connections
-          info.connection.addType("actionProperty");
-          info.connection.removeOverlay("arrow");
-          // Only update source if we receive a connection from a State or Transform block
-          // Do it in the next tick because we need to wait for the other connection to be detached first
-          Vue.nextTick(() => {
-            Vue.set(
-              // Find the array entry for this block
-              this.blocks.actionBlocks.find(x => x.id === id),
-              // Update the source field
-              "source",
-              // to the sourceId of the connection
-              info.sourceId
-            );
-          });
+          // For now just delete these kinds of conecions, eventually this will be the "Apply Action Regardless" scenario
+          jsPlumb.deleteConnection(connection);
         }
       });
       // The reverse of the above bind, we set the source to empty when detached
@@ -613,17 +590,7 @@ export default {
           (info.sourceId.startsWith("state") ||
             info.sourceId.startsWith("transform"))
         ) {
-          // Only update source if we receive a connection from a State block
-          Vue.set(
-            // Find the array entry for this block
-            this.blocks.actionBlocks.find(x => x.id === id),
-            // Update the source field to empty
-            "source",
-            ""
-          );
-          Vue.nextTick(() => {
-            jsPlumb.revalidate(id);
-          });
+          // Undo whatever we make happen on connecion
         }
       });
     },
@@ -1005,7 +972,7 @@ svg.actionProperty path {
   // width: 30px;
   // height: 30px;
   display: inline-block;
-  right: 0px;
+  // right: 0px;
   bottom: -10px;
   border-radius: 100%;
 }

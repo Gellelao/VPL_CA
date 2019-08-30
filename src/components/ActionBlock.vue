@@ -3,19 +3,18 @@
     <v-toolbar-title class="text-uppercase">
       <span class="heading">Action</span>
     </v-toolbar-title>
-    <template v-if="property === 'neighbours'">
+    <template v-if="affectsNeighbours">
       <div>Turn my neighbours into:</div>
       <div class="selectColour">
         <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
       </div>
     </template>
-    <template v-else-if="property === 'state'">
-      <div>Become:</div>
+    <template v-else>
+      <div>Turn myself into:</div>
       <div class="selectColour">
         <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
       </div>
     </template>
-    <div v-else>Connect a property</div>
   </div>
 </template>
 
@@ -24,17 +23,12 @@ import Swatches from "vue-swatches";
 
 export default {
   components: { Swatches },
-  props: ["id", "source", "initialDesiredState"],
+  props: ["id", "source", "initialDesiredState", "initialAffectsNeighbours"],
   data: function() {
     return {
-      desiredState: this.initialDesiredState
+      desiredState: this.initialDesiredState,
+      affectsNeighbours: this.initialAffectsNeighbours
     };
-  },
-  computed: {
-    property() {
-      let index = this.source.lastIndexOf("_");
-      return this.source.substr(index + 1);
-    }
   },
   methods: {
     updateStateInParent() {

@@ -3,36 +3,40 @@
     <v-toolbar-title class="text-uppercase">
       <span class="heading">Condition</span>
     </v-toolbar-title>
-    <template class="body" v-if="property === 'neighbours'">
-      <div class="body">
-        <select v-model="operator" @change="updateOperatorInParent">
-          <option>Exactly</option>
-          <option>Less than</option>
-          <option>More than</option>
-          <option>Between</option>
-        </select>
-        <template v-if="operator === 'Between'">
-          <input class="rangeInput" v-model.number="neighbourRange[0]" @input="updateNeighbourRangeInParent" type="number" />
-          and
-          <input class="rangeInput" v-model.number="neighbourRange[1]" @input="updateNeighbourRangeInParent" type="number" />
-        </template>
-          <div v-else>
-            <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number" />
-          </div>
-        <div>Neighbours are:</div>
-        <div class="selectColour">
-          <swatches
-            v-model="requiredState"
-            colors="text-basic"
-            @input="updateStateInParent"
-          >Select state</swatches>
-        </div>
+    <div class="body">
+      <select v-model="operator" @change="updateOperatorInParent">
+        <option>Exactly</option>
+        <option>Less than</option>
+        <option>More than</option>
+        <option>Between</option>
+      </select>
+      <template v-if="operator === 'Between'">
+        <input
+          class="rangeInput"
+          v-model.number="neighbourRange[0]"
+          @input="updateNeighbourRangeInParent"
+          type="number"
+        />
+        and
+        <input
+          class="rangeInput"
+          v-model.number="neighbourRange[1]"
+          @input="updateNeighbourRangeInParent"
+          type="number"
+        />
+      </template>
+      <div v-else>
+        <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number" />
       </div>
-    </template>
-    <template v-else-if="property === 'state'">
-      <div class="body">Apply action regardless</div>
-    </template>
-    <div class="body" v-else>Connect a property</div>
+      <div>Neighbours are:</div>
+      <div class="selectColour">
+        <swatches
+          v-model="requiredState"
+          colors="text-basic"
+          @input="updateStateInParent"
+        >Select state</swatches>
+      </div>
+    </div>
     <div :id="id+'_then'" class="thenSource">
       <v-chip>Then</v-chip>
     </div>
@@ -62,12 +66,6 @@ export default {
   },
   mounted() {
     this.updateOperatorInParent();
-  },
-  computed: {
-    property() {
-      let index = this.source.lastIndexOf("_");
-      return this.source.substr(index + 1);
-    }
   },
   methods: {
     updateStateInParent() {
@@ -121,7 +119,8 @@ export default {
   .selectColour {
     background-color: var(--condition-secondary);
   }
-  input, select {
+  input,
+  select {
     width: 100%;
     display: block;
     border-radius: 5px;
@@ -135,7 +134,7 @@ export default {
     right: 39px;
     bottom: -25px;
   }
-  .rangeInput{
+  .rangeInput {
     display: inline-block;
     width: 37%;
   }
