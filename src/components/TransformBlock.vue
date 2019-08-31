@@ -10,7 +10,7 @@
         <div class="grid">
           <tr v-for="(row, x) in grid" :key="x">
             <td v-for="(col, y) in row" :key="y">
-              <div class="tile" :class="{on: grid[x][y]}" @click="toggleCell(x, y)"></div>
+              <div v-if="x*y != 1" class="tile" :class="{on: grid[x][y]}" @click="toggleCell(x, y)"></div>
             </td>
           </tr>
         </div>

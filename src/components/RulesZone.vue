@@ -182,6 +182,8 @@ export default {
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
+
+
       //First check for any rules which don't require conditions:
       this.blocks.stateBlocks.forEach(state => {
         if(state.actions.length === 0)return;
@@ -200,7 +202,7 @@ export default {
       });
 
 
-      // Go through the rules which require conditions
+      // Then go through the rules which require conditions
       this.blocks.conditionBlocks.forEach(cond => {
         // We need conditions to have all of the required info before we make a rule out of them
         if (cond.actions.length == 0 || !cond.source) {
