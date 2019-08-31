@@ -182,6 +182,25 @@ export default {
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
+      //First check for any rules which don't require conditions:
+      this.blocks.stateBlocks.forEach(state => {
+        if(state.actions.length === 0)return;
+
+        // This rule has no, so tell the simZone not to check any condition before applying the action
+        var checkCondition = false;
+
+        let actions = this.parseActions(state.actions);
+        let stateColour = state.colour;
+
+        rules.push({
+          stateColour,
+          checkCondition,
+          actions
+        });
+      });
+
+
+      // Go through the rules which require conditions
       this.blocks.conditionBlocks.forEach(cond => {
         // We need conditions to have all of the required info before we make a rule out of them
         if (cond.actions.length == 0 || !cond.source) {
@@ -197,45 +216,10 @@ export default {
         var checkCondition = true;
 
         // Create list of Action objects
-        let actions = [];
-        let validActions = true;
-        cond.actions.forEach(actionId => {
-          // Using the condition's array of actions (which are strings of the action ids),
-          // find the corresponding Action object from the actionBlocks array
-          let action = this.blocks.actionBlocks.find(x => x.id === actionId);
-          if(!action){
-            console.error("Could not find action " + actionId + " but it was in the actions array of Condition " + cond.id);
-            validActions = false;
-            return;
-          }
-          
-          if (!action.desiredState) {
-            validActions = false;
-            return;
-          }
-          var affectsNeighbours = action.affectsNeighbours; // Use this to determine whether or not we'll set our own state or our neighbours states
-
-          var neighbourhood = undefined;
-
-          // To make transforms work ina  chain, the Condition is going to need to ask the Transform for whatever Actions it's connected to
-          // And the Transforms will need to store an array of the Actions they're connected to
-
-          // let sourceId = action.source.substr(0, index);
-          // if (sourceId.startsWith("transform")) {
-          //   let transformSource = this.blocks.transformBlocks.find(
-          //     x => x.id === sourceId
-          //   );
-          //   neighbourhood = transformSource.neighbourhood;
-          // }
-
-          actions.push({
-            affectsNeighbours,
-            desiredState: action.desiredState,
-            neighbourhood
-          });
-        });
+        let actions = this.parseActions(cond.actions);
+        
         // We need at least one action to have the required info, so return otherwise.
-        if (!validActions) return;
+        if (!actions || actions.length === 0) return;
 
         var neighbourhood = undefined;
         let sourceId = cond.source;
@@ -366,6 +350,51 @@ export default {
     });
   },
   methods: {
+    // Converts list of action ids into array of information about those actions to be used by rules
+    parseActions(actionArray){
+        let actions = [];
+        let validActions = true;
+        actionArray.forEach(actionId => {
+          // find the Action object with this id in the actionBlocks array
+          let action = this.blocks.actionBlocks.find(x => x.id === actionId);
+          if (!action) {
+            console.error(
+                "Could not find action " +
+                actionId +
+                " but it was in the actions array of Condition " +
+                cond.id
+            );
+            validActions = false;
+            return;
+          }
+
+          // if (!action.desiredState) {
+          //   validActions = false;
+          //   return;
+          // }
+          var affectsNeighbours = action.affectsNeighbours; // Use this to determine whether or not we'll set our own state or our neighbours states
+
+          var neighbourhood = undefined;
+
+          // To make transforms work ina  chain, the Condition is going to need to ask the Transform for whatever Actions it's connected to
+          // And the Transforms will need to store an array of the Actions they're connected to
+
+          // let sourceId = action.source.substr(0, index);
+          // if (sourceId.startsWith("transform")) {
+          //   let transformSource = this.blocks.transformBlocks.find(
+          //     x => x.id === sourceId
+          //   );
+          //   neighbourhood = transformSource.neighbourhood;
+          // }
+
+          actions.push({
+            affectsNeighbours,
+            desiredState: action.desiredState,
+            neighbourhood
+          });
+        });
+        return actions
+    },
     revalidateOnConnect() {
       // When resizing a block we want to update the connection to reflect the new size,
       // and this is the best way I've found to do that:
@@ -420,6 +449,7 @@ export default {
       this.blocks.stateBlocks.push({
         id: idOfThisState,
         colour: "#000000",
+        actions: [],
         top: 30,
         left: blockStartingX
       });
@@ -430,7 +460,6 @@ export default {
     },
     initializeStateBlock(id) {
       let neighbourNode = id + "_neighbours";
-      let stateNode = id + "_state";
 
       let blockData = this.blocks.stateBlocks.find(x => x.id === id);
       this.initializeGenericBlock(id, blockData);
@@ -443,14 +472,17 @@ export default {
         },
         sourcePoint
       );
-      jsPlumb.makeSource(
-        stateNode,
-        {
-          maxConnections: 100,
-          anchor: "Center"
-        },
-        sourcePoint
-      );
+
+      jsPlumb.bind("connection", info => {
+        // If a connection is made from this State block to an action block,
+        // push the id of that action block into the actions array of this State block
+        // (for conditionless actions)
+        if (info.sourceId == neighbourNode && info.targetId.startsWith("action")) {
+          this.blocks.stateBlocks
+            .find(x => x.id === id)
+            .actions.push(info.targetId);
+        }
+      });
     },
     addCondition: function(event) {
       // count = count + 1;
@@ -514,7 +546,6 @@ export default {
         ) {
           // If a connection is made from this condition block to an action block,
           // push the id of that action block into the actions array of this condition block
-          // Add the id of the source to the array of triggers
           this.blocks.conditionBlocks
             .find(x => x.id === id)
             .actions.push(info.targetId);
@@ -587,7 +618,7 @@ export default {
             info.sourceId.startsWith("transform"))
         ) {
           // For now just delete these kinds of conecions, eventually this will be the "Apply Action Regardless" scenario
-          jsPlumb.deleteConnection(connection);
+          
         }
       });
       // The reverse of the above bind, we set the source to empty when detached
