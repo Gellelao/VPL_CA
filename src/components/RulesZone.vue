@@ -346,6 +346,13 @@ export default {
         data.desiredState
       );
     });
+    this.$root.$on("updateActionAffectsNeighbours", data => {
+      Vue.set(
+        this.blocks.actionBlocks.find(x => x.id == data.id),
+        "affectsNeighbours",
+        data.affectsNeighbours
+      );
+    });
     this.$root.$on("updateNeighbourhood", data => {
       Vue.set(
         this.blocks.transformBlocks.find(x => x.id == data.id),

@@ -1,20 +1,20 @@
 <template>
   <div :id="id" class="action">
-    <v-toolbar-title class="text-uppercase">
+    <v-toolbar-title class="text-uppercase heading">
       <span class="heading">Action</span>
     </v-toolbar-title>
-    <template v-if="affectsNeighbours">
-      <div>Turn my neighbours into:</div>
-      <div class="selectColour">
-        <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
-      </div>
-    </template>
-    <template v-else>
-      <div>Turn myself into:</div>
-      <div class="selectColour">
-        <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
-      </div>
-    </template>
+    <div class="onSameLine">
+    Turn
+    <select :id="id+'_actionsAffectsNeighboursSelector'" v-model="affectsNeighbours" @change="updateAffectsNeighboursInParent">
+      <option value="false">myself</option>
+      <option value="true">my neighbours</option>
+    </select>
+    into:
+    </div>
+    <p></p>
+    <div class="selectColour">
+      <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
+    </div>
   </div>
 </template>
 
@@ -30,12 +30,45 @@ export default {
       affectsNeighbours: this.initialAffectsNeighbours
     };
   },
+  mounted() {
+    this.resizeSelect();
+  },
   methods: {
     updateStateInParent() {
       this.$root.$emit("updateActionDesiredState", {
         id: this.id,
         desiredState: this.desiredState
       });
+
+      this.$root.$emit("updateActionAffectsNeighbours", {
+        id: this.id,
+        affectsNeighbours: this.affectsNeighbours
+      });
+    },
+    updateAffectsNeighboursInParent() {
+      this.$root.$emit("updateActionAffectsNeighbours", {
+        id: this.id,
+        affectsNeighbours: this.affectsNeighbours
+      });
+
+      // Also update the width of the select box to match the text inside
+      this.resizeSelect();
+    },
+    resizeSelect() {
+      // Code from here: https://stackoverflow.com/a/49693251
+      const select = document.querySelector('#' + this.id + "_actionsAffectsNeighboursSelector");
+
+      const dummySelect = document.createElement("select");
+      dummySelect.classList.add("dummy");
+
+      const dummyOption = document.createElement("option");
+      dummyOption.innerHTML = select.options[select.selectedIndex].text + "+four";
+      dummySelect.appendChild(dummyOption);
+
+      document.body.appendChild(dummySelect);
+      select.style.width = `${dummySelect.offsetWidth}px`;
+
+      document.body.removeChild(dummySelect);
     }
   }
 };
@@ -56,6 +89,23 @@ export default {
   }
   .selectColour {
     background-color: var(--action-secondary);
+  }
+  .onSameLine{
+    display: inline-block
+  }
+  p {
+    margin-bottom: 10px;
+  }
+  input,
+  select {
+    border-radius: 5px;
+    background-color: var(--action-secondary);
+    padding: 4px 10px;
+  }
+  .dummy {
+    position: absolute;
+    left: -10000px;
+    padding: 4px 10px;
   }
 }
 </style>
