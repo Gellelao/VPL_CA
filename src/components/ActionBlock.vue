@@ -10,8 +10,7 @@
         v-model="affectsNeighbours"
         @change="updateAffectsNeighboursInParent"
       >
-        <option value="false">myself</option>
-        <option value="true">my neighbours</option>
+        <option v-for="option in options" :value="option.value" :key="option.value">{{option.text}}</option>
       </select>
       into:
     </div>
@@ -20,7 +19,7 @@
       <swatches v-model="desiredState" colors="text-basic" @input="updateStateInParent"></swatches>
     </div>
 
-    <template v-if="affectsNeighbours === 'true'">
+    <template v-if="affectsNeighbours">
       <v-btn class="toggleTransform" flat icon color="black" @click.stop="drawer = !drawer">
         <template v-if="drawer">
           <v-icon>keyboard_arrow_left</v-icon>
@@ -55,7 +54,8 @@ export default {
     return {
       desiredState: this.initialDesiredState,
       affectsNeighbours: this.initialAffectsNeighbours,
-      drawer: false
+      drawer: false,
+      options: [{ text: "myself", value: false }, { text: "my neighbours", value: true }]
     };
   },
   mounted() {
