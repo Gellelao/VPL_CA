@@ -485,6 +485,19 @@ export default {
             .actions.push(info.targetId);
         }
       });
+      jsPlumb.bind("connectionDetached", info => {
+        if (info.sourceId == neighbourNode && info.targetId.startsWith("action")) {
+          // If a connection is detached from this state block to an action block,
+          // delete the id of that action block out of the actions array of this state block
+          let index = this.blocks.stateBlocks
+            .find(x => x.id === id)
+            .actions.indexOf(info.targetId);
+          this.$delete(
+            this.blocks.stateBlocks.find(x => x.id === id).actions,
+            index
+          );
+        }
+      });
     },
     addCondition: function(event) {
       // count = count + 1;
@@ -555,7 +568,7 @@ export default {
       });
       // Reverse those changes when detaching connections
       jsPlumb.bind("connectionDetached", info => {
-        // If a connection is made from a state block to this condition block,
+        // If a connection is detached from a state block to this condition block,
         // update the source of this block empty
         if (
           info.targetId == id &&
@@ -574,7 +587,7 @@ export default {
             jsPlumb.revalidate(id);
           });
         } else if (info.sourceId == thenNode && info.targetId.startsWith("action")) {
-          // If a connection is made from this condition block to an action block,
+          // If a connection is detached from this condition block to an action block,
           // delete the id of that action block out of the actions array of this condition block
           let index = this.blocks.conditionBlocks
             .find(x => x.id === id)
