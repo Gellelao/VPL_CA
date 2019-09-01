@@ -36,18 +36,40 @@
           @input="updateStateInParent"
         >Select state</swatches>
       </div>
+
+      <v-btn class="toggleTransform" flat icon color="black" @click.stop="drawer = !drawer">
+        <template v-if="drawer">
+          <v-icon>keyboard_arrow_left</v-icon>
+        </template>
+        <div v-else>
+          <v-icon>keyboard_arrow_right</v-icon>
+        </div>
+      </v-btn>
     </div>
     <div :id="id+'_then'" class="thenSource">
       <v-chip>Then</v-chip>
+    </div>
+
+    <div class="drawer" :class="{ open: drawer }">
+      <TransformBlock
+        :id="'null'"
+        :source="'null'"
+        :initialNeighbourhood="[
+          [true, true, true],
+          [true, false, true],
+          [true, true, true]
+        ]"
+      ></TransformBlock>
     </div>
   </div>
 </template>
 
 <script>
 import Swatches from "vue-swatches";
+import TransformBlock from "./TransformBlock";
 
 export default {
-  components: { Swatches },
+  components: { Swatches, TransformBlock },
   props: [
     "id",
     "source",
@@ -61,7 +83,8 @@ export default {
       operator: this.initialOperator,
       howManyNeighbours: this.initialNeighbourCount,
       neighbourRange: this.initialNeighbourRange,
-      requiredState: this.initialReqState
+      requiredState: this.initialReqState,
+      drawer: false
     };
   },
   mounted() {
@@ -99,7 +122,7 @@ export default {
 <style scoped lang="scss">
 .condition {
   text-align: center;
-  z-index: 2;
+  // z-index: 2;
   position: absolute;
   // width: 120px;
   padding: 10px;
@@ -137,6 +160,24 @@ export default {
   .rangeInput {
     display: inline-block;
     width: 37%;
+  }
+  .drawer {
+    position: absolute;
+    top: 50px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: -5;
+    transform: translateX(0px);
+    transition: transform 0.2s;
+  }
+  .open {
+    transform: translateX(135px) !important;
+  }
+  .toggleTransform{
+    position: absolute;
+    right: -4px;
+    bottom: 28px;
   }
 }
 </style>

@@ -19,15 +19,15 @@
                 <div id="points">
                   <div v-if="trashOpen">
                     <div v-if="mouseOverTrash">
-                      <v-icon x-large>delete_forever</v-icon>
+                      <v-icon class="trashIcon" x-large>delete_forever</v-icon>
                     </div>
                     <div v-else>
-                      <v-icon x-large>delete</v-icon>
+                      <v-icon class="trashIcon" x-large>delete</v-icon>
                     </div>
                     <div class="trash" :class="{ 'red': mouseOverTrash }"></div>
                   </div>
                   <div v-else>
-                    <v-icon x-large>delete</v-icon>
+                    <v-icon class="trashIcon" x-large>delete</v-icon>
                   </div>
 
                   <div v-if="blocks.stateBlocks.length > 0">
@@ -962,8 +962,9 @@ body {
   border: 1px solid #aaaaaa;
   overflow-y: auto;
   height: 100%;
+  z-index: 0;
 
-  .v-icon {
+  .trashIcon{
     z-index: 2;
     position: absolute;
     top: 10px;
@@ -986,8 +987,9 @@ svg.jtk-connector path {
 svg.actionProperty path {
   stroke: var(--action-connector);
 }
+.jtk-connector { z-index:-10; }
 .jtk-endpoint {
-  z-index: 1;
+  z-index: -1;
   svg circle {
     fill: var(--endpoint-primary);
     stroke: var(--endpoint-secondary);
@@ -1022,11 +1024,11 @@ svg.actionProperty path {
 .neighboursSource {
   position: absolute;
   // background-color: rgb(54, 173, 43);
-  // width: 30px;
-  // height: 30px;
+  // width: 36px;
+  // height: 36px;
   display: inline-block;
-  // right: 0px;
-  bottom: -10px;
+  right: 50px;
+  bottom: -20px;
   border-radius: 100%;
 }
 .stateSource {

@@ -41,7 +41,7 @@ export default {
 
 <style scoped lang="scss">
 .state {
-  z-index: 2;
+  // z-index: 2;
   position: absolute;
     display: inline-block;
   width: 150px;

@@ -1,35 +1,16 @@
 <template>
   <div :id="id" class="transform">
-    <v-toolbar-title class="text-uppercase">
-      <span class="heading">Transform</span>
-    </v-toolbar-title>
-    <template v-if="property === 'neighbours'">
-      <div class="body">
-        <div>Set neighbourhood:</div>
-        <!-- Grid start -->
-        <div class="grid">
-          <tr v-for="(row, x) in grid" :key="x">
-            <td v-for="(col, y) in row" :key="y">
-              <div v-if="x*y != 1" class="tile" :class="{on: grid[x][y]}" @click="toggleCell(x, y)"></div>
-            </td>
-          </tr>
-        </div>
-        <!-- Grid end -->
+    <div class="body">
+      <div>Neighbourhood:</div>
+      <!-- Grid start -->
+      <div class="grid">
+        <tr v-for="(row, x) in grid" :key="x">
+          <td v-for="(col, y) in row" :key="y">
+            <div v-if="x*y != 1" class="tile" :class="{on: grid[x][y]}" @click="toggleCell(x, y)"></div>
+          </td>
+        </tr>
       </div>
-    </template>
-    <template v-else-if="property === 'state'">
-      <div class="body">
-        state
-        <!-- Fill this in -->
-      </div>
-    </template>
-    <div class="body" v-else>Connect a property</div>
-    <!-- put the property nodes in v-shows so that they stay on the dom -->
-    <div v-show="property === 'neighbours'">
-      <div :id="id+'_neighbours'" class="neighboursSource"><v-chip >Others</v-chip></div>
-    </div>
-    <div v-show="property === 'state'">
-      <div :id="id+'_state'" class="stateSource"><v-chip >Myself</v-chip></div>
+      <!-- Grid end -->
     </div>
   </div>
 </template>
@@ -44,12 +25,6 @@ export default {
   },
   mounted() {
     this.updateNeighbourhoodInParent();
-  },
-  computed: {
-    property() {
-      let index = this.source.lastIndexOf("_");
-      return this.source.substr(index + 1);
-    }
   },
   methods: {
     updateNeighbourhoodInParent() {
@@ -76,7 +51,7 @@ export default {
 <style scoped lang="scss">
 .transform {
   text-align: center;
-  z-index: 2;
+  // z-index: 2;
   position: absolute;
   padding: 10px;
   background-color: var(--transform-primary);
@@ -86,7 +61,8 @@ export default {
     font-size: 18px;
     margin-bottom: 12px;
   }
-  .neighboursSource, .stateSource {
+  .neighboursSource,
+  .stateSource {
     bottom: -15px;
   }
   .body {
@@ -105,7 +81,7 @@ export default {
     background-color: var(--transform-primary);
   }
   .on {
-    background-color: var(--transform-secondary);;
+    background-color: var(--transform-secondary);
   }
   th,
   td {
