@@ -173,11 +173,13 @@ export default {
       for (let x = 0; x < this.nextGrid.length; x++) {
         for (let y = 0; y < this.nextGrid[x].length; y++) {
           let updateInfo = this.applyRules(x, y);
-          if (updateInfo) {
-            if (updateInfo.self) {
-              this.nextGrid[x][y] = updateInfo.self.colour;
-            }
-            updates.push(updateInfo);
+          if (updateInfo && updateInfo.length > 0) {
+            updateInfo.forEach((e) => {
+              if (e.self) {
+                this.nextGrid[x][y] = e.self.colour;
+              }
+              updates.push(e);
+            });
           }
         }
       }
@@ -212,39 +214,43 @@ export default {
           };
         }
       });
+      console.log("PROCESSNIG ACTIONS:");
+      console.log(actionsResult);
       return actionsResult;
     },
     applyRules(x, y) {
       let cellState = this.grid[x][y];
       // We expect to have updated this variable by the end of the method
-      var updateInfo;
+      var updateInfo = [];
 
       this.rules.forEach(rule => {
         // Only consider rules that match the state of this cell
         if (rule.stateColour === cellState) {
           let neighbours = this.getMyNeighbours(x, y, rule.neighbourhood);
-
+          console.log("For rule:");
+          console.log(rule);
           // See if we need to check the condition at all (will usually be true)
           if (rule.checkCondition) {
+            console.log("Checking Condition");
             let actualNeighbours = neighbours.filter(
               cell => cell === rule.requiredState
             ).length;
             switch (rule.operator) {
               case "Exactly": {
                 if (actualNeighbours === rule.desiredNumberOfNeighbours) {
-                  updateInfo = this.processActions(x, y, rule.actions);
+                  updateInfo.push(this.processActions(x, y, rule.actions));
                 }
                 break;
               }
               case "Less than": {
                 if (actualNeighbours < rule.desiredNumberOfNeighbours) {
-                  updateInfo = this.processActions(x, y, rule.actions);
+                  updateInfo.push(this.processActions(x, y, rule.actions));
                 }
                 break;
               }
               case "More than": {
                 if (actualNeighbours > rule.desiredNumberOfNeighbours) {
-                  updateInfo = this.processActions(x, y, rule.actions);
+                  updateInfo.push(this.processActions(x, y, rule.actions));
                 }
                 break;
               }
@@ -253,7 +259,7 @@ export default {
                   actualNeighbours > rule.neighbourRange[0] &&
                   actualNeighbours < rule.neighbourRange[1]
                 ) {
-                  updateInfo = this.processActions(x, y, rule.actions);
+                  updateInfo.push(this.processActions(x, y, rule.actions));
                 }
                 break;
               }
@@ -262,12 +268,15 @@ export default {
               }
             }
           } else {
+            console.log("NOT Checking Condition");
             // This means we don't need to check the condition, so apply the action regardless
-            updateInfo = this.processActions(x, y, rule.actions);
+            updateInfo.push(this.processActions(x, y, rule.actions));
           }
         }
       });
 
+      console.log("HERE COMES THE UPDATE INFO");
+      console.log(updateInfo);
       return updateInfo;
     },
     getMyNeighbours(x, y, neighbourhood = defaultNeighbourhood) {
@@ -300,6 +309,8 @@ export default {
           });
         }
       }
+      console.log("SETTING NEIGHBOURS:");
+      console.log(cellUpdates);
       return cellUpdates;
     },
     setCell(x, y, colour = this.penColour) {

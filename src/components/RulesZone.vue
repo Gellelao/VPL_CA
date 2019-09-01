@@ -531,11 +531,7 @@ export default {
       jsPlumb.bind("connection", info => {
         // If a connection is made from a state block to this condition block,
         // update the source of this block to the name of the property which was just connected to it.
-        if (
-          info.targetId == id &&
-          (info.sourceId.startsWith("state") ||
-            info.sourceId.startsWith("transform"))
-        ) {
+        if (info.targetId == id && info.sourceId.startsWith("state")) {
           Vue.set(
             // Find the array entry for this block
             this.blocks.conditionBlocks.find(x => x.id === id),
@@ -620,124 +616,9 @@ export default {
         maxConnections: 100,
         anchor: "Continuous"
       });
-
-      // When a connection is made, update the source of the block to
-      // the name of the property which was just connected to it.
-      jsPlumb.bind("connection", info => {
-        if (
-          info.targetId == id &&
-          (info.sourceId.startsWith("state") ||
-            info.sourceId.startsWith("transform"))
-        ) {
-          // For now just delete these kinds of conecions, eventually this will be the "Apply Action Regardless" scenario
-        }
-      });
-      // The reverse of the above bind, we set the source to empty when detached
-      jsPlumb.bind("connectionDetached", info => {
-        if (
-          info.targetId == id &&
-          (info.sourceId.startsWith("state") ||
-            info.sourceId.startsWith("transform"))
-        ) {
-          // Undo whatever we make happen on connecion
-        }
-      });
-    },
-    addTransform: function(event) {
-      // count = count + 1;
-      var idOfThisTransform = "transform_" + count;
-
-      this.blocks.transformBlocks.push({
-        id: idOfThisTransform,
-        source: "",
-        neighbourhood: [
-          [true, true, true],
-          [true, false, true],
-          [true, true, true]
-        ],
-        top: 600,
-        left: blockStartingX
-      });
-      // Wait for the DOM to update before setting up plumbing
-      Vue.nextTick(() => {
-        this.initializeTransformBlock(idOfThisTransform);
-      });
     },
     initializeTransformBlock(id) {
-      let neighbourNode = id + "_neighbours";
-      let stateNode = id + "_state";
-
-      let blockData = this.blocks.transformBlocks.find(x => x.id === id);
-      this.initializeGenericBlock(id, blockData);
-
-      jsPlumb.makeSource(
-        neighbourNode,
-        {
-          maxConnections: 100,
-          anchor: "Center"
-        },
-        sourcePoint
-      );
-      jsPlumb.makeSource(
-        stateNode,
-        {
-          maxConnections: 100,
-          anchor: "Center"
-        },
-        sourcePoint
-      );
-      jsPlumb.makeTarget(id, {
-        // 1 max connection because each Transform should have exactly one
-        // property attached
-        maxConnections: 1,
-        anchor: "Continuous"
-      });
-
-      // When a connection is made, update the source of the block to
-      // the name of the property which was just connected to it.
-      jsPlumb.bind("connection", info => {
-        if (info.targetId == id) {
-          // For now there is no implementation for connecting the State node to Transforms, so delete those connections
-          if (info.sourceId.endsWith("state")) {
-            jsPlumb.deleteConnection(info.connection);
-          }
-          if (info.sourceId.startsWith("state")) {
-            // Only update source if we receive a connection from a State block
-            Vue.set(
-              // Find the array entry for this block
-              this.blocks.transformBlocks.find(x => x.id === id),
-              // Update the source field
-              "source",
-              // to the sourceId of the connection
-              info.sourceId
-            );
-
-            // Transform Blocks should only accept connections from State Blocks,
-            // so destroy all other connections
-          } else {
-            jsPlumb.deleteConnection(info.connection);
-          }
-        }
-      });
-      // When detaching the conneciton, reverse our changes to the source field of this block
-      jsPlumb.bind("connectionDetached", info => {
-        if (info.targetId == id) {
-          if (info.sourceId.startsWith("state")) {
-            // Only update source if we receive a connection from a State block
-            Vue.set(
-              // Find the array entry for this block
-              this.blocks.transformBlocks.find(x => x.id === id),
-              // Update the source field
-              "source",
-              // to empty
-              ""
-            );
-          }
-        }
-        Vue.nextTick(() => {
-          jsPlumb.revalidate(id);
-        });
-      });
+      // Transforms have been removed
     },
     upload() {
       this.$refs.inputUpload.value = "";
