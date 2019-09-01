@@ -52,13 +52,8 @@
 
     <div class="drawer" :class="{ open: drawer }">
       <TransformBlock
-        :id="'null'"
-        :source="'null'"
-        :initialNeighbourhood="[
-          [true, true, true],
-          [true, false, true],
-          [true, true, true]
-        ]"
+        :id="id+'_transform'"
+        :initialNeighbourhood="neighbourhood"
       ></TransformBlock>
     </div>
   </div>
@@ -76,13 +71,15 @@ export default {
     "initialOperator",
     "initialNeighbourCount",
     "initialNeighbourRange",
-    "initialReqState"
+    "initialNeighbourhood",
+    "initialReqState",
   ],
   data: function() {
     return {
       operator: this.initialOperator,
       howManyNeighbours: this.initialNeighbourCount,
       neighbourRange: this.initialNeighbourRange,
+      neighbourhood: this.initialNeighbourhood,
       requiredState: this.initialReqState,
       drawer: false
     };

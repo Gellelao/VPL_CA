@@ -29,7 +29,7 @@ export default {
   methods: {
     updateNeighbourhoodInParent() {
       this.$root.$emit("updateNeighbourhood", {
-        id: this.id,
+        id: this.id.replace("_transform", ''),
         neighbourhood: this.grid
       });
     },

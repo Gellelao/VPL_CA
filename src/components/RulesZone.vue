@@ -47,6 +47,7 @@
                       :source="block.source"
                       :initialNeighbourCount="block.desiredNumberOfNeighbours"
                       :initialNeighbourRange="block.neighbourRange"
+                      :initialNeighbourhood="block.neighbourhood"
                       :initialOperator="block.operator"
                       :initialReqState="block.requiredState"
                     ></ConditionBlock>
@@ -60,6 +61,7 @@
                       :source="block.source"
                       :initialDesiredState="block.desiredState"
                       :initialAffectsNeighbours="block.affectsNeighbours"
+                      :initialNeighbourhood="block.neighbourhood"
                     ></ActionBlock>
                   </div>
 
@@ -183,10 +185,9 @@ export default {
       // SimZone which can use the data to implement the rules.
       var rules = [];
 
-
       //First check for any rules which don't require conditions:
       this.blocks.stateBlocks.forEach(state => {
-        if(state.actions.length === 0)return;
+        if (state.actions.length === 0) return;
 
         // This rule has no, so tell the simZone not to check any condition before applying the action
         var checkCondition = false;
@@ -200,7 +201,6 @@ export default {
           actions
         });
       });
-
 
       // Then go through the rules which require conditions
       this.blocks.conditionBlocks.forEach(cond => {
@@ -219,24 +219,12 @@ export default {
 
         // Create list of Action objects
         let actions = this.parseActions(cond.actions);
-        
+
         // We need at least one action to have the required info, so return otherwise.
         if (!actions || actions.length === 0) return;
 
-        var neighbourhood = undefined;
+        var neighbourhood = cond.neighbourhood;
         let sourceId = cond.source;
-
-        // If there is a transform block present, go find the original state source
-        // and update the sourceId to point to that instead of the transform block
-        if (sourceId.startsWith("transform")) {
-          index = sourceId.lastIndexOf("_");
-          sourceId = sourceId.substr(0, index);
-          let transformSource = this.blocks.transformBlocks.find(
-            x => x.id === sourceId
-          );
-          sourceId = transformSource.source;
-          neighbourhood = transformSource.neighbourhood;
-        }
 
         let index = sourceId.lastIndexOf("_");
         sourceId = sourceId.substr(0, index);
@@ -339,12 +327,19 @@ export default {
         data.affectsNeighbours
       );
     });
+    // Two events trigger on the same name here because we want to check both Conditions and Actions
+    // to find the block we need to update
     this.$root.$on("updateNeighbourhood", data => {
-      Vue.set(
-        this.blocks.transformBlocks.find(x => x.id == data.id),
-        "neighbourhood",
-        data.neighbourhood
-      );
+      let block = this.blocks.conditionBlocks.find(x => x.id == data.id);
+      if (block) {
+        Vue.set(block, "neighbourhood", data.neighbourhood);
+      }
+    });
+    this.$root.$on("updateNeighbourhood", data => {
+      let block = this.blocks.actionBlocks.find(x => x.id == data.id);
+      if (block) {
+        Vue.set(block, "neighbourhood", data.neighbourhood);
+      }
     });
     // Here we receive a copy of the grid from the SimZone, but we only ever use this for saving
     this.$root.$on("saveGrid", data => {
@@ -353,49 +348,33 @@ export default {
   },
   methods: {
     // Converts list of action ids into array of information about those actions to be used by rules
-    parseActions(actionArray){
-        let actions = [];
-        let validActions = true;
-        actionArray.forEach(actionId => {
-          // find the Action object with this id in the actionBlocks array
-          let action = this.blocks.actionBlocks.find(x => x.id === actionId);
-          if (!action) {
-            console.error(
-                "Could not find action " +
-                actionId +
-                " but it was in the actions array of Condition " +
-                cond.id
-            );
-            validActions = false;
-            return;
-          }
+    parseActions(actionArray) {
+      let actions = [];
+      let validActions = true;
+      actionArray.forEach(actionId => {
+        // find the Action object with this id in the actionBlocks array
+        let action = this.blocks.actionBlocks.find(x => x.id === actionId);
+        if (!action) {
+          console.error(
+            "Could not find action " +
+              actionId +
+              " but it was in the actions array of Condition " +
+              cond.id
+          );
+          validActions = false;
+          return;
+        }
+        var affectsNeighbours = action.affectsNeighbours; // Use this to determine whether or not we'll set our own state or our neighbours states
 
-          // if (!action.desiredState) {
-          //   validActions = false;
-          //   return;
-          // }
-          var affectsNeighbours = action.affectsNeighbours; // Use this to determine whether or not we'll set our own state or our neighbours states
+        var neighbourhood = action.neighbourhood;
 
-          var neighbourhood = undefined;
-
-          // To make transforms work ina  chain, the Condition is going to need to ask the Transform for whatever Actions it's connected to
-          // And the Transforms will need to store an array of the Actions they're connected to
-
-          // let sourceId = action.source.substr(0, index);
-          // if (sourceId.startsWith("transform")) {
-          //   let transformSource = this.blocks.transformBlocks.find(
-          //     x => x.id === sourceId
-          //   );
-          //   neighbourhood = transformSource.neighbourhood;
-          // }
-
-          actions.push({
-            affectsNeighbours,
-            desiredState: action.desiredState,
-            neighbourhood
-          });
+        actions.push({
+          affectsNeighbours,
+          desiredState: action.desiredState,
+          neighbourhood
         });
-        return actions
+      });
+      return actions;
     },
     revalidateOnConnect() {
       // When resizing a block we want to update the connection to reflect the new size,
@@ -479,14 +458,20 @@ export default {
         // If a connection is made from this State block to an action block,
         // push the id of that action block into the actions array of this State block
         // (for conditionless actions)
-        if (info.sourceId == neighbourNode && info.targetId.startsWith("action")) {
+        if (
+          info.sourceId == neighbourNode &&
+          info.targetId.startsWith("action")
+        ) {
           this.blocks.stateBlocks
             .find(x => x.id === id)
             .actions.push(info.targetId);
         }
       });
       jsPlumb.bind("connectionDetached", info => {
-        if (info.sourceId == neighbourNode && info.targetId.startsWith("action")) {
+        if (
+          info.sourceId == neighbourNode &&
+          info.targetId.startsWith("action")
+        ) {
           // If a connection is detached from this state block to an action block,
           // delete the id of that action block out of the actions array of this state block
           let index = this.blocks.stateBlocks
@@ -509,6 +494,11 @@ export default {
         actions: [],
         desiredNumberOfNeighbours: 1,
         neighbourRange: [0, 9],
+        neighbourhood: [
+          [true, true, true],
+          [true, false, true],
+          [true, true, true]
+        ],
         operator: "Exactly",
         requiredState: "#FFFFFF",
         top: 220,
@@ -586,7 +576,10 @@ export default {
           Vue.nextTick(() => {
             jsPlumb.revalidate(id);
           });
-        } else if (info.sourceId == thenNode && info.targetId.startsWith("action")) {
+        } else if (
+          info.sourceId == thenNode &&
+          info.targetId.startsWith("action")
+        ) {
           // If a connection is detached from this condition block to an action block,
           // delete the id of that action block out of the actions array of this condition block
           let index = this.blocks.conditionBlocks
@@ -607,6 +600,11 @@ export default {
         id: idOfThisAction,
         desiredState: "#FFFFFF",
         affectsNeighbours: false,
+        neighbourhood: [
+          [true, true, true],
+          [true, false, true],
+          [true, true, true]
+        ],
         top: 500,
         left: blockStartingX
       });
@@ -633,7 +631,6 @@ export default {
             info.sourceId.startsWith("transform"))
         ) {
           // For now just delete these kinds of conecions, eventually this will be the "Apply Action Regardless" scenario
-          
         }
       });
       // The reverse of the above bind, we set the source to empty when detached
@@ -964,7 +961,7 @@ body {
   height: 100%;
   z-index: 0;
 
-  .trashIcon{
+  .trashIcon {
     z-index: 2;
     position: absolute;
     top: 10px;
@@ -987,7 +984,9 @@ svg.jtk-connector path {
 svg.actionProperty path {
   stroke: var(--action-connector);
 }
-.jtk-connector { z-index:-10; }
+.jtk-connector {
+  z-index: -10;
+}
 .jtk-endpoint {
   z-index: -1;
   svg circle {

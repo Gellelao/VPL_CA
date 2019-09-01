@@ -32,8 +32,7 @@
 
       <div class="drawer" :class="{ open: drawer }">
         <TransformBlock
-          :id="'null'"
-          :source="'null'"
+          :id="id+'_transform'"
           :initialNeighbourhood="[
           [true, true, true],
           [true, false, true],
