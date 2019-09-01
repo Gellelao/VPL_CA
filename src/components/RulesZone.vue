@@ -10,7 +10,6 @@
             <v-btn @click="addState">Add a new State</v-btn>
             <v-btn @click="addCondition">Add a new Condition</v-btn>
             <v-btn @click="addAction">Add a new Action</v-btn>
-            <v-btn @click="addTransform">Add a new Transform</v-btn>
           </v-toolbar>
 
           <v-container fluid fill-height class="rulesContainer">
