@@ -573,7 +573,7 @@ export default {
           Vue.nextTick(() => {
             jsPlumb.revalidate(id);
           });
-        } else if (info.sourceId == id && info.targetId.startsWith("action")) {
+        } else if (info.sourceId == thenNode && info.targetId.startsWith("action")) {
           // If a connection is made from this condition block to an action block,
           // delete the id of that action block out of the actions array of this condition block
           let index = this.blocks.conditionBlocks
