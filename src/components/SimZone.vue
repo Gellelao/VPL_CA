@@ -164,16 +164,12 @@ export default {
     updateCells() {
       this.setArrays(this.nextGrid, this.grid);
       var updates = [];
-      // for (let x = 0; x < this.grid.length; x++) {
-      //   this.nextGrid[x] = [];
-      //   for (let y = 0; y < this.grid[x].length; y++) {
-      //     this.nextGrid[x][y] = "";
-      //   }
-      // }
+
       for (let x = 0; x < this.nextGrid.length; x++) {
         for (let y = 0; y < this.nextGrid[x].length; y++) {
           let updateInfo = this.applyRules(x, y);
           if (updateInfo && updateInfo.length > 0) {
+            // Update the center cells first, and push remaining update stuff into updates array
             updateInfo.forEach((e) => {
               if (e.self) {
                 this.nextGrid[x][y] = e.self.colour;
@@ -183,11 +179,14 @@ export default {
           }
         }
       }
+      // Once we've done all the "self" updates, go through the updates array updating neighbours
       updates.forEach(update => {
         let cellUpdates = update.neighbours;
-        if (cellUpdates) {
-          cellUpdates.forEach(cell => {
-            this.nextGrid[cell.x][cell.y] = cell.colour;
+        if (cellUpdates && cellUpdates.length > 0) {
+          cellUpdates.forEach(update => {
+            update.forEach((cell) => {
+              this.nextGrid[cell.x][cell.y] = cell.colour;
+            });
           });
         }
       });
@@ -197,15 +196,19 @@ export default {
       // this.$set(this.grid, 0, newRow);
     },
     processActions(x, y, actions) {
-      var actionsResult = {};
+      var actionsResult = {
+        neighbours: []
+      };
+      // We store an array of Neighbours update because applying multiple of different colours would have an effect
+      // But we only store a single self update because applying multiple of these would overwrite the previous ones anyway
       actions.forEach(action => {
         if (action.affectsNeighbours) {
-          actionsResult.neighbours = this.setMyNeighbours(
+          actionsResult.neighbours.push(this.setMyNeighbours(
             x,
             y,
             action.desiredState,
             action.neighbourhood
-          );
+          ));
         } else {
           actionsResult.self = {
             x,
