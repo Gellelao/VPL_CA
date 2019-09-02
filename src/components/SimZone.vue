@@ -169,7 +169,7 @@ export default {
         for (let y = 0; y < this.nextGrid[x].length; y++) {
           let updateInfo = this.applyRules(x, y);
           if (updateInfo && updateInfo.length > 0) {
-            // Update the center cells first, and push remaining update stuff into updates array
+            // Update the center cells first, and push remaining update stuff(neighbours updates) into updates array
             updateInfo.forEach((e) => {
               if (e.self) {
                 this.nextGrid[x][y] = e.self.colour;
