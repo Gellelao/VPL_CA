@@ -3,6 +3,7 @@
     <v-toolbar-title class="text-uppercase">
       <span class="heading">Colour</span>
     </v-toolbar-title>
+    <!-- For each cell that is: -->
     <div class="selectColour">
       <!-- <div class="form__input"> -->
       <swatches v-model="colour" colors="text-basic" @input="updateStateInParent"></swatches>

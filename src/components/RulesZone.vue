@@ -930,4 +930,7 @@ svg.actionProperty path {
 .transform {
   border-radius: 10px;
 }
+.v-chip {
+  z-index: 0;
+}
 </style>
