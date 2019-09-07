@@ -346,9 +346,6 @@ export default {
       return actions;
     },
     parseCondition(stateColour, cond, arrayOfExistingConds, rules) {
-      console.log("======================================");
-      console.log("parsing " + cond.id + ", existing conds looks like: " + JSON.stringify(arrayOfExistingConds));
-      console.log("rules upon beginning method: " + JSON.stringify(rules));
 
       if (cond.actions.length === 0 && cond.conditions.length === 0) {
         // Then this condition must be useless
@@ -373,10 +370,7 @@ export default {
         neighbourRange
       });
 
-      console.log("added myself, so existing conds looks like: " + JSON.stringify(arrayOfExistingConds));
-
       // If this condition has actions as well, then it forms a complete rule and we can push it
-      console.log("rules before pushing: " + JSON.stringify(rules));
       if (actions.length) {
         rules.push({
           stateColour,
@@ -384,7 +378,6 @@ export default {
           actions
         });
       }
-      console.log("rules after pushing: " + JSON.stringify(rules));
 
       let conditionsOfThisCond = cond.conditions;
 
@@ -519,7 +512,7 @@ export default {
           // delete the id of that action block out of the actions array of this state block
           let index = this.blocks.stateBlocks
             .find(x => x.id === id)
-            .actions.indexOf(info.targetId);
+            .conditions.indexOf(info.targetId);
           this.$delete(
             this.blocks.stateBlocks.find(x => x.id === id).conditions,
             index
@@ -833,7 +826,6 @@ export default {
       // by first deleting ALL connections but we can't do that here)
       if (id.startsWith("state") || id.startsWith("transform")) {
         jsPlumb.remove(id + "_neighbours");
-        jsPlumb.remove(id + "_state");
       }
       if (id.startsWith("condition")) {
         jsPlumb.remove(id + "_then");
