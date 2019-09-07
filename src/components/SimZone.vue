@@ -272,7 +272,6 @@ export default {
                 }
               }
             });
-            console.log(conditionsMet + "/" + conditionsToMeet + " met");
             if (conditionsMet == conditionsToMeet) {
               updateInfo.push(this.processActions(x, y, rule.actions));
             }

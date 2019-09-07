@@ -211,7 +211,6 @@ export default {
           let cond = this.blocks.conditionBlocks.find(
             x => x.id === conditionId
           );
-          console.log("Cond: " + cond);
           let newRules = this.parseCondition(stateColour, cond, [], rules);
           rules.concat(newRules);
         });
@@ -347,18 +346,14 @@ export default {
       return actions;
     },
     parseCondition(stateColour, cond, arrayOfExistingConds, rules) {
-      console.log("cond in parse method: " + cond);
+      console.log("======================================");
+      console.log("parsing " + cond.id + ", existing conds looks like: " + JSON.stringify(arrayOfExistingConds));
+      console.log("rules upon beginning method: " + JSON.stringify(rules));
 
       if (cond.actions.length === 0 && cond.conditions.length === 0) {
         // Then this condition must be useless
         return rules;
       }
-      console.log(
-        "actions: " +
-          cond.actions.length +
-          ", conditions: " +
-          cond.conditions.length
-      );
 
       var requiredState = cond.requiredState;
       var operator = cond.operator;
@@ -378,14 +373,18 @@ export default {
         neighbourRange
       });
 
+      console.log("added myself, so existing conds looks like: " + JSON.stringify(arrayOfExistingConds));
+
       // If this condition has actions as well, then it forms a complete rule and we can push it
+      console.log("rules before pushing: " + JSON.stringify(rules));
       if (actions.length) {
         rules.push({
           stateColour,
-          conditions: arrayOfExistingConds,
+          conditions: arrayOfExistingConds.slice(),
           actions
         });
       }
+      console.log("rules after pushing: " + JSON.stringify(rules));
 
       let conditionsOfThisCond = cond.conditions;
 
