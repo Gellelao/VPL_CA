@@ -188,61 +188,32 @@ export default {
       this.blocks.stateBlocks.forEach(state => {
         if (state.actions.length === 0) return;
 
-        // This rule has no, so tell the simZone not to check any condition before applying the action
-        var checkCondition = false;
+        // This rule has no cond, so don't put any in the array
+        var conditions = [];
 
         let actions = this.parseActions(state.actions);
         let stateColour = state.colour;
 
         rules.push({
           stateColour,
-          checkCondition,
+          conditions,
           actions
         });
       });
 
       // Then go through the rules which require conditions
-      this.blocks.conditionBlocks.forEach(cond => {
-        // We need conditions to have all of the required info before we make a rule out of them
-        if (cond.actions.length == 0 || !cond.source) {
-          return;
-        }
+      this.blocks.stateBlocks.forEach(state => {
+        if (state.conditions.length === 0) return;
 
-        // We need a required state to have a valid rule
-        if (!cond.requiredState) {
-          return;
-        }
+        var stateColour = state.colour;
 
-        // This rule has a condition, so tell the simZone to check the condition before applying the rule!
-        var checkCondition = true;
-
-        // Create list of Action objects
-        let actions = this.parseActions(cond.actions);
-
-        // We need at least one action to have the required info, so return otherwise.
-        if (!actions || actions.length === 0) return;
-
-        var neighbourhood = cond.neighbourhood;
-        let sourceId = cond.source;
-
-        let index = sourceId.lastIndexOf("_");
-        sourceId = sourceId.substr(0, index);
-        let source = this.blocks.stateBlocks.find(x => x.id == sourceId);
-        var stateColour = source.colour;
-        var requiredState = cond.requiredState;
-        var operator = cond.operator;
-        var desiredNumberOfNeighbours = cond.desiredNumberOfNeighbours;
-        var neighbourRange = cond.neighbourRange;
-
-        rules.push({
-          stateColour,
-          checkCondition,
-          requiredState,
-          operator,
-          neighbourhood,
-          desiredNumberOfNeighbours,
-          neighbourRange,
-          actions
+        state.conditions.forEach(conditionId => {
+          let cond = this.blocks.conditionBlocks.find(
+            x => x.id === conditionId
+          );
+          console.log("Cond: " + cond);
+          let newRules = this.parseCondition(stateColour, cond, [], rules);
+          rules.concat(newRules);
         });
       });
       return rules;
@@ -375,6 +346,59 @@ export default {
       });
       return actions;
     },
+    parseCondition(stateColour, cond, arrayOfExistingConds, rules) {
+      console.log("cond in parse method: " + cond);
+
+      if (cond.actions.length === 0 && cond.conditions.length === 0) {
+        // Then this condition must be useless
+        return rules;
+      }
+      console.log(
+        "actions: " +
+          cond.actions.length +
+          ", conditions: " +
+          cond.conditions.length
+      );
+
+      var requiredState = cond.requiredState;
+      var operator = cond.operator;
+      var neighbourhood = cond.neighbourhood;
+      var desiredNumberOfNeighbours = cond.desiredNumberOfNeighbours;
+      var neighbourRange = cond.neighbourRange;
+
+      // Create list of Action objects
+      let actions = this.parseActions(cond.actions);
+
+      // This rule has at least one condition, the current one, so add it
+      arrayOfExistingConds.push({
+        requiredState,
+        operator,
+        neighbourhood,
+        desiredNumberOfNeighbours,
+        neighbourRange
+      });
+
+      // If this condition has actions as well, then it forms a complete rule and we can push it
+      if (actions.length) {
+        rules.push({
+          stateColour,
+          conditions: arrayOfExistingConds,
+          actions
+        });
+      }
+
+      let conditionsOfThisCond = cond.conditions;
+
+      // The conditions may be connected to other conditions in a chain, so deal with them recursively
+      if (conditionsOfThisCond.length) {
+        conditionsOfThisCond.forEach(conditionId => {
+          let cond = this.blocks.conditionBlocks.find(
+            x => x.id === conditionId
+          );
+          this.parseCondition(stateColour, cond, arrayOfExistingConds, rules);
+        });
+      } else return rules;
+    },
     revalidateOnConnect() {
       // When resizing a block we want to update the connection to reflect the new size,
       // and this is the best way I've found to do that:
@@ -429,6 +453,7 @@ export default {
       this.blocks.stateBlocks.push({
         id: idOfThisState,
         colour: "#000000",
+        conditions: [],
         actions: [],
         top: 30,
         left: blockStartingX
@@ -464,6 +489,13 @@ export default {
           this.blocks.stateBlocks
             .find(x => x.id === id)
             .actions.push(info.targetId);
+        } else if (
+          info.sourceId == neighbourNode &&
+          info.targetId.startsWith("condition")
+        ) {
+          this.blocks.stateBlocks
+            .find(x => x.id === id)
+            .conditions.push(info.targetId);
         }
       });
       jsPlumb.bind("connectionDetached", info => {
@@ -480,6 +512,19 @@ export default {
             this.blocks.stateBlocks.find(x => x.id === id).actions,
             index
           );
+        } else if (
+          info.sourceId == neighbourNode &&
+          info.targetId.startsWith("condition")
+        ) {
+          // If a connection is detached from this state block to an action block,
+          // delete the id of that action block out of the actions array of this state block
+          let index = this.blocks.stateBlocks
+            .find(x => x.id === id)
+            .actions.indexOf(info.targetId);
+          this.$delete(
+            this.blocks.stateBlocks.find(x => x.id === id).conditions,
+            index
+          );
         }
       });
     },
@@ -491,6 +536,7 @@ export default {
         id: idOfThisCond,
         source: "",
         actions: [],
+        conditions: [],
         desiredNumberOfNeighbours: 1,
         neighbourRange: [0, 9],
         neighbourhood: [
@@ -549,6 +595,15 @@ export default {
           this.blocks.conditionBlocks
             .find(x => x.id === id)
             .actions.push(info.targetId);
+        } else if (
+          info.sourceId == thenNode &&
+          info.targetId.startsWith("condition")
+        ) {
+          // If a connection is made from this condition block to an action block,
+          // push the id of that action block into the actions array of this condition block
+          this.blocks.conditionBlocks
+            .find(x => x.id === id)
+            .conditions.push(info.targetId);
         }
       });
       // Reverse those changes when detaching connections
@@ -582,6 +637,19 @@ export default {
             .actions.indexOf(info.targetId);
           this.$delete(
             this.blocks.conditionBlocks.find(x => x.id === id).actions,
+            index
+          );
+        } else if (
+          info.sourceId == thenNode &&
+          info.targetId.startsWith("condition")
+        ) {
+          // If a connection is detached from this condition block to an action block,
+          // delete the id of that action block out of the actions array of this condition block
+          let index = this.blocks.conditionBlocks
+            .find(x => x.id === id)
+            .conditions.indexOf(info.targetId);
+          this.$delete(
+            this.blocks.conditionBlocks.find(x => x.id === id).conditions,
             index
           );
         }

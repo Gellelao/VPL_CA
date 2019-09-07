@@ -170,7 +170,7 @@ export default {
           let updateInfo = this.applyRules(x, y);
           if (updateInfo && updateInfo.length > 0) {
             // Update the center cells first, and push remaining update stuff(neighbours updates) into updates array
-            updateInfo.forEach((e) => {
+            updateInfo.forEach(e => {
               if (e.self) {
                 this.nextGrid[x][y] = e.self.colour;
               }
@@ -184,7 +184,7 @@ export default {
         let cellUpdates = update.neighbours;
         if (cellUpdates && cellUpdates.length > 0) {
           cellUpdates.forEach(update => {
-            update.forEach((cell) => {
+            update.forEach(cell => {
               this.nextGrid[cell.x][cell.y] = cell.colour;
             });
           });
@@ -203,12 +203,14 @@ export default {
       // But we only store a single self update because applying multiple of these would overwrite the previous ones anyway
       actions.forEach(action => {
         if (action.affectsNeighbours) {
-          actionsResult.neighbours.push(this.setMyNeighbours(
-            x,
-            y,
-            action.desiredState,
-            action.neighbourhood
-          ));
+          actionsResult.neighbours.push(
+            this.setMyNeighbours(
+              x,
+              y,
+              action.desiredState,
+              action.neighbourhood
+            )
+          );
         } else {
           actionsResult.self = {
             x,
@@ -221,53 +223,59 @@ export default {
     },
     applyRules(x, y) {
       let cellState = this.grid[x][y];
-      // We expect to have updated this variable by the end of the method
+      // We expect to have updated this array by the end of the method
       var updateInfo = [];
 
       this.rules.forEach(rule => {
         // Only consider rules that match the state of this cell
         if (rule.stateColour === cellState) {
-          let neighbours = this.getMyNeighbours(x, y, rule.neighbourhood);
-          // See if we need to check the condition at all (will usually be true)
-          if (rule.checkCondition) {
-            let actualNeighbours = neighbours.filter(
-              cell => cell === rule.requiredState
-            ).length;
-            switch (rule.operator) {
-              case "Exactly": {
-                if (actualNeighbours === rule.desiredNumberOfNeighbours) {
-                  updateInfo.push(this.processActions(x, y, rule.actions));
-                }
-                break;
-              }
-              case "Less than": {
-                if (actualNeighbours < rule.desiredNumberOfNeighbours) {
-                  updateInfo.push(this.processActions(x, y, rule.actions));
-                }
-                break;
-              }
-              case "More than": {
-                if (actualNeighbours > rule.desiredNumberOfNeighbours) {
-                  updateInfo.push(this.processActions(x, y, rule.actions));
-                }
-                break;
-              }
-              case "Between": {
-                if (
-                  actualNeighbours > rule.neighbourRange[0] &&
-                  actualNeighbours < rule.neighbourRange[1]
-                ) {
-                  updateInfo.push(this.processActions(x, y, rule.actions));
-                }
-                break;
-              }
-              default: {
-                // do nothing
-              }
-            }
-          } else {
+          // See if we need to check the condition at all
+          if (rule.conditions.length === 0) {
             // This means we don't need to check the condition, so apply the action regardless
             updateInfo.push(this.processActions(x, y, rule.actions));
+          } else {
+            // We do need to check all conditions are met
+            var conditionsToMeet = rule.conditions.length;
+            var conditionsMet = 0;
+            rule.conditions.forEach(cond => {
+              let neighbours = this.getMyNeighbours(x, y, cond.neighbourhood);
+              let validNeighbours = neighbours.filter(
+                cell => cell === cond.requiredState
+              ).length;
+              switch (cond.operator) {
+                case "Exactly": {
+                  if (validNeighbours === cond.desiredNumberOfNeighbours) {
+                    conditionsMet++;
+                  }
+                  break;
+                }
+                case "Less than": {
+                  if (validNeighbours < cond.desiredNumberOfNeighbours)
+                    conditionsMet++;
+                  break;
+                }
+                case "More than": {
+                  if (validNeighbours > cond.desiredNumberOfNeighbours)
+                    conditionsMet++;
+                  break;
+                }
+                case "Between": {
+                  if (
+                    validNeighbours > cond.neighbourRange[0] &&
+                    validNeighbours < cond.neighbourRange[1]
+                  )
+                    conditionsMet++;
+                  break;
+                }
+                default: {
+                  // do nothing
+                }
+              }
+            });
+            console.log(conditionsMet + "/" + conditionsToMeet + " met");
+            if (conditionsMet == conditionsToMeet) {
+              updateInfo.push(this.processActions(x, y, rule.actions));
+            }
           }
         }
       });
