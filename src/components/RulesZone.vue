@@ -7,7 +7,7 @@
             <v-toolbar-title class="headline text-uppercase">
               <span>Rules</span>
             </v-toolbar-title>
-            <v-btn @click="addState">Add a new State</v-btn>
+            <v-btn @click="addState">Add a new Colour</v-btn>
             <v-btn @click="addCondition">Add a new Condition</v-btn>
             <v-btn @click="addAction">Add a new Action</v-btn>
           </v-toolbar>
@@ -508,8 +508,8 @@ export default {
           info.sourceId == neighbourNode &&
           info.targetId.startsWith("condition")
         ) {
-          // If a connection is detached from this state block to an action block,
-          // delete the id of that action block out of the actions array of this state block
+          // If a connection is detached from this state block to an condition block,
+          // delete the id of that condition block out of the conditions array of this state block
           let index = this.blocks.stateBlocks
             .find(x => x.id === id)
             .conditions.indexOf(info.targetId);
@@ -635,8 +635,8 @@ export default {
           info.sourceId == thenNode &&
           info.targetId.startsWith("condition")
         ) {
-          // If a connection is detached from this condition block to an action block,
-          // delete the id of that action block out of the actions array of this condition block
+          // If a connection is detached from this condition block to another condition block,
+          // delete the id of that condition block out of the conditions array of this condition block
           let index = this.blocks.conditionBlocks
             .find(x => x.id === id)
             .conditions.indexOf(info.targetId);
