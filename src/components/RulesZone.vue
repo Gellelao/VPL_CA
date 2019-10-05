@@ -7,10 +7,9 @@
             <v-toolbar-title class="headline text-uppercase">
               <span>Rules</span>
             </v-toolbar-title>
-            <v-btn @click="addState">Add a new State</v-btn>
+            <v-btn @click="addState">Add a new Colour</v-btn>
             <v-btn @click="addCondition">Add a new Condition</v-btn>
             <v-btn @click="addAction">Add a new Action</v-btn>
-            <v-btn @click="addTransform">Add a new Transform</v-btn>
           </v-toolbar>
 
           <v-container fluid fill-height class="rulesContainer">
@@ -19,15 +18,15 @@
                 <div id="points">
                   <div v-if="trashOpen">
                     <div v-if="mouseOverTrash">
-                      <v-icon x-large>delete_forever</v-icon>
+                      <v-icon class="trashIcon" x-large>delete_forever</v-icon>
                     </div>
                     <div v-else>
-                      <v-icon x-large>delete</v-icon>
+                      <v-icon class="trashIcon" x-large>delete</v-icon>
                     </div>
                     <div class="trash" :class="{ 'red': mouseOverTrash }"></div>
                   </div>
                   <div v-else>
-                    <v-icon x-large>delete</v-icon>
+                    <v-icon class="trashIcon" x-large>delete</v-icon>
                   </div>
 
                   <div v-if="blocks.stateBlocks.length > 0">
@@ -47,6 +46,7 @@
                       :source="block.source"
                       :initialNeighbourCount="block.desiredNumberOfNeighbours"
                       :initialNeighbourRange="block.neighbourRange"
+                      :initialNeighbourhood="block.neighbourhood"
                       :initialOperator="block.operator"
                       :initialReqState="block.requiredState"
                     ></ConditionBlock>
@@ -59,6 +59,8 @@
                       :id="block.id"
                       :source="block.source"
                       :initialDesiredState="block.desiredState"
+                      :initialAffectsNeighbours="block.affectsNeighbours"
+                      :initialNeighbourhood="block.neighbourhood"
                     ></ActionBlock>
                   </div>
 
@@ -90,6 +92,10 @@
                 <v-list-tile v-for="(item, i) in presets" :key="i" @click="loadPreset(item.data)">
                   <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                 </v-list-tile>
+                <v-divider></v-divider>
+                <v-list-tile v-for="(item, i) in userTestingPresets" :key="i" @click="loadPreset(item.data)">
+                  <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                </v-list-tile>
               </v-list>
             </v-menu>
             <input v-show="false" ref="inputUpload" type="file" @change="loadFile" />
@@ -114,8 +120,16 @@ import ActionBlock from "./ActionBlock";
 import TransformBlock from "./TransformBlock";
 import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
+
+// Preset rules:
+
+import gameOfLife from "../../rules/gameOfLife.json";
+import wireworld from "../../rules/wireworld.json";
+import langtons from "../../rules/langtons.json";
+import rule110 from "../../rules/rule110.json";
+
 import basics from "../../rules/basics.json";
-import wireworld from "../../rules/unfinished_wireworld.json";
+import unfinishedwireworld from "../../rules/unfinished_wireworld.json";
 import blueYellow from "../../rules/blue_and_yellow.json";
 
 // Count variable appended to block id values to ensure uniqueness
@@ -168,9 +182,15 @@ export default {
     trashOpen: false,
     mouseOverTrash: false,
     presets: [
-      { title: "Basics", data: basics },
+      { title: "Game of Life", data: gameOfLife },
       { title: "Wireworld", data: wireworld },
-      { title: "BlueYellow", data: blueYellow }
+      { title: "Langton's Ant", data: langtons },
+      { title: "Rule 110", data: rule110 }
+    ],
+    userTestingPresets: [
+      { title: "Basics", data: basics },
+      { title: "Incomplete Wireworld", data: unfinishedwireworld },
+      { title: "Blue and Yellow", data: blueYellow }
     ]
   }),
   updated() {
@@ -181,90 +201,36 @@ export default {
       // Fully construct the data needed for each rule here, to pass down to
       // SimZone which can use the data to implement the rules.
       var rules = [];
-      this.blocks.conditionBlocks.forEach(cond => {
-        // We need conditions to have all of the required info before we make a rule out of them
-        if (cond.actions.length == 0 || !cond.source) {
-          return;
-        }
 
-        let index = cond.source.lastIndexOf("_");
-        var property = cond.source.substr(index + 1); // Use this to determine whether or not we'll check our own state or our neighbours states
+      //First check for any rules which don't require conditions:
+      this.blocks.stateBlocks.forEach(state => {
+        if (state.actions.length === 0) return;
 
-        // We need a required state if we're basing the condition on neighbours
-        if (property === "neighbours" && !cond.requiredState) {
-          return;
-        }
+        // This rule has no cond, so don't put any in the array
+        var conditions = [];
 
-        // Create list of Action objects
-        let actions = [];
-        let validActions = true;
-        cond.actions.forEach(actionId => {
-          // Using the condition's array of actions (which are strings of the action ids),
-          // find the corresponding Action object from the actionBlocks array
-          let action = this.blocks.actionBlocks.find(x => x.id === actionId);
-          if(!action){
-            console.error("Could not find action " + actionId + " but it was in the actions array of Condition " + cond.id);
-            validActions = false;
-            return;
-          }
-          if (!action.source || !action.desiredState) {
-            validActions = false;
-            return;
-          }
-          let index = action.source.lastIndexOf("_");
-          var property = action.source.substr(index + 1); // Use this to determine whether or not we'll set our own state or our neighbours states
-
-          var neighbourhood = undefined;
-          let sourceId = action.source.substr(0, index);
-          if (sourceId.startsWith("transform")) {
-            let transformSource = this.blocks.transformBlocks.find(
-              x => x.id === sourceId
-            );
-            neighbourhood = transformSource.neighbourhood;
-          }
-
-          actions.push({
-            property,
-            desiredState: action.desiredState,
-            neighbourhood
-          });
-        });
-        // We need at least one action to have the required info, so return otherwise.
-        if (!validActions) return;
-
-        var neighbourhood = undefined;
-        let sourceId = cond.source;
-
-        // If there is a transform block present, go find the original state source
-        // and update the sourceId to point to that instead of the transform block
-        if (sourceId.startsWith("transform")) {
-          index = sourceId.lastIndexOf("_");
-          sourceId = sourceId.substr(0, index);
-          let transformSource = this.blocks.transformBlocks.find(
-            x => x.id === sourceId
-          );
-          sourceId = transformSource.source;
-          neighbourhood = transformSource.neighbourhood;
-        }
-
-        index = sourceId.lastIndexOf("_");
-        sourceId = sourceId.substr(0, index);
-        let source = this.blocks.stateBlocks.find(x => x.id == sourceId);
-        var stateColour = source.colour;
-        var requiredState = cond.requiredState;
-        var operator = cond.operator;
-        var desiredNumberOfNeighbours = cond.desiredNumberOfNeighbours;
-        var neighbourRange = cond.neighbourRange;
+        let actions = this.parseActions(state.actions);
+        let stateColour = state.colour;
 
         rules.push({
           stateColour,
-          property,
-          requiredState,
-          operator,
-          neighbourhood,
-          desiredNumberOfNeighbours,
-          neighbourRange,
+          conditions,
           actions
+        });
+      });
+
+      // Then go through the rules which require conditions
+      this.blocks.stateBlocks.forEach(state => {
+        if (state.conditions.length === 0) return;
+
+        var stateColour = state.colour;
+
+        state.conditions.forEach(conditionId => {
+          let cond = this.blocks.conditionBlocks.find(
+            x => x.id === conditionId
+          );
+          let newRules = this.parseCondition(stateColour, cond, [], rules);
+          rules.concat(newRules);
         });
       });
       return rules;
@@ -341,12 +307,26 @@ export default {
         data.desiredState
       );
     });
-    this.$root.$on("updateNeighbourhood", data => {
+    this.$root.$on("updateActionAffectsNeighbours", data => {
       Vue.set(
-        this.blocks.transformBlocks.find(x => x.id == data.id),
-        "neighbourhood",
-        data.neighbourhood
+        this.blocks.actionBlocks.find(x => x.id == data.id),
+        "affectsNeighbours",
+        data.affectsNeighbours
       );
+    });
+    // Two events trigger on the same name here because we want to check both Conditions and Actions
+    // to find the block we need to update
+    this.$root.$on("updateNeighbourhood", data => {
+      let block = this.blocks.conditionBlocks.find(x => x.id == data.id);
+      if (block) {
+        Vue.set(block, "neighbourhood", data.neighbourhood);
+      }
+    });
+    this.$root.$on("updateNeighbourhood", data => {
+      let block = this.blocks.actionBlocks.find(x => x.id == data.id);
+      if (block) {
+        Vue.set(block, "neighbourhood", data.neighbourhood);
+      }
     });
     // Here we receive a copy of the grid from the SimZone, but we only ever use this for saving
     this.$root.$on("saveGrid", data => {
@@ -354,6 +334,81 @@ export default {
     });
   },
   methods: {
+    // Converts list of action ids into array of information about those actions to be used by rules
+    parseActions(actionArray) {
+      let actions = [];
+      let validActions = true;
+      actionArray.forEach(actionId => {
+        // find the Action object with this id in the actionBlocks array
+        let action = this.blocks.actionBlocks.find(x => x.id === actionId);
+        if (!action) {
+          console.error(
+            "Could not find action " +
+              actionId +
+              " but it was in the actions array of Condition " +
+              cond.id
+          );
+          validActions = false;
+          return;
+        }
+        var affectsNeighbours = action.affectsNeighbours; // Use this to determine whether or not we'll set our own state or our neighbours states
+
+        var neighbourhood = action.neighbourhood;
+
+        actions.push({
+          affectsNeighbours,
+          desiredState: action.desiredState,
+          neighbourhood
+        });
+      });
+      return actions;
+    },
+    parseCondition(stateColour, cond, arrayOfExistingConds, rules) {
+
+      if (cond.actions.length === 0 && cond.conditions.length === 0) {
+        // Then this condition must be useless
+        return rules;
+      }
+
+      var requiredState = cond.requiredState;
+      var operator = cond.operator;
+      var neighbourhood = cond.neighbourhood;
+      var desiredNumberOfNeighbours = cond.desiredNumberOfNeighbours;
+      var neighbourRange = cond.neighbourRange;
+
+      // Create list of Action objects
+      let actions = this.parseActions(cond.actions);
+
+      // This rule has at least one condition, the current one, so add it
+      arrayOfExistingConds.push({
+        requiredState,
+        operator,
+        neighbourhood,
+        desiredNumberOfNeighbours,
+        neighbourRange
+      });
+
+      // If this condition has actions as well, then it forms a complete rule and we can push it
+      if (actions.length) {
+        rules.push({
+          stateColour,
+          conditions: arrayOfExistingConds.slice(),
+          actions
+        });
+      }
+
+      let conditionsOfThisCond = cond.conditions;
+
+      // The conditions may be connected to other conditions in a chain, so deal with them recursively
+      if (conditionsOfThisCond.length) {
+        conditionsOfThisCond.forEach(conditionId => {
+          let cond = this.blocks.conditionBlocks.find(
+            x => x.id === conditionId
+          );
+          this.parseCondition(stateColour, cond, arrayOfExistingConds, rules);
+        });
+      } else return rules;
+    },
     revalidateOnConnect() {
       // When resizing a block we want to update the connection to reflect the new size,
       // and this is the best way I've found to do that:
@@ -408,6 +463,8 @@ export default {
       this.blocks.stateBlocks.push({
         id: idOfThisState,
         colour: "#000000",
+        conditions: [],
+        actions: [],
         top: 30,
         left: blockStartingX
       });
@@ -418,7 +475,6 @@ export default {
     },
     initializeStateBlock(id) {
       let neighbourNode = id + "_neighbours";
-      let stateNode = id + "_state";
 
       let blockData = this.blocks.stateBlocks.find(x => x.id === id);
       this.initializeGenericBlock(id, blockData);
@@ -431,14 +487,56 @@ export default {
         },
         sourcePoint
       );
-      jsPlumb.makeSource(
-        stateNode,
-        {
-          maxConnections: 100,
-          anchor: "Center"
-        },
-        sourcePoint
-      );
+
+      jsPlumb.bind("connection", info => {
+        // If a connection is made from this State block to an action block,
+        // push the id of that action block into the actions array of this State block
+        // (for conditionless actions)
+        if (
+          info.sourceId == neighbourNode &&
+          info.targetId.startsWith("action")
+        ) {
+          this.blocks.stateBlocks
+            .find(x => x.id === id)
+            .actions.push(info.targetId);
+        } else if (
+          info.sourceId == neighbourNode &&
+          info.targetId.startsWith("condition")
+        ) {
+          this.blocks.stateBlocks
+            .find(x => x.id === id)
+            .conditions.push(info.targetId);
+        }
+      });
+      jsPlumb.bind("connectionDetached", info => {
+        if (
+          info.sourceId == neighbourNode &&
+          info.targetId.startsWith("action")
+        ) {
+          // If a connection is detached from this state block to an action block,
+          // delete the id of that action block out of the actions array of this state block
+          let index = this.blocks.stateBlocks
+            .find(x => x.id === id)
+            .actions.indexOf(info.targetId);
+          this.$delete(
+            this.blocks.stateBlocks.find(x => x.id === id).actions,
+            index
+          );
+        } else if (
+          info.sourceId == neighbourNode &&
+          info.targetId.startsWith("condition")
+        ) {
+          // If a connection is detached from this state block to an condition block,
+          // delete the id of that condition block out of the conditions array of this state block
+          let index = this.blocks.stateBlocks
+            .find(x => x.id === id)
+            .conditions.indexOf(info.targetId);
+          this.$delete(
+            this.blocks.stateBlocks.find(x => x.id === id).conditions,
+            index
+          );
+        }
+      });
     },
     addCondition: function(event) {
       // count = count + 1;
@@ -448,8 +546,14 @@ export default {
         id: idOfThisCond,
         source: "",
         actions: [],
+        conditions: [],
         desiredNumberOfNeighbours: 1,
         neighbourRange: [0, 9],
+        neighbourhood: [
+          [true, true, true],
+          [true, false, true],
+          [true, true, true]
+        ],
         operator: "Exactly",
         requiredState: "#FFFFFF",
         top: 220,
@@ -483,11 +587,7 @@ export default {
       jsPlumb.bind("connection", info => {
         // If a connection is made from a state block to this condition block,
         // update the source of this block to the name of the property which was just connected to it.
-        if (
-          info.targetId == id &&
-          (info.sourceId.startsWith("state") ||
-            info.sourceId.startsWith("transform"))
-        ) {
+        if (info.targetId == id && info.sourceId.startsWith("state")) {
           Vue.set(
             // Find the array entry for this block
             this.blocks.conditionBlocks.find(x => x.id === id),
@@ -502,15 +602,23 @@ export default {
         ) {
           // If a connection is made from this condition block to an action block,
           // push the id of that action block into the actions array of this condition block
-          // Add the id of the source to the array of triggers
           this.blocks.conditionBlocks
             .find(x => x.id === id)
             .actions.push(info.targetId);
+        } else if (
+          info.sourceId == thenNode &&
+          info.targetId.startsWith("condition")
+        ) {
+          // If a connection is made from this condition block to an action block,
+          // push the id of that action block into the actions array of this condition block
+          this.blocks.conditionBlocks
+            .find(x => x.id === id)
+            .conditions.push(info.targetId);
         }
       });
       // Reverse those changes when detaching connections
       jsPlumb.bind("connectionDetached", info => {
-        // If a connection is made from a state block to this condition block,
+        // If a connection is detached from a state block to this condition block,
         // update the source of this block empty
         if (
           info.targetId == id &&
@@ -528,14 +636,30 @@ export default {
           Vue.nextTick(() => {
             jsPlumb.revalidate(id);
           });
-        } else if (info.sourceId == id && info.targetId.startsWith("action")) {
-          // If a connection is made from this condition block to an action block,
+        } else if (
+          info.sourceId == thenNode &&
+          info.targetId.startsWith("action")
+        ) {
+          // If a connection is detached from this condition block to an action block,
           // delete the id of that action block out of the actions array of this condition block
           let index = this.blocks.conditionBlocks
             .find(x => x.id === id)
             .actions.indexOf(info.targetId);
           this.$delete(
             this.blocks.conditionBlocks.find(x => x.id === id).actions,
+            index
+          );
+        } else if (
+          info.sourceId == thenNode &&
+          info.targetId.startsWith("condition")
+        ) {
+          // If a connection is detached from this condition block to another condition block,
+          // delete the id of that condition block out of the conditions array of this condition block
+          let index = this.blocks.conditionBlocks
+            .find(x => x.id === id)
+            .conditions.indexOf(info.targetId);
+          this.$delete(
+            this.blocks.conditionBlocks.find(x => x.id === id).conditions,
             index
           );
         }
@@ -547,9 +671,14 @@ export default {
 
       this.blocks.actionBlocks.push({
         id: idOfThisAction,
-        source: "",
         desiredState: "#FFFFFF",
-        top: 430,
+        affectsNeighbours: false,
+        neighbourhood: [
+          [true, true, true],
+          [true, false, true],
+          [true, true, true]
+        ],
+        top: 500,
         left: blockStartingX
       });
       // Wait for the DOM to update before setting up plumbing
@@ -565,163 +694,9 @@ export default {
         maxConnections: 100,
         anchor: "Continuous"
       });
-
-      // When a connection is made, update the source of the block to
-      // the name of the property which was just connected to it.
-      jsPlumb.bind("connection", info => {
-        if (
-          info.targetId == id &&
-          (info.sourceId.startsWith("state") ||
-            info.sourceId.startsWith("transform"))
-        ) {
-          // if this action already has a sourceConnection, detach it because an Action can only have one source
-          let existingConnectionId = this.blocks.actionBlocks.find(
-            x => x.id === id
-          ).sourceConnectionId;
-          // Find all the connections targetting this block, and delete them if they have the same connection id
-          // as the existing connection. Effectively remove the previous connection before making a new one
-          jsPlumb.select({target: id}).each((connection => {
-            if(connection.id == existingConnectionId)jsPlumb.deleteConnection(connection);
-          }));
-          Vue.set(
-            // Update the sourceConnection to the new one
-            this.blocks.actionBlocks.find(x => x.id === id),
-            "sourceConnectionId",
-            info.connection.id
-          );
-          // Style the Action connection differently to other connections
-          info.connection.addType("actionProperty");
-          info.connection.removeOverlay("arrow");
-          // Only update source if we receive a connection from a State or Transform block
-          // Do it in the next tick because we need to wait for the other connection to be detached first
-          Vue.nextTick(() => {
-            Vue.set(
-              // Find the array entry for this block
-              this.blocks.actionBlocks.find(x => x.id === id),
-              // Update the source field
-              "source",
-              // to the sourceId of the connection
-              info.sourceId
-            );
-          });
-        }
-      });
-      // The reverse of the above bind, we set the source to empty when detached
-      jsPlumb.bind("connectionDetached", info => {
-        if (
-          info.targetId == id &&
-          (info.sourceId.startsWith("state") ||
-            info.sourceId.startsWith("transform"))
-        ) {
-          // Only update source if we receive a connection from a State block
-          Vue.set(
-            // Find the array entry for this block
-            this.blocks.actionBlocks.find(x => x.id === id),
-            // Update the source field to empty
-            "source",
-            ""
-          );
-          Vue.nextTick(() => {
-            jsPlumb.revalidate(id);
-          });
-        }
-      });
-    },
-    addTransform: function(event) {
-      // count = count + 1;
-      var idOfThisTransform = "transform_" + count;
-
-      this.blocks.transformBlocks.push({
-        id: idOfThisTransform,
-        source: "",
-        neighbourhood: [
-          [true, true, true],
-          [true, false, true],
-          [true, true, true]
-        ],
-        top: 600,
-        left: blockStartingX
-      });
-      // Wait for the DOM to update before setting up plumbing
-      Vue.nextTick(() => {
-        this.initializeTransformBlock(idOfThisTransform);
-      });
     },
     initializeTransformBlock(id) {
-      let neighbourNode = id + "_neighbours";
-      let stateNode = id + "_state";
-
-      let blockData = this.blocks.transformBlocks.find(x => x.id === id);
-      this.initializeGenericBlock(id, blockData);
-
-      jsPlumb.makeSource(
-        neighbourNode,
-        {
-          maxConnections: 100,
-          anchor: "Center"
-        },
-        sourcePoint
-      );
-      jsPlumb.makeSource(
-        stateNode,
-        {
-          maxConnections: 100,
-          anchor: "Center"
-        },
-        sourcePoint
-      );
-      jsPlumb.makeTarget(id, {
-        // 1 max connection because each Transform should have exactly one
-        // property attached
-        maxConnections: 1,
-        anchor: "Continuous"
-      });
-
-      // When a connection is made, update the source of the block to
-      // the name of the property which was just connected to it.
-      jsPlumb.bind("connection", info => {
-        if (info.targetId == id) {
-          // For now there is no implementation for connecting the State node to Transforms, so delete those connections
-          if (info.sourceId.endsWith("state")) {
-            jsPlumb.deleteConnection(info.connection);
-          }
-          if (info.sourceId.startsWith("state")) {
-            // Only update source if we receive a connection from a State block
-            Vue.set(
-              // Find the array entry for this block
-              this.blocks.transformBlocks.find(x => x.id === id),
-              // Update the source field
-              "source",
-              // to the sourceId of the connection
-              info.sourceId
-            );
-
-            // Transform Blocks should only accept connections from State Blocks,
-            // so destroy all other connections
-          } else {
-            jsPlumb.deleteConnection(info.connection);
-          }
-        }
-      });
-      // When detaching the conneciton, reverse our changes to the source field of this block
-      jsPlumb.bind("connectionDetached", info => {
-        if (info.targetId == id) {
-          if (info.sourceId.startsWith("state")) {
-            // Only update source if we receive a connection from a State block
-            Vue.set(
-              // Find the array entry for this block
-              this.blocks.transformBlocks.find(x => x.id === id),
-              // Update the source field
-              "source",
-              // to empty
-              ""
-            );
-          }
-        }
-        Vue.nextTick(() => {
-          jsPlumb.revalidate(id);
-        });
-      });
+      // Transforms have been removed
     },
     upload() {
       this.$refs.inputUpload.value = "";
@@ -869,7 +844,6 @@ export default {
       // by first deleting ALL connections but we can't do that here)
       if (id.startsWith("state") || id.startsWith("transform")) {
         jsPlumb.remove(id + "_neighbours");
-        jsPlumb.remove(id + "_state");
       }
       if (id.startsWith("condition")) {
         jsPlumb.remove(id + "_then");
@@ -942,8 +916,9 @@ body {
   border: 1px solid #aaaaaa;
   overflow-y: auto;
   height: 100%;
+  z-index: 0;
 
-  .v-icon {
+  .trashIcon {
     z-index: 2;
     position: absolute;
     top: 10px;
@@ -966,8 +941,11 @@ svg.jtk-connector path {
 svg.actionProperty path {
   stroke: var(--action-connector);
 }
+.jtk-connector {
+  z-index: -10;
+}
 .jtk-endpoint {
-  z-index: 1;
+  z-index: -1;
   svg circle {
     fill: var(--endpoint-primary);
     stroke: var(--endpoint-secondary);
@@ -1002,11 +980,11 @@ svg.actionProperty path {
 .neighboursSource {
   position: absolute;
   // background-color: rgb(54, 173, 43);
-  // width: 30px;
-  // height: 30px;
+  // width: 36px;
+  // height: 36px;
   display: inline-block;
-  right: 0px;
-  bottom: -10px;
+  right: 50px;
+  bottom: -20px;
   border-radius: 100%;
 }
 .stateSource {
@@ -1028,5 +1006,8 @@ svg.actionProperty path {
 .action,
 .transform {
   border-radius: 10px;
+}
+.v-chip {
+  z-index: 0;
 }
 </style>

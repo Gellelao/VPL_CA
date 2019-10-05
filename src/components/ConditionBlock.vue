@@ -3,71 +3,89 @@
     <v-toolbar-title class="text-uppercase">
       <span class="heading">Condition</span>
     </v-toolbar-title>
-    <template class="body" v-if="property === 'neighbours'">
-      <div class="body">
-        <select v-model="operator" @change="updateOperatorInParent">
-          <option>Exactly</option>
-          <option>Less than</option>
-          <option>More than</option>
-          <option>Between</option>
-        </select>
-        <template v-if="operator === 'Between'">
-          <input class="rangeInput" v-model.number="neighbourRange[0]" @input="updateNeighbourRangeInParent" type="number" />
-          and
-          <input class="rangeInput" v-model.number="neighbourRange[1]" @input="updateNeighbourRangeInParent" type="number" />
-        </template>
-          <div v-else>
-            <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number" />
-          </div>
-        <div>Neighbours are:</div>
-        <div class="selectColour">
-          <swatches
-            v-model="requiredState"
-            colors="text-basic"
-            @input="updateStateInParent"
-          >Select state</swatches>
-        </div>
+    <div class="body">
+      <select v-model="operator" @change="updateOperatorInParent">
+        <option>Exactly</option>
+        <option>Less than</option>
+        <option>More than</option>
+        <option>Between</option>
+      </select>
+      <template v-if="operator === 'Between'">
+        <input
+          class="rangeInput"
+          v-model.number="neighbourRange[0]"
+          @input="updateNeighbourRangeInParent"
+          type="number"
+        />
+        and
+        <input
+          class="rangeInput"
+          v-model.number="neighbourRange[1]"
+          @input="updateNeighbourRangeInParent"
+          type="number"
+        />
+      </template>
+      <div v-else>
+        <input v-model.number="howManyNeighbours" @input="updateNeighboursInParent" type="number" />
       </div>
-    </template>
-    <template v-else-if="property === 'state'">
-      <div class="body">Apply action regardless</div>
-    </template>
-    <div class="body" v-else>Connect a property</div>
+      <div>Neighbours are:</div>
+      <div class="selectColour">
+        <swatches
+          v-model="requiredState"
+          colors="text-basic"
+          @input="updateStateInParent"
+        >Select state</swatches>
+      </div>
+
+      <v-btn class="toggleTransform" flat icon color="black" @click.stop="drawer = !drawer">
+        <template v-if="drawer">
+          <v-icon>keyboard_arrow_left</v-icon>
+        </template>
+        <div v-else>
+          <v-icon>keyboard_arrow_right</v-icon>
+        </div>
+      </v-btn>
+    </div>
     <div :id="id+'_then'" class="thenSource">
       <v-chip>Then</v-chip>
+    </div>
+
+    <div class="drawer" :class="{ open: drawer }">
+      <TransformBlock
+        :id="id+'_transform'"
+        :initialNeighbourhood="neighbourhood"
+      ></TransformBlock>
     </div>
   </div>
 </template>
 
 <script>
 import Swatches from "vue-swatches";
+import TransformBlock from "./TransformBlock";
 
 export default {
-  components: { Swatches },
+  components: { Swatches, TransformBlock },
   props: [
     "id",
     "source",
     "initialOperator",
     "initialNeighbourCount",
     "initialNeighbourRange",
-    "initialReqState"
+    "initialNeighbourhood",
+    "initialReqState",
   ],
   data: function() {
     return {
       operator: this.initialOperator,
       howManyNeighbours: this.initialNeighbourCount,
       neighbourRange: this.initialNeighbourRange,
-      requiredState: this.initialReqState
+      neighbourhood: this.initialNeighbourhood,
+      requiredState: this.initialReqState,
+      drawer: false
     };
   },
   mounted() {
     this.updateOperatorInParent();
-  },
-  computed: {
-    property() {
-      let index = this.source.lastIndexOf("_");
-      return this.source.substr(index + 1);
-    }
   },
   methods: {
     updateStateInParent() {
@@ -101,7 +119,7 @@ export default {
 <style scoped lang="scss">
 .condition {
   text-align: center;
-  z-index: 2;
+  // z-index: 2;
   position: absolute;
   // width: 120px;
   padding: 10px;
@@ -121,7 +139,8 @@ export default {
   .selectColour {
     background-color: var(--condition-secondary);
   }
-  input, select {
+  input,
+  select {
     width: 100%;
     display: block;
     border-radius: 5px;
@@ -135,9 +154,27 @@ export default {
     right: 39px;
     bottom: -25px;
   }
-  .rangeInput{
+  .rangeInput {
     display: inline-block;
     width: 37%;
+  }
+  .drawer {
+    position: absolute;
+    top: 50px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: -5;
+    transform: translateX(0px);
+    transition: transform 0.2s;
+  }
+  .open {
+    transform: translateX(135px) !important;
+  }
+  .toggleTransform{
+    position: absolute;
+    right: -4px;
+    bottom: 28px;
   }
 }
 </style>

@@ -3,16 +3,14 @@
     <v-toolbar-title class="text-uppercase">
       <span class="heading">Colour</span>
     </v-toolbar-title>
+    <!-- For each cell that is: -->
     <div class="selectColour">
       <!-- <div class="form__input"> -->
       <swatches v-model="colour" colors="text-basic" @input="updateStateInParent"></swatches>
       <!-- </div> -->
     </div>
     <div :id="id+'_neighbours'" class="neighboursSource">
-      <v-chip>Others</v-chip>
-    </div>
-    <div :id="id+'_state'" class="stateSource">
-      <v-chip>Myself</v-chip>
+      <v-chip>If</v-chip>
     </div>
   </div>
 </template>
@@ -44,7 +42,7 @@ export default {
 
 <style scoped lang="scss">
 .state {
-  z-index: 2;
+  // z-index: 2;
   position: absolute;
     display: inline-block;
   width: 150px;
