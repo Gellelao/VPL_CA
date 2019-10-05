@@ -92,6 +92,10 @@
                 <v-list-tile v-for="(item, i) in presets" :key="i" @click="loadPreset(item.data)">
                   <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                 </v-list-tile>
+                <v-divider></v-divider>
+                <v-list-tile v-for="(item, i) in userTestingPresets" :key="i" @click="loadPreset(item.data)">
+                  <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                </v-list-tile>
               </v-list>
             </v-menu>
             <input v-show="false" ref="inputUpload" type="file" @change="loadFile" />
@@ -116,8 +120,16 @@ import ActionBlock from "./ActionBlock";
 import TransformBlock from "./TransformBlock";
 import SimZone from "./SimZone";
 import "vue-swatches/dist/vue-swatches.min.css";
+
+// Preset rules:
+
+import gameOfLife from "../../rules/gameOfLife.json";
+import wireworld from "../../rules/wireworld.json";
+import langtons from "../../rules/langtons.json";
+import rule110 from "../../rules/rule110.json";
+
 import basics from "../../rules/basics.json";
-import wireworld from "../../rules/unfinished_wireworld.json";
+import unfinishedwireworld from "../../rules/unfinished_wireworld.json";
 import blueYellow from "../../rules/blue_and_yellow.json";
 
 // Count variable appended to block id values to ensure uniqueness
@@ -170,9 +182,15 @@ export default {
     trashOpen: false,
     mouseOverTrash: false,
     presets: [
-      { title: "Basics", data: basics },
+      { title: "Game of Life", data: gameOfLife },
       { title: "Wireworld", data: wireworld },
-      { title: "BlueYellow", data: blueYellow }
+      { title: "Langton's Ant", data: langtons },
+      { title: "Rule 110", data: rule110 }
+    ],
+    userTestingPresets: [
+      { title: "Basics", data: basics },
+      { title: "Incomplete Wireworld", data: unfinishedwireworld },
+      { title: "Blue and Yellow", data: blueYellow }
     ]
   }),
   updated() {
