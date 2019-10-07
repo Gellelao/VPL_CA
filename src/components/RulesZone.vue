@@ -93,7 +93,7 @@
                   <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                 </v-list-tile>
                 <v-divider></v-divider>
-                <v-list-tile v-for="(item, i) in userTestingPresets" :key="i" @click="loadPreset(item.data)">
+                <v-list-tile v-for="(item, i) in userTestingPresets" :key="'testing_'+i" @click="loadPreset(item.data)">
                   <v-list-tile-title>{{ item.title }}</v-list-tile-title>
                 </v-list-tile>
               </v-list>
@@ -229,14 +229,15 @@ export default {
           let cond = this.blocks.conditionBlocks.find(
             x => x.id === conditionId
           );
-          this.parseCondition(stateColour, cond, [], rules);
+          let newRules = this.parseCondition(stateColour, cond, [], rules);
+          rules.concat(newRules);
         });
       });
       return rules;
     }
   },
   mounted() {
-    console.log("mounted");
+    // console.log("mounted");
     jsPlumb.registerConnectionTypes({
       actionProperty: {
         cssClass: "actionProperty",
@@ -406,7 +407,7 @@ export default {
           );
           this.parseCondition(stateColour, cond, arrayOfExistingConds, rules);
         });
-      } else return;
+      } else return rules;
     },
     revalidateOnConnect() {
       // When resizing a block we want to update the connection to reflect the new size,
@@ -712,7 +713,7 @@ export default {
       return block;
     },
     save() {
-      console.log("SAVE");
+      // console.log("SAVE");
       // We want to copy the blocks object, not store a reference to it
       let blockData = JSON.parse(JSON.stringify(this.blocks));
       blockData.stateBlocks.forEach(block => {
@@ -768,17 +769,17 @@ export default {
       }
     },
     load(totalData) {
-      console.log("LOAD");
+      // console.log("LOAD");
 
       if (totalData.grid && totalData.grid != null) {
-        console.log("Loading grid");
+        // console.log("Loading grid");
         let jsonGrid = JSON.parse(totalData.grid);
         this.$root.$emit("loadGrid", {
           grid: jsonGrid
         });
       }
 
-      console.log("Setting blocks");
+      // console.log("Setting blocks");
       Vue.set(this.blocks, "stateBlocks", totalData.blocks.stateBlocks);
       Vue.set(this.blocks, "conditionBlocks", totalData.blocks.conditionBlocks);
       Vue.set(this.blocks, "actionBlocks", totalData.blocks.actionBlocks);
@@ -786,7 +787,7 @@ export default {
 
       // Wait for the DOM to update before setting up plumbing
       Vue.nextTick(() => {
-        console.log("Initializing blocks");
+        // console.log("Initializing blocks");
         this.blocks.stateBlocks.forEach(block => {
           this.initializeStateBlock(block.id);
         });
@@ -802,7 +803,7 @@ export default {
       });
 
       Vue.nextTick(() => {
-        console.log("Making connections");
+        // console.log("Making connections");
         totalData.connections.forEach(connection => {
           jsPlumb.connect({
             source: connection.source,
@@ -832,7 +833,6 @@ export default {
       // Clear the existing rules before loading
       this.clearRules();
       Vue.nextTick(() => {
-        console.log("preset: " + preset);
         this.load(preset);
       });
     },
@@ -864,7 +864,7 @@ export default {
       });
     },
     clearRules() {
-      console.log("CLEAR");
+      // console.log("CLEAR");
       count = 0;
 
       // jsPlumb.deleteEveryConnection();
