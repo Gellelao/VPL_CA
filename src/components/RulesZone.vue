@@ -229,8 +229,7 @@ export default {
           let cond = this.blocks.conditionBlocks.find(
             x => x.id === conditionId
           );
-          let newRules = this.parseCondition(stateColour, cond, [], rules);
-          rules.concat(newRules);
+          this.parseCondition(stateColour, cond, [], rules);
         });
       });
       return rules;
@@ -407,7 +406,7 @@ export default {
           );
           this.parseCondition(stateColour, cond, arrayOfExistingConds, rules);
         });
-      } else return rules;
+      } else return;
     },
     revalidateOnConnect() {
       // When resizing a block we want to update the connection to reflect the new size,
