@@ -1,4 +1,7 @@
-# vpl
+Honours project for my final year of uni at Victoria University of Wellington.
+
+With the help of my supervisor, Michael Homer, this became [a poster](https://ieeexplore.ieee.org/document/9127283) at the IEEE Symposium on Visual Languages and Human Centric Computing.
+
 
 ## Project setup
 ```
